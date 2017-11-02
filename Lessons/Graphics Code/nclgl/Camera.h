@@ -54,7 +54,7 @@ public:
 	void	SetPitch(float p) {pitch = p;}
 
 protected:
-	float	yaw;
-	float	pitch;
+	float	yaw = 0.0f;
+	float	pitch = 0.0f;
 	Vector3 position;
 };
