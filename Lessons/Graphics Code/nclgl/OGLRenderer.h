@@ -30,6 +30,7 @@ _-_-_-_-_-_-_-""  ""
 #include "Quaternion.h"
 #include "Matrix4.h"
 #include "Window.h"
+#include "Camera.h"
 //#include "light.h"
 
 #include "Shader.h"		//Students make this file...

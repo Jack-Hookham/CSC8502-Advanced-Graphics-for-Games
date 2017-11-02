@@ -5,7 +5,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	camera = new Camera();
 	triangle = Mesh::GenerateTriangle();
 
-	currentShader = new Shader(SHADERDIR"MatrixVertex.glsl", SHADERDIR"colourFragment.glsl");
+	currentShader = new Shader(SHADERDIR"basicVertex.glsl", SHADERDIR"colourFragment.glsl");
 
 	if (!currentShader->LinkProgram())
 	{

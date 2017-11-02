@@ -18,6 +18,10 @@ public:
 	inline void SetRotation(float r) { rotation = r; }
 	inline void SetPosition(Vector3 p) { position = p; }
 
+	void UpdateTextureMatrix(float rotatation);
+	void ToggleRepeating();
+	void ToggleFiltering();
+
 protected:
 	Mesh* triangle;
 
@@ -25,5 +29,8 @@ protected:
 	float rotation;
 	Vector3 position;
 
-	Camera* camera;
+	//Camera* camera;
+
+	bool filtering;
+	bool repeating;
 };
