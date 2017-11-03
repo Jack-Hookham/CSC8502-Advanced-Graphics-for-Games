@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../nclgl/OGLRenderer.h"
-#include "../nclgl/Camera.h"
 
 class Renderer : public OGLRenderer
 {
@@ -11,13 +10,24 @@ public:
 
 	virtual void RenderScene();
 
-	void UpdateTextureMatrix(float rotation);
-	void ToggleRepeating();
-	void ToggleFiltering();
+	void ToggleObject();
+	void ToggleDepth();
+	void ToggleAlphaBlend();
+	void ToggleBlendMode();
+	void MoveObject(float by);
 
 protected:
-	Mesh* triangle;
+	GLuint textures[2];
+	Mesh* meshes[2];
+	Vector3 positions[2];
 
-	bool filtering;
-	bool repeating;
+	Matrix4 textureMatrix;
+	Matrix4 modelMatrix;
+	Matrix4 projMatrix;
+	Matrix4 viewMatrix;
+
+	bool modifyObject;
+	bool usingDepth;
+	bool usingAlpha;
+	int blendMode;
 };
