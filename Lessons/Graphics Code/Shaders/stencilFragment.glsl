@@ -1,4 +1,5 @@
 #version 150
+
 uniform sampler2D diffuseTex;
 
 in Vertex {
@@ -8,5 +9,12 @@ in Vertex {
 out vec4 fragColour;
 
 void main(void){
-	fragColour = texture(diffuseTex, IN.texCoord);
+	vec4 value = texture(diffuseTex, IN.texCoord).rgba;
+	
+	if (value.a == 0.0)
+	{
+		discard;
+	}
+	
+	fragColour = value;
 }
