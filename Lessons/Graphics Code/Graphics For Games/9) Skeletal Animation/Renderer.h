@@ -5,6 +5,8 @@
 #include "../../nclgl/MD5Mesh.h"
 #include "../../nclgl/MD5Node.h"
 
+#define WEEK_2_CODE
+
 class Renderer : public OGLRenderer		{
 public:
 	Renderer(Window &parent);
@@ -14,8 +16,8 @@ public:
 	virtual void UpdateScene(float msec);
 
 protected:
-	MD5FileData*hellData;
-	MD5Node*	hellNode;
-	Camera*		camera;
+	MD5FileData*	hellData;
+	MD5Node*		hellNode;
+	Camera*			camera;
 };
 
