@@ -28,7 +28,7 @@ public:
 	void AddChild(SceneNode* s);
 
 	virtual void Update(float msec);
-	virtual void Draw(const OGLRenderer &r);
+	virtual void Draw();
 
 	std::vector<SceneNode*>::const_iterator GetChildIteratorStart()
 	{

@@ -2,7 +2,7 @@
 
 SceneNode::SceneNode(Mesh* m, Vector4 colour)
 {
-	this->mesh = mesh;
+	this->mesh = m;
 	this->colour = colour;
 	parent = NULL;
 	modelScale = Vector3(1, 1, 1);
@@ -41,7 +41,7 @@ void SceneNode::Update(float msec)
 	}
 }
 
-void SceneNode::Draw(const OGLRenderer& r)
+void SceneNode::Draw()
 {
 	if (mesh) { mesh->Draw(); }
 }
