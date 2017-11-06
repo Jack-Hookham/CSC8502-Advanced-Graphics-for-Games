@@ -6,7 +6,7 @@
 #include "../../nclgl/Camera.h"
 #include "../../nclgl/HeightMap.h"
 
-#define POST_PASSES 10
+#define POST_PASSES 5
 
 class Renderer : public OGLRenderer
 {
