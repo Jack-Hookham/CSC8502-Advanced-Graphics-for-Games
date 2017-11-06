@@ -3,8 +3,10 @@
   <ItemGroup>
     <ClCompile Include="Tutorial6.cpp" />
     <ClCompile Include="CubeRobot.cpp" />
+    <ClCompile Include="Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CubeRobot.h" />
+    <ClInclude Include="Renderer.h" />
   </ItemGroup>
 </Project>

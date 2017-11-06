@@ -44,7 +44,9 @@ void CubeRobot::Update(float msec)
 
 	head->SetTransform(head->GetTransform() * Matrix4::Rotation(-msec / 10.0f, Vector3(0, 1, 0)));
 	leftArm->SetTransform(leftArm->GetTransform() * Matrix4::Rotation(-msec / 10.0f, Vector3(1, 0, 0)));
-	leftArm->SetTransform(leftArm->GetTransform() * Matrix4::Rotation(-msec / 10.0f, Vector3(1, 0, 0)));
+	rightArm->SetTransform(rightArm->GetTransform() * Matrix4::Rotation(msec / 10.0f, Vector3(1, 0, 0)));
+
+	SceneNode::Update(msec);
 }
 
 void CubeRobot::CreateCube()
@@ -52,9 +54,4 @@ void CubeRobot::CreateCube()
 	OBJMesh* m = new OBJMesh();
 	m->LoadOBJMesh(MESHDIR"cube.obj");
 	cube = m;
-}
-
-
-CubeRobot::~CubeRobot()
-{
 }
