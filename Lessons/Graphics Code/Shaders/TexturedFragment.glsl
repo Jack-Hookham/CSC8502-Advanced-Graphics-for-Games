@@ -7,6 +7,7 @@ in Vertex {
 
 out vec4 fragColour;
 
-void main(void){
+void main(void)
+{
 	fragColour = texture(diffuseTex, IN.texCoord);
 }

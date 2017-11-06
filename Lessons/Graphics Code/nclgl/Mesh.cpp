@@ -15,6 +15,9 @@ Mesh::Mesh(void)
 	type = GL_TRIANGLES;
 	texture = 0;
 	textureCoords = NULL;
+
+	indices = NULL;
+	numIndices = 0;
 }
 
 Mesh::~Mesh(void)
@@ -25,14 +28,24 @@ Mesh::~Mesh(void)
 	delete[] colours;
 	glDeleteTextures(1, &texture);
 	delete[] textureCoords;
+	delete[] indices;
 }
 
 void Mesh::Draw()
 {
 	glBindTexture(GL_TEXTURE_2D, texture);
+	
 	glBindVertexArray(arrayObject);
-	glDrawArrays(type, 0, numVertices);
+	if (bufferObject[INDEX_BUFFER])
+	{
+		glDrawElements(type, numIndices, GL_UNSIGNED_INT, 0);
+	}
+	else
+	{
+		glDrawArrays(type, 0, numVertices);
+	}
 	glBindVertexArray(0);
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -113,6 +126,13 @@ void Mesh::BufferData()
 		glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(Vector4), colours, GL_STATIC_DRAW);
 		glVertexAttribPointer(COLOUR_BUFFER, 4, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(COLOUR_BUFFER);
+	}
+
+	if (indices)
+	{
+		glGenBuffers(1, &bufferObject[INDEX_BUFFER]);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[INDEX_BUFFER]);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(GLuint), indices, GL_STATIC_DRAW);
 	}
 
 	glBindVertexArray(0);

@@ -7,6 +7,7 @@ enum MeshBuffer
 	VERTEX_BUFFER,
 	COLOUR_BUFFER,
 	TEXTURE_BUFFER,
+	INDEX_BUFFER,
 	MAX_BUFFER
 };
 
@@ -34,5 +35,8 @@ protected:
 	Vector4* colours;
 	GLuint texture;
 	Vector2* textureCoords;
+
+	GLuint numIndices;
+	unsigned int* indices;
 };
 

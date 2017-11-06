@@ -94,7 +94,7 @@ void Renderer::BuildNodeLists(SceneNode* from)
 
 	for (vector<SceneNode*>::const_iterator i = from->GetChildIteratorStart(); i != from->GetChildIteratorEnd(); ++i)
 	{
-		BuildNodeLists((*i));
+		BuildNodeLists(*i);
 	}
 }
 
@@ -114,12 +114,12 @@ void Renderer::DrawNodes()
 {
 	for (vector<SceneNode*>::const_iterator i = nodeList.begin(); i != nodeList.end(); ++i)
 	{
-		DrawNode((*i));
+		DrawNode(*i);
 	}
 
 	for (vector<SceneNode*>::const_reverse_iterator i = transparentNodeList.rbegin(); i != transparentNodeList.rend(); ++i)
 	{
-		DrawNode((*i));
+		DrawNode(*i);
 	}
 }
 
