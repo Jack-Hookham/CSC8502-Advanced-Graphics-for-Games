@@ -567,7 +567,8 @@ void	MD5FileData::BindTextureBuffers() const {
 
 	glActiveTexture(GL_TEXTURE0 + MD5_TRANSFORM_TEXNUM);
 	glBindTexture(GL_TEXTURE_BUFFER, transformTexture);
-	glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F,transformBuffer);
+	glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F,transformBuffer); 
+	glActiveTexture(GL_TEXTURE0);
 }
 
 //Here's where we actually fill in the 'transforms' memory we created

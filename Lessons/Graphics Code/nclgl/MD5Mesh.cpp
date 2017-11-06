@@ -63,6 +63,8 @@ void MD5Mesh::BufferExtraData() {
 	glBufferData(GL_ARRAY_BUFFER, numVertices*sizeof(Vector2), weights, GL_STATIC_DRAW);
 	glVertexAttribPointer(MAX_BUFFER, 2, GL_FLOAT, GL_FALSE, 0, 0); 
 	glEnableVertexAttribArray(MAX_BUFFER);
+	glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(6);
 
 	glBindVertexArray(0);
 }
