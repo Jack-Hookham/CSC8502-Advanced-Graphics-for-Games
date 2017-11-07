@@ -59,7 +59,6 @@ bool Shader::LinkProgram()
 		std::cout << "\n";
 	}
 
-
 	return code == GL_TRUE ? true : false;
 }
 
@@ -67,6 +66,7 @@ void Shader::SetDefaultAttribute()
 {
 	glBindAttribLocation(program, VERTEX_BUFFER, "position");
 	glBindAttribLocation(program, COLOUR_BUFFER, "colour");
+	glBindAttribLocation(program, NORMAL_BUFFER, "normal");
 	glBindAttribLocation(program, TEXTURE_BUFFER, "texCoord");
 }
 
