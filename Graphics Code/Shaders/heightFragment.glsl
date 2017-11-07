@@ -13,15 +13,13 @@ vec4 peakColour = vec4(0.9, 0.9, 0.9, 0.9);
 
 void main(void)
 {
-	if(IN.position.y < 1)
+	if(IN.position.y < 150)
 	{
-		//fragColour = mix(mix(texture(diffuseTex, IN.texCoord), IN.colour, 0.7), mix(texture(diffuseTex, IN.texCoord), IN.colour, 0.3), IN.position.y/257);
-		fragColour = vec4(1, 0, 0, 1);
+		fragColour = mix(mix(texture(diffuseTex, IN.texCoord), IN.colour, 0.7), mix(texture(diffuseTex, IN.texCoord), IN.colour, 0.3), IN.position.y/257);
 	}	
 	else
 	{
-		//fragColour = mix(mix(texture(diffuseTex, IN.texCoord), peakColour, 0.7), mix(texture(diffuseTex, IN.texCoord), peakColour, 0.3), IN.position.y/257);
-		fragColour = vec4(0, 0, 1, 1);
+		fragColour = mix(mix(texture(diffuseTex, IN.texCoord), peakColour, 0.7), mix(texture(diffuseTex, IN.texCoord), peakColour, 0.3), IN.position.y/257);
 	}
 	if(fragColour.a <= 0)
 	{
