@@ -45,5 +45,8 @@ void SceneNode::Update(float msec)
 
 void SceneNode::Draw()
 {
-	if (mesh) { mesh->Draw(); }
+	if (mesh) 
+	{
+		mesh->Draw();
+	}
 }
