@@ -52,5 +52,6 @@ HeightMap::HeightMap(std::string name)
 	}
 
 	GenerateNormals();
+	GenerateTangents();
 	BufferData();
 }

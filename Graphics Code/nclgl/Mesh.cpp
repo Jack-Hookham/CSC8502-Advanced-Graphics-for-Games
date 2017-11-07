@@ -45,7 +45,7 @@ void Mesh::Draw()
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, bump);
+	glBindTexture(GL_TEXTURE_2D, bumpTexture);
 	
 	glBindVertexArray(arrayObject);
 	if (bufferObject[INDEX_BUFFER])
@@ -221,12 +221,62 @@ void Mesh::GenerateNormals()
 
 void Mesh::GenerateTangents()
 {
+	if (!tangents)
+	{
+		tangents = new Vector3[numVertices];
+	}
 
+	for (GLuint i = 0; i < numVertices; ++i)
+	{
+		tangents[i] = Vector3();
+	}
+
+	if (indices)
+	{
+		for (GLuint i = 0; i < numIndices; i += 3)
+		{
+			int a = indices[i];
+			int b = indices[i + 1];
+			int c = indices[i + 2];
+
+			Vector3 tangent = GenerateTangent(vertices[a], vertices[b], vertices[c], textureCoords[a], textureCoords[b], textureCoords[c]);
+
+			tangents[a] += tangent;
+			tangents[b] += tangent;
+			tangents[c] += tangent;
+		}
+	}
+	else
+	{
+		for (GLuint i = 0; i < numVertices; i += 3)
+		{
+			Vector3 tangent = GenerateTangent(vertices[i], vertices[i + 1], vertices[i + 2], 
+				textureCoords[i], textureCoords[i + 1], textureCoords[i + 2]);
+
+			normals[i] = tangent;
+			normals[i + 1] = tangent;
+			normals[i + 2] = tangent;
+		}
+	}
+
+	for (GLuint i = 0; i < numVertices; ++i)
+	{
+		tangents[i].Normalise();
+	}
 }
 
 Vector3 Mesh::GenerateTangent(const Vector3& a, const Vector3& b, const Vector3& c, 
 	const Vector2& ta, const Vector2& tb, const Vector2& tc)
 {
-	return Vector3();
+	Vector2 coord1 = tb - ta;
+	Vector2 coord2 = tc - ta;
+
+	Vector3 vertex1 = b - a;
+	Vector3 vertex2 = c - a;
+
+	Vector3 axis = Vector3(vertex1 * coord2.y - vertex2 * coord1.y);
+	float factor = 1.0f / (coord1.x * coord2.y - coord2.x * coord1.y);
+
+	return axis * factor;
 }
 

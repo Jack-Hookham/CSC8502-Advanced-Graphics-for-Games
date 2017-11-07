@@ -4,7 +4,7 @@
 #include "Renderer.h"
 
 int main() {
-	Window w("Per Pixel Lighting!", 800,600,false);
+	Window w("Per Pixel Lighting!", 1280,800,false);
 	if(!w.HasInitialised()) {
 		return -1;
 	}
