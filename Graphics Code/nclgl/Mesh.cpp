@@ -21,6 +21,8 @@ Mesh::Mesh(void)
 
 	//Lighting
 	normals = NULL;
+	tangents = NULL;
+	bumpTexture = 0;
 }
 
 Mesh::~Mesh(void)
@@ -33,11 +35,17 @@ Mesh::~Mesh(void)
 	delete[] textureCoords;
 	delete[] indices;
 	delete[] normals;
+	delete[] tangents;
+	glDeleteTextures(1, &bumpTexture);
 }
 
 void Mesh::Draw()
 {
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, bump);
 	
 	glBindVertexArray(arrayObject);
 	if (bufferObject[INDEX_BUFFER])
@@ -148,6 +156,15 @@ void Mesh::BufferData()
 		glEnableVertexAttribArray(NORMAL_BUFFER);
 	}
 
+	if (tangents)
+	{
+		glGenBuffers(1, &bufferObject[TANGENT_BUFFER]);
+		glBindBuffer(GL_ARRAY_BUFFER, bufferObject[TANGENT_BUFFER]);
+		glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(Vector3), tangents, GL_STATIC_DRAW);
+		glVertexAttribPointer(TANGENT_BUFFER, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(TANGENT_BUFFER);
+	}
+
 	glBindVertexArray(0);
 }
 
@@ -200,5 +217,16 @@ void Mesh::GenerateNormals()
 	{
 		normals[i].Normalise();
 	}
+}
+
+void Mesh::GenerateTangents()
+{
+
+}
+
+Vector3 Mesh::GenerateTangent(const Vector3& a, const Vector3& b, const Vector3& c, 
+	const Vector2& ta, const Vector2& tb, const Vector2& tc)
+{
+	return Vector3();
 }
 
