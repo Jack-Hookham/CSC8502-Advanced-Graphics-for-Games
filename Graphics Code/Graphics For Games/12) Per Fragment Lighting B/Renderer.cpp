@@ -13,13 +13,13 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	//heightMap->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"brickDOT3.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
 	lights[0] = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 0.25f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z * 0.75f)),
-		Vector4(0.8, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X) / 2.0f);
+		Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X) / 2.0f);
 	lights[1] = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 0.25f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z * 0.25f)),
-		Vector4(0.8, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X) / 2.0f);
+		Vector4(1, 0, 0, 1), (RAW_WIDTH * HEIGHTMAP_X) / 2.0f);
 	lights[2] = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 0.25f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z * 0.75f)),
-		Vector4(0.8, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X) / 2.0f);
+		Vector4(0, 1, 0, 1), (RAW_WIDTH * HEIGHTMAP_X) / 2.0f);
 	lights[3] = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 0.75f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z * 0.25f)),
-		Vector4(0.8, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X) / 2.0f);
+		Vector4(0, 0, 1, 1), (RAW_WIDTH * HEIGHTMAP_X) / 2.0f);
 
 	if (!currentShader->LinkProgram() || !heightMap->GetTexture() || !heightMap->GetBumpMap())
 	{
@@ -93,7 +93,7 @@ void Renderer::SetShaderLights(Light* lights[numLights])
 		radii[i] = lights[i]->GetRadius();
 	}
 
-	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "lightPos"), 1, (float*)&positions);
-	glUniform4fv(glGetUniformLocation(currentShader->GetProgram(), "lightColour"), 1, (float*)&colours);
+	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "lightPos"), 4, (float*)&positions);
+	glUniform4fv(glGetUniformLocation(currentShader->GetProgram(), "lightColour"), 4, (float*)&colours);
 	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "lightRadius"), *radii);
 }
