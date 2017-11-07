@@ -5,8 +5,11 @@ uniform vec2 pixelSize;
 uniform int isVertical;
 
 in Vertex {
-	vec2 texCoord;
-	vec4 colour;
+	vec4 	colour;
+	vec2 	texCoord;
+	vec3 	normal;
+	vec3 	tangent;
+	vec3 	worldPos;
 } IN;
 
 out vec4 fragColour;
