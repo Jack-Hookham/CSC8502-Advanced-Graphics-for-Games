@@ -15,7 +15,7 @@ public:
 	virtual void RenderScene();
 	virtual void UpdateScene(float msec);
 
-	void SetShaderLights(Light* lights[]);
+	void SetShaderLights(Light* lights[numLights]);
 
 protected:
 	Mesh* heightMap;

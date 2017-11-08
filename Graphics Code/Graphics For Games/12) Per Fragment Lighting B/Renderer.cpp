@@ -12,13 +12,13 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	//heightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"brick.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	//heightMap->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"brickDOT3.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-	lights[0] = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 0.25f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z * 0.75f)),
+	lights[0] = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 0.25f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z * 0.25f)),
 		Vector4(1, 1, 1, 1), (RAW_WIDTH * HEIGHTMAP_X) / 2.0f);
-	lights[1] = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 0.25f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z * 0.25f)),
+	lights[1] = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 0.25f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z * 0.75f)),
 		Vector4(1, 0, 0, 1), (RAW_WIDTH * HEIGHTMAP_X) / 2.0f);
-	lights[2] = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 0.25f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z * 0.75f)),
+	lights[2] = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 0.75f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z * 0.25f)),
 		Vector4(0, 1, 0, 1), (RAW_WIDTH * HEIGHTMAP_X) / 2.0f);
-	lights[3] = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 0.75f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z * 0.25f)),
+	lights[3] = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 0.75f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z * 0.75f)),
 		Vector4(0, 0, 1, 1), (RAW_WIDTH * HEIGHTMAP_X) / 2.0f);
 
 	if (!currentShader->LinkProgram() || !heightMap->GetTexture() || !heightMap->GetBumpMap())
@@ -69,6 +69,7 @@ void Renderer::RenderScene()
 
 void Renderer::UpdateScene(float msec)
 {
+	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "time"), msec);
 	camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
 }
@@ -95,5 +96,5 @@ void Renderer::SetShaderLights(Light* lights[numLights])
 
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "lightPos"), 4, (float*)&positions);
 	glUniform4fv(glGetUniformLocation(currentShader->GetProgram(), "lightColour"), 4, (float*)&colours);
-	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "lightRadius"), *radii);
+	glUniform1fv(glGetUniformLocation(currentShader->GetProgram(), "lightRadius"), 4, radii);
 }
