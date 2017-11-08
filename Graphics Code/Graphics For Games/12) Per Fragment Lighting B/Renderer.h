@@ -20,7 +20,7 @@ public:
 	void SetShaderLights(Light* lights[numLights]);
 
 protected:
-	int timeMod = 0;
+	int timeMods[4] = { 0, 1000, 3000, 2000 };
 	Mesh* heightMap;
 	Camera* camera;
 

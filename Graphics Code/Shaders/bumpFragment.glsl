@@ -46,6 +46,4 @@ void main(void)
 
 		fragColour += col;
 	}
-
-	//fragColour = fragColour / 4;
 }

@@ -102,21 +102,42 @@ void Renderer::SetShaderLights(Light* lights[numLights])
 
 void Renderer::updateLights()
 {
-	timeMod += 1;
-	if (timeMod > 100000)
+	for (int i = 0; i < 4; ++i)
 	{
-		timeMod = 0;
+		timeMods[i]++;
+
+		if (timeMods[i] > 25500)
+		{
+			timeMods[i] = 0;
+		}
 	}
 
-	float colourVal = sin((timeMod % 255) * 0.05f);
-
+	float colourVal = sin((timeMods[0] % 255) * 0.05f);
 	if (colourVal < 0.3f)
 	{
 		colourVal = 0.3f;
 	}
 
 	lights[0]->SetColour(Vector4(colourVal, colourVal, colourVal, 1.0f));
+
+	colourVal = sin((timeMods[1] % 255) * 0.05f);
+	if (colourVal < 0.3f)
+	{
+		colourVal = 0.3f;
+	}
 	lights[1]->SetR(colourVal);
+
+	colourVal = sin((timeMods[2] % 255) * 0.05f);
+	if (colourVal < 0.3f)
+	{
+		colourVal = 0.3f;
+	}
 	lights[2]->SetG(colourVal);
+
+	colourVal = sin((timeMods[3] % 255) * 0.05f);
+	if (colourVal < 0.3f)
+	{
+		colourVal = 0.3f;
+	}
 	lights[3]->SetB(colourVal);
 }
