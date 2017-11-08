@@ -3,7 +3,7 @@
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projMatrix;
-uniform vec4 textureMatrix;
+uniform mat4 textureMatrix;
 
 in vec3 position;
 in vec4 colour;
