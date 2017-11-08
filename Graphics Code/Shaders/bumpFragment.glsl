@@ -46,7 +46,6 @@ void main(void)
 
 		fragColour += col;
 	}
-	fragColour.r = (mod(time, 255)) / 255;
 
 	//fragColour = fragColour / 4;
 }

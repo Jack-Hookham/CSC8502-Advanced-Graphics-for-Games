@@ -69,6 +69,7 @@ void Renderer::RenderScene()
 
 void Renderer::UpdateScene(float msec)
 {
+	updateLights();
 	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "time"), msec);
 	camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
@@ -97,4 +98,25 @@ void Renderer::SetShaderLights(Light* lights[numLights])
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "lightPos"), 4, (float*)&positions);
 	glUniform4fv(glGetUniformLocation(currentShader->GetProgram(), "lightColour"), 4, (float*)&colours);
 	glUniform1fv(glGetUniformLocation(currentShader->GetProgram(), "lightRadius"), 4, radii);
+}
+
+void Renderer::updateLights()
+{
+	timeMod += 1;
+	if (timeMod > 100000)
+	{
+		timeMod = 0;
+	}
+
+	float colourVal = sin((timeMod % 255) * 0.05f);
+
+	if (colourVal < 0.3f)
+	{
+		colourVal = 0.3f;
+	}
+
+	lights[0]->SetColour(Vector4(colourVal, colourVal, colourVal, 1.0f));
+	lights[1]->SetR(colourVal);
+	lights[2]->SetG(colourVal);
+	lights[3]->SetB(colourVal);
 }

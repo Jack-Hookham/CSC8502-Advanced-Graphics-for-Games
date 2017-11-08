@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #include "../../nclgl/OGLRenderer.h"
 #include "../../nclgl/Camera.h"
 #include "../../nclgl/HeightMap.h"
@@ -18,8 +20,11 @@ public:
 	void SetShaderLights(Light* lights[numLights]);
 
 protected:
+	int timeMod = 0;
 	Mesh* heightMap;
 	Camera* camera;
 
 	Light* lights[numLights];
+
+	void updateLights();
 };

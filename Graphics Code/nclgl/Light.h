@@ -24,9 +24,13 @@ public:
 	Vector4 GetColour() const { return colour; }
 	void SetColour(Vector4 val) { colour = val; }
 
+	void SetR(float val) { colour.x = val; }
+	void SetG(float val) { colour.y = val; }
+	void SetB(float val) { colour.z = val; }
+	void SetA(float val) { colour.w = val; }
+
 	//Vector4 GetSpecularColour() const { return colour; }
 	//void SetSpecularColour(Vector4 val) { colour = val; }
-
 
 protected:
 	Vector3 position;
