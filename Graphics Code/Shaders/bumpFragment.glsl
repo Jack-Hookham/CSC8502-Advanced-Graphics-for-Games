@@ -23,7 +23,7 @@ out vec4 fragColour;
 
 void main(void)
 {
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < lightColour.length; i++)
 	{
 		vec4 diffuse = texture(diffuseTex, IN.texCoord);
 		mat3 TBN = mat3(IN.tangent, IN.binormal, IN.normal);

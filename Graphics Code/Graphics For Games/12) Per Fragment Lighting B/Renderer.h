@@ -17,7 +17,7 @@ public:
 	virtual void RenderScene();
 	virtual void UpdateScene(float msec);
 
-	void SetShaderLights(Light* lights[numLights]);
+	void SetShaderLights(Light* lights[]);
 
 protected:
 	int timeMods[4] = { 0, 1000, 3000, 2000 };

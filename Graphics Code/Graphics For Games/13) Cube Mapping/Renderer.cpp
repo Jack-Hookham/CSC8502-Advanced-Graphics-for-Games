@@ -7,19 +7,21 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	camera->SetPosition(Vector3(RAW_WIDTH * HEIGHTMAP_X / 2.0f, 500.0f, RAW_WIDTH * HEIGHTMAP_X));
 	heightMap = new HeightMap(TEXTUREDIR"terrain.raw");
 
-	light = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)), Vector4(0.9f, 0.9f, 1.0f, 1),
-		RAW_WIDTH * HEIGHTMAP_X / 2.0f);
+	light = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 1000.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)), Vector4(0.9f, 0.9f, 1.0f, 1),
+		RAW_WIDTH * HEIGHTMAP_X);
 
-	reflectShader = new Shader(SHADERDIR"perPixelVertex.glsl", SHADERDIR"reflectFragment.glsl");
+	//reflectShader = new Shader(SHADERDIR"bumpVertex.glsl", SHADERDIR"bumpFragment.glsl");
+	reflectShader = new Shader(SHADERDIR"bumpVertex.glsl", SHADERDIR"reflectFragment.glsl");
 	skyboxShader = new Shader(SHADERDIR"skyboxVertex.glsl", SHADERDIR"skyboxFragment.glsl");
-	lightShader = new Shader(SHADERDIR"perPixelVertex.glsl", SHADERDIR"perPixelFragment.glsl");
+	lightShader = new Shader(SHADERDIR"bumpVertex.glsl", SHADERDIR"bumpFragment.glsl");
 
 	if (!reflectShader->LinkProgram() || !skyboxShader->LinkProgram() || !lightShader->LinkProgram())
 	{
 		return;
 	}
 
-	quad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	quad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water-0340.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	quad->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"water 0340normal.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	heightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	heightMap->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
@@ -103,6 +105,7 @@ void Renderer::DrawWater()
 	SetShaderLight(*light);
 
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 2);
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
 

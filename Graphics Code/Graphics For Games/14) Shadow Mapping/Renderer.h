@@ -2,9 +2,10 @@
 
 #include "../../nclgl/OGLRenderer.h"
 #include "../../nclgl/Camera.h"
-#include "../../nclgl/HeightMap.h"
+#include "../../nclgl/MD5Mesh.h"
+#include "../../nclgl/MD5Node.h"
 
-#define POST_PASSES 10
+#define SHADOWSIZE 2048
 
 class Renderer : public OGLRenderer
 {
@@ -16,19 +17,20 @@ public:
 	virtual void UpdateScene(float msec);
 
 protected:
-	void PresentScene();
-	void DrawPostProcess();
-	void DrawScene();
+	void DrawMesh();
+	void DrawFloor();
+	void DrawShadowScene();
+	void DrawCombinedScene();
 
 	Shader* sceneShader;
-	Shader* processShader;
+	Shader* shadowShader;
 
-	Mesh* quad;
-	HeightMap* heightMap;
+	GLuint shadowTex;
+	GLuint shadowFBO;
+
+	MD5FileData* hellData;
+	MD5Node* hellNode;
+	Mesh* floor;
 	Camera* camera;
-
-	GLuint bufferFBO;
-	GLuint processFBO;
-	GLuint bufferColourTex[2];
-	GLuint bufferDepthTex;
+	Light* light;
 };
