@@ -6,9 +6,12 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	camera = new Camera();
 	camera->SetPosition(Vector3(RAW_WIDTH * HEIGHTMAP_X / 2.0f, 500.0f, RAW_WIDTH * HEIGHTMAP_X));
 	heightMap = new HeightMap(TEXTUREDIR"terrain.raw");
+	//heightMap = new HeightMap(TEXTUREDIR"river257.png");
 
-	light = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 1000.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)), Vector4(0.9f, 0.9f, 1.0f, 1),
-		RAW_WIDTH * HEIGHTMAP_X);
+	//light = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)), Vector4(0.9f, 0.9f, 1.0f, 1),
+	//	RAW_WIDTH * HEIGHTMAP_X / 2.0f);
+	light = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 100.0f), 300000.0f, (-RAW_HEIGHT * HEIGHTMAP_X * 60.0f)), Vector4(0.9f, 0.9f, 1.0f, 1),
+		RAW_WIDTH * HEIGHTMAP_X * 100000.0f);
 
 	//reflectShader = new Shader(SHADERDIR"bumpVertex.glsl", SHADERDIR"bumpFragment.glsl");
 	reflectShader = new Shader(SHADERDIR"bumpVertex.glsl", SHADERDIR"reflectFragment.glsl");
@@ -20,8 +23,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 		return;
 	}
 
-	quad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water-0340.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	quad->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"water 0340normal.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	quad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	quad->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"waterBumpMap1.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	heightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	heightMap->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
@@ -35,6 +38,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	}
 
 	SetTextureRepeating(quad->GetTexture(), true);
+	SetTextureRepeating(quad->GetBumpMap(), true);
 	SetTextureRepeating(heightMap->GetTexture(), true);
 	SetTextureRepeating(heightMap->GetBumpMap(), true);
 
@@ -108,6 +112,9 @@ void Renderer::DrawWater()
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 2);
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, heightMap->GetBumpMap());
 
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
