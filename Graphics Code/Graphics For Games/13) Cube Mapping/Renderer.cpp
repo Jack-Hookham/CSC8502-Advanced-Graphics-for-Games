@@ -3,7 +3,7 @@
 Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 {
 	//heightMap = new HeightMap(HEIGHTMAPSDIR"grand-canyon.data");
-	heightMap = new HeightMap(HEIGHTMAPSDIR"grandCanyon1080.data", 1080, 1080, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
+	heightMap = new HeightMap(HEIGHTMAPSDIR"grandCanyon1080_02.data", 1080, 1080, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
 	quad = Mesh::GenerateQuad();
 	camera = new Camera();
 	camera->SetPosition(Vector3(heightMap->getRawWidth() * heightMap->getHeightMapX() / 2.0f, 500.0f, 
