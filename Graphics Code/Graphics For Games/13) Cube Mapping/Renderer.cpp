@@ -2,16 +2,19 @@
 
 Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 {
+	heightMap = new HeightMap(HEIGHTMAPSDIR"grand-canyon.data");
+	//heightMap = new HeightMap(HEIGHTMAPSDIR"grand-canyon.data", 257, 257, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
 	quad = Mesh::GenerateQuad();
 	camera = new Camera();
-	camera->SetPosition(Vector3(RAW_WIDTH * HEIGHTMAP_X / 2.0f, 500.0f, RAW_WIDTH * HEIGHTMAP_X));
-	heightMap = new HeightMap(HEIGHTMAPSDIR"grand-canyon.data");
+	camera->SetPosition(Vector3(heightMap->getRawWidth() * heightMap->getHeightMapX() / 2.0f, 500.0f, 
+		heightMap->getRawWidth() * heightMap->getHeightMapX()));
 	//heightMap = new HeightMap(TEXTUREDIR"river257.png");
 
 	//light = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)), Vector4(0.9f, 0.9f, 1.0f, 1),
 	//	RAW_WIDTH * HEIGHTMAP_X / 2.0f);
-	light = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X * 100.0f), 300000.0f, (-RAW_HEIGHT * HEIGHTMAP_X * 60.0f)), Vector4(0.9f, 0.9f, 1.0f, 1),
-		RAW_WIDTH * HEIGHTMAP_X * 100000.0f);
+	light = new Light(Vector3((heightMap->getRawHeight() * heightMap->getHeightMapX() * 100.0f), 300000.0f,
+		(-heightMap->getRawHeight() * heightMap->getHeightMapX() * 60.0f)), Vector4(0.9f, 0.9f, 1.0f, 1),
+		heightMap->getRawWidth() * heightMap->getHeightMapX() * 100000.0f);
 
 	//reflectShader = new Shader(SHADERDIR"bumpVertex.glsl", SHADERDIR"bumpFragment.glsl");
 	reflectShader = new Shader(SHADERDIR"bumpVertex.glsl", SHADERDIR"reflectFragment.glsl");
@@ -119,9 +122,9 @@ void Renderer::DrawWater()
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
 
-	float heightX = (RAW_WIDTH * HEIGHTMAP_X / 2.0f);
-	float heightY = 256 * HEIGHTMAP_Y / 5.0f;
-	float heightZ = (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f);
+	float heightX = (heightMap->getRawWidth() * heightMap->getHeightMapX() / 2.0f);
+	float heightY = 256 * heightMap->getHeightMapY() / 5.0f;
+	float heightZ = (heightMap->getRawHeight() * heightMap->getHeightMapZ() / 2.0f);
 
 	modelMatrix =
 		Matrix4::Translation(Vector3(heightX, heightY, heightZ)) *
