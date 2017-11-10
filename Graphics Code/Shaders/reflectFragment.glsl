@@ -43,7 +43,7 @@ void main(void)
 
 //		fragColour += col;
 
-	vec4 diffuse = /*vec4(0.3, 0.7, 0.9, 1.0) */ texture(diffuseTex, IN.texCoord);// * IN.colour;
+	vec4 diffuse = /*vec4(0.3, 0.7, 0.9, 1.0) */ texture(diffuseTex, IN.texCoord) * IN.colour;
 
 	mat3 TBN = mat3(IN.tangent, IN.binormal, IN.normal);
 	vec3 normal = normalize(TBN * (texture(bumpTex, IN.texCoord).rgb * 2.0 - 1.0));
@@ -57,15 +57,13 @@ void main(void)
 	vec3 halfDir = normalize(bumpIncident + viewDir);
 	
 	float rFactor = max(0.0, dot(halfDir, normal));
-	float sFactor = pow(rFactor, 50.0);
+	float sFactor = pow(rFactor, 32.0);
 
 	vec3 colour = (diffuse.rgb * lightColour.rgb);
-	//colour += (lightColour.rgb * sFactor) * 0.33;
-	
-	colour = colour * atten * lambert;
-	vec4 bumpColour = vec4(colour * atten * lambert, diffuse.a);
-	bumpColour.rgb += (diffuse.rgb * lightColour.rgb) * 0.2;
-	bumpColour.a *= 0.7;
+	colour += lightColour.rgb * sFactor * 1.0;
+	colour *= atten * lambert;
+	colour.rgb += (diffuse.rgb * lightColour.rgb) * 0.2;
+	vec4 bumpColour = vec4(colour, diffuse.a * 0.7);
 
 	vec3 reflectIncident = normalize(IN.worldPos - cameraPos);
 	vec4 reflection = texture(cubeTex, reflect(reflectIncident, normalize(IN.normal)));
@@ -73,7 +71,7 @@ void main(void)
 	//fragColour = mix((lightColour * diffuse * atten) * (diffuse + reflection), (bumpColour + sFactor), 0.5);
 	
 	//fragColour = mix(lightColour * atten * reflection, mix(bumpColour, vec4((lightColour.rgb + sFactor), 1.0), 0.5), 0.5);
-	fragColour = mix(lightColour * atten * reflection, (bumpColour + sFactor), 0.5);
+	fragColour = mix(lightColour * atten * reflection, bumpColour, 0.5);
 	//fragColour.a *= 0.7;
 
 	//	fragColour = diffuse;

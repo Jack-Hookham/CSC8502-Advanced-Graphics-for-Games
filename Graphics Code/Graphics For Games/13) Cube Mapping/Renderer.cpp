@@ -2,8 +2,8 @@
 
 Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 {
-	heightMap = new HeightMap(HEIGHTMAPSDIR"grand-canyon.data");
-	//heightMap = new HeightMap(HEIGHTMAPSDIR"grand-canyon.data", 257, 257, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
+	//heightMap = new HeightMap(HEIGHTMAPSDIR"grand-canyon.data");
+	heightMap = new HeightMap(HEIGHTMAPSDIR"grandCanyon1080.data", 1080, 1080, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
 	quad = Mesh::GenerateQuad();
 	camera = new Camera();
 	camera->SetPosition(Vector3(heightMap->getRawWidth() * heightMap->getHeightMapX() / 2.0f, 500.0f, 
@@ -12,8 +12,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 
 	//light = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)), Vector4(0.9f, 0.9f, 1.0f, 1),
 	//	RAW_WIDTH * HEIGHTMAP_X / 2.0f);
-	light = new Light(Vector3((heightMap->getRawHeight() * heightMap->getHeightMapX() * 100.0f), 300000.0f,
-		(-heightMap->getRawHeight() * heightMap->getHeightMapX() * 60.0f)), Vector4(0.9f, 0.9f, 1.0f, 1),
+	light = new Light(Vector3((heightMap->getRawHeight() * heightMap->getHeightMapX() * 100.0f), 1000000.0f,
+		(heightMap->getRawHeight() * heightMap->getHeightMapX() * -60.0f)), Vector4(1.0f, 0.7f, 0.4f, 1),
 		heightMap->getRawWidth() * heightMap->getHeightMapX() * 100000.0f);
 
 	//reflectShader = new Shader(SHADERDIR"bumpVertex.glsl", SHADERDIR"bumpFragment.glsl");
@@ -47,7 +47,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 
 	waterRotate = 0.0f;
 
-	projMatrix = Matrix4::Perspective(1.0f, 15000.0f, (float)width / (float)height, 45.0f);
+	projMatrix = Matrix4::Perspective(1.0f, 50000.0f, (float)width / (float)height, 45.0f);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);

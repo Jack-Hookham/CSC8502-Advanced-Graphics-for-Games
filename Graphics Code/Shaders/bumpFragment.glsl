@@ -26,7 +26,7 @@ void main(void)
 	for (int i = 0; i < lightColour.length; i++)
 	{
 		vec4 diffuse = texture(diffuseTex, IN.texCoord);
-		diffuse.rgb *= vec3(0.47, 0.16, 0.05);
+		diffuse.rgb *= vec3(0.5, 0.42, 0.37);
 		mat3 TBN = mat3(IN.tangent, IN.binormal, IN.normal);
 		vec3 normal = normalize(TBN * (texture(bumpTex, IN.texCoord).rgb * 2.0 - 1.0));
 
@@ -40,7 +40,7 @@ void main(void)
 		float rFactor = max(0.0, dot(halfDir, normal));
 		float sFactor = pow(rFactor, 33.0);
 		vec3 colour = (diffuse.rgb * lightColour[i].rgb);
-		colour += (lightColour[i].rgb * sFactor) * 0.33;
+		colour += (lightColour[i].rgb * sFactor) * 0.2;
 	
 		vec4 col = vec4(colour * atten * lambert, diffuse.a);
 		col.rgb += (diffuse.rgb * lightColour[i].rgb) * 0.1;
