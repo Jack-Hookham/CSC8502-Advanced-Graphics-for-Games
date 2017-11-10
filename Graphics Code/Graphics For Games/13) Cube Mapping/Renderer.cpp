@@ -5,7 +5,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	quad = Mesh::GenerateQuad();
 	camera = new Camera();
 	camera->SetPosition(Vector3(RAW_WIDTH * HEIGHTMAP_X / 2.0f, 500.0f, RAW_WIDTH * HEIGHTMAP_X));
-	heightMap = new HeightMap(TEXTUREDIR"terrain.raw");
+	heightMap = new HeightMap(HEIGHTMAPSDIR"grand-canyon.data");
 	//heightMap = new HeightMap(TEXTUREDIR"river257.png");
 
 	//light = new Light(Vector3((RAW_HEIGHT * HEIGHTMAP_X / 2.0f), 500.0f, (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f)), Vector4(0.9f, 0.9f, 1.0f, 1),
@@ -120,7 +120,7 @@ void Renderer::DrawWater()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
 
 	float heightX = (RAW_WIDTH * HEIGHTMAP_X / 2.0f);
-	float heightY = 256 * HEIGHTMAP_Y / 3.0f;
+	float heightY = 256 * HEIGHTMAP_Y / 5.0f;
 	float heightZ = (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f);
 
 	modelMatrix =
