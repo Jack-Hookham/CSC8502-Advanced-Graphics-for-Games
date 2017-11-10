@@ -26,6 +26,7 @@ void main(void)
 	for (int i = 0; i < lightColour.length; i++)
 	{
 		vec4 diffuse = texture(diffuseTex, IN.texCoord);
+		diffuse.rgb *= vec3(0.47, 0.16, 0.05);
 		mat3 TBN = mat3(IN.tangent, IN.binormal, IN.normal);
 		vec3 normal = normalize(TBN * (texture(bumpTex, IN.texCoord).rgb * 2.0 - 1.0));
 
