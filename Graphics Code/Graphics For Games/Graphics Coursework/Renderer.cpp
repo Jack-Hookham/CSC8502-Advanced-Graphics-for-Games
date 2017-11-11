@@ -2,7 +2,7 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 {
-	CubeRobot::CreateCube();
+	SolarSystem::createSolarSystem();
 	camera = new Camera();
 
 	currentShader = new Shader(SHADERDIR"sceneVertex.glsl", SHADERDIR"sceneFragment.glsl");
@@ -17,7 +17,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	camera->SetPosition(Vector3(0, 30, 175));
 
 	root = new SceneNode();
-	root->AddChild(new CubeRobot());
+	root->AddChild(new SolarSystem());
 
 	glEnable(GL_DEPTH_TEST);
 	init = true;
@@ -27,7 +27,7 @@ Renderer::~Renderer(void)
 {
 	delete root;
 	delete camera;
-	CubeRobot::DeleteCube();
+	SolarSystem::deleteSolarSystem();
 }
 
 void Renderer::UpdateScene(float msec)
