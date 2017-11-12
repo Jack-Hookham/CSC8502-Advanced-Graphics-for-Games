@@ -14,6 +14,10 @@ public:
 	static void createSolarSystem();
 	static void deleteSolarSystem();
 
+	SceneNode* getSun() const { return sun; }
+	SceneNode* getPlanet() const { return planet; }
+	SceneNode* getMoon() const { return moon; }
+
 private:
 	static Mesh* sphere;
 	SceneNode* sun;

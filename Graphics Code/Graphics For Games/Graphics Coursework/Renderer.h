@@ -17,6 +17,8 @@ public:
 protected:
 	void DrawNode(SceneNode* n);
 
+	SolarSystem* solarSystem;
+
 	SceneNode* root;
 	Camera* camera;
 };

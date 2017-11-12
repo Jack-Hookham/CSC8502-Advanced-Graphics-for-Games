@@ -5,7 +5,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	SolarSystem::createSolarSystem();
 	camera = new Camera();
 
-	currentShader = new Shader(SHADERDIR"sceneVertex.glsl", SHADERDIR"sceneFragment.glsl");
+	currentShader = new Shader(SHADERDIR"CW/sceneVertex.glsl", SHADERDIR"CW/sceneFragment.glsl");
 
 	if (!currentShader->LinkProgram())
 	{
@@ -16,7 +16,15 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 	camera->SetPosition(Vector3(0, 30, 175));
 
-	root = new SceneNode();
+	root = new SceneNode();	
+	SolarSystem* ss = new SolarSystem();
+
+	ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	if (!ss->getMoon()->GetMesh()->GetTexture())
+	{
+		return;
+	}
+
 	root->AddChild(new SolarSystem());
 
 	glEnable(GL_DEPTH_TEST);
@@ -45,6 +53,8 @@ void Renderer::RenderScene()
 	UpdateShaderMatrices();
 
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 1);
+
+	//glActiveTexture(GL_TEXTURE0);
 
 	DrawNode(root);
 

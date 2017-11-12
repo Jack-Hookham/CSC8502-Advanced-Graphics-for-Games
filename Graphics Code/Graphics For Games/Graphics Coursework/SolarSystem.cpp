@@ -8,19 +8,18 @@ SolarSystem::SolarSystem()
 	SetMesh(sphere);
 
 	sun = new SceneNode(sphere, Vector4(0.9f, 0.7f, 0.3f, 1.0f));
-	//sun->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	sun->SetModelScale(Vector3(30.0f, 30.0f, 30.0f));
 	sun->SetTransform(Matrix4::Translation(Vector3(0.0f, 35.0f, 0.0f)));
 	AddChild(sun);
 
 	planet = new SceneNode(sphere, Vector4(0.2f, 0.7f, 0.9f, 1.0f));
 	planet->SetModelScale(Vector3(20.0f, 20.0f, 20.0f));
-	planet->SetTransform(Matrix4::Translation(Vector3(35.0f, 35.0f, 0.0f)));
+	planet->SetTransform(Matrix4::Translation(Vector3(200.0f, 35.0f, 0.0f)));
 	sun->AddChild(planet);
 	
 	moon = new SceneNode(sphere, Vector4(0.4f, 0.4f, 0.4f, 1.0f));
 	moon->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
-	moon->SetTransform(Matrix4::Translation(Vector3(35.0f, 35.0f, 35.0f)));
+	moon->SetTransform(Matrix4::Translation(Vector3(70.0f, 35.0f, 35.0f)));
 	planet->AddChild(moon);
 }
 
@@ -33,7 +32,7 @@ void SolarSystem::update(float msec)
 	transform = transform * Matrix4::Rotation(msec / 10.0f, Vector3(0, 1, 0));
 
 	sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(msec / 10.0f, Vector3(0, 1, 0)));
-	planet->SetTransform(planet->GetTransform() * Matrix4::Rotation(-msec / 10.0f, Vector3(1, 0, 0)));
+	planet->SetTransform(planet->GetTransform() * Matrix4::Translation(Vector3(msec * 1000.0f, 0.0f, 0.0f)));
 	moon->SetTransform(moon->GetTransform() * Matrix4::Rotation(msec / 10.0f, Vector3(1, 0, 0)));
 
 	SceneNode::Update(msec);
