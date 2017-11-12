@@ -2,10 +2,11 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 {
-	SolarSystem::createSolarSystem();
+	sunLight = new Light(Vector3(0.0f, 35.0f, 0.0f));
+	SolarSystem::createSphereObj();
 	camera = new Camera();
 
-	currentShader = new Shader(SHADERDIR"CW/sceneVertex.glsl", SHADERDIR"CW/sceneFragment.glsl");
+	currentShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
 
 	if (!currentShader->LinkProgram())
 	{
@@ -14,7 +15,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 
-	camera->SetPosition(Vector3(0, 30, 175));
+	camera->SetPosition(Vector3(0, 30.0f, 500.0f));
 
 	root = new SceneNode();	
 	SolarSystem* ss = new SolarSystem();
@@ -35,7 +36,9 @@ Renderer::~Renderer(void)
 {
 	delete root;
 	delete camera;
-	SolarSystem::deleteSolarSystem();
+	delete sunLight;
+
+	SolarSystem::deleteSphereObj();
 }
 
 void Renderer::UpdateScene(float msec)
@@ -48,10 +51,13 @@ void Renderer::UpdateScene(float msec)
 void Renderer::RenderScene()
 {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
 	glUseProgram(currentShader->GetProgram());
+
+	SetShaderLight(*sunLight);
+
 	UpdateShaderMatrices();
 
+	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, (float*)&textureMatrix);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 1);
 
 	//glActiveTexture(GL_TEXTURE0);

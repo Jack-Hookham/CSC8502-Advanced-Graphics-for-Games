@@ -10,7 +10,8 @@ uniform float lightRadius[4];
 
 uniform float time;
 
-in Vertex {
+in Vertex 
+{
 	vec3 	colour;
 	vec2 	texCoord;
 	vec3 	normal;

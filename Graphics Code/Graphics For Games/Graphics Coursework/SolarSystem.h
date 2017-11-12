@@ -11,8 +11,8 @@ public:
 
 	virtual void Update(float msec);
 
-	static void createSolarSystem();
-	static void deleteSolarSystem();
+	static void createSphereObj();
+	static void deleteSphereObj();
 
 	SceneNode* getSun() const { return sun; }
 	SceneNode* getPlanet() const { return planet; }
