@@ -5,7 +5,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	CubeRobot::CreateCube();
 	camera = new Camera();
 
-	currentShader = new Shader(SHADERDIR"sceneVertex.glsl", SHADERDIR"sceneFragment.glsl");
+	currentShader = new Shader(SHADERDIR"Tutorials/sceneVertex.glsl", SHADERDIR"Tutorials/sceneFragment.glsl");
 
 	if (!currentShader->LinkProgram())
 	{

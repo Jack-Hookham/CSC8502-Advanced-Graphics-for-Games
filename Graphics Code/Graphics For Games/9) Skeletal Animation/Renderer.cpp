@@ -4,9 +4,9 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)	{
 	camera			= new Camera(0,-90.0f,Vector3(-180,60,0));
 
 #ifdef MD5_USE_HARDWARE_SKINNING
-	currentShader   = new Shader(SHADERDIR"skeletonvertex.glsl", SHADERDIR"texturedFragment.glsl");
+	currentShader   = new Shader(SHADERDIR"Tutorials/skeletonvertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
 #else
-	currentShader   = new Shader(SHADERDIR"texturedVertex.glsl", SHADERDIR"texturedFragment.glsl");
+	currentShader   = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
 #endif
 
 	hellData		= new MD5FileData(MESHDIR"hellknight.md5mesh");

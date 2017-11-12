@@ -16,6 +16,8 @@ public:
 	static void CreateCube();
 	static void DeleteCube() { delete cube; }
 
+	SceneNode* getHead() { return head; }
+
 protected:
 	static Mesh* cube;
 	SceneNode* head;

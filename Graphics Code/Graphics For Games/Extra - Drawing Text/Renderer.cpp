@@ -43,7 +43,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)	{
 	and how many characters across each axis the font contains. (look at the
 	font texture in paint.net if you don't quite 'get' this)
 	*/
-	basicFont = new Font(SOIL_load_OGL_texture(SHADERDIR"tahoma.tga",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_COMPRESS_TO_DXT),16,16);
+	basicFont = new Font(SOIL_load_OGL_texture(SHADERDIR"Tutorials/tahoma.tga",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_COMPRESS_TO_DXT),16,16);
 
 	//The font is not alpha blended! It has a black background.
 	//but that doesn't matter, we can fiddle blend func to do 

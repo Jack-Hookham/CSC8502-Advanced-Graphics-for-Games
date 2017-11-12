@@ -11,8 +11,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	hellData->AddAnim(MESHDIR"idle2.md5anim");
 	hellNode->PlayAnim(MESHDIR"idle2.md5anim");
 
-	sceneShader = new Shader(SHADERDIR"shadowSceneVert.glsl", SHADERDIR"shadowSceneFrag.glsl");
-	shadowShader = new Shader(SHADERDIR"shadowVert.glsl", SHADERDIR"shadowFrag.glsl");
+	sceneShader = new Shader(SHADERDIR"Tutorials/shadowSceneVert.glsl", SHADERDIR"Tutorials/shadowSceneFrag.glsl");
+	shadowShader = new Shader(SHADERDIR"Tutorials/shadowVert.glsl", SHADERDIR"Tutorials/shadowFrag.glsl");
 
 	if (!sceneShader->LinkProgram() || !shadowShader->LinkProgram())
 	{

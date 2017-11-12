@@ -11,7 +11,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 		return;
 	}
 
-	currentShader = new Shader(SHADERDIR"texturedVertex.glsl", SHADERDIR"texturedFragment.glsl");
+	currentShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
 
 	if (!currentShader->LinkProgram())
 	{

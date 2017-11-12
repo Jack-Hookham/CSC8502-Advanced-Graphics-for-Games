@@ -7,9 +7,9 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	heightMap = new HeightMap(TEXTUREDIR"terrain.raw");
 	heightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-	sceneShader = new Shader(SHADERDIR"texturedVertex.glsl", SHADERDIR"texturedFragment.glsl");
-	processShader = new Shader(SHADERDIR"texturedVertex.glsl", SHADERDIR"processFragment.glsl");
-
+	sceneShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
+	processShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/processFragment.glsl");
+	
 	if (!sceneShader->LinkProgram() || !processShader->LinkProgram() || !heightMap->GetTexture())
 	{
 		return;

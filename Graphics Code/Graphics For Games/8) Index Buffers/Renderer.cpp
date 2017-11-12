@@ -5,8 +5,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	heightMap = new HeightMap(TEXTUREDIR"terrain.raw");
 	camera = new Camera(0.0f, 270.0f, Vector3(0, 1000.0f, 750.0f));
 
-	//currentShader = new Shader(SHADERDIR"texturedVertex.glsl", SHADERDIR"texturedFragment.glsl");
-	currentShader = new Shader(SHADERDIR"heightVertex.glsl", SHADERDIR"heightFragment.glsl");
+	//currentShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
+	currentShader = new Shader(SHADERDIR"Tutorials/heightVertex.glsl", SHADERDIR"Tutorials/heightFragment.glsl");
 
 	if (!currentShader->LinkProgram())
 	{

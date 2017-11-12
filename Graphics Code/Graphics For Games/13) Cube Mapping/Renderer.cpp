@@ -16,10 +16,10 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 		(heightMap->getRawHeight() * heightMap->getHeightMapX() * -60.0f)), Vector4(1.0f, 0.7f, 0.4f, 1),
 		heightMap->getRawWidth() * heightMap->getHeightMapX() * 100000.0f);
 
-	//reflectShader = new Shader(SHADERDIR"bumpVertex.glsl", SHADERDIR"bumpFragment.glsl");
-	reflectShader = new Shader(SHADERDIR"bumpVertex.glsl", SHADERDIR"reflectFragment.glsl");
-	skyboxShader = new Shader(SHADERDIR"skyboxVertex.glsl", SHADERDIR"skyboxFragment.glsl");
-	lightShader = new Shader(SHADERDIR"bumpVertex.glsl", SHADERDIR"bumpFragment.glsl");
+	//reflectShader = new Shader(SHADERDIR"Tutorials/bumpVertex.glsl", SHADERDIR"Tutorials/bumpFragment.glsl");
+	reflectShader = new Shader(SHADERDIR"Tutorials/bumpVertex.glsl", SHADERDIR"Tutorials/reflectFragment.glsl");
+	skyboxShader = new Shader(SHADERDIR"Tutorials/skyboxVertex.glsl", SHADERDIR"Tutorials/skyboxFragment.glsl");
+	lightShader = new Shader(SHADERDIR"Tutorials/bumpVertex.glsl", SHADERDIR"Tutorials/bumpFragment.glsl");
 
 	if (!reflectShader->LinkProgram() || !skyboxShader->LinkProgram() || !lightShader->LinkProgram())
 	{

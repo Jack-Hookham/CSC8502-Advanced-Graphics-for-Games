@@ -16,7 +16,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	positions[0] = Vector3(0, 0, -5);
 	positions[1] = Vector3(0, 0, -5);
 
-	currentShader = new Shader(SHADERDIR"texturedVertex.glsl", SHADERDIR"texturedFragment.glsl");
+	currentShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
 
 	if (!currentShader->LinkProgram())
 	{

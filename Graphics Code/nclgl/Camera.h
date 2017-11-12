@@ -57,4 +57,6 @@ protected:
 	float	yaw = 0.0f;
 	float	pitch = 0.0f;
 	Vector3 position;
+
+	bool goFaster = false;
 };

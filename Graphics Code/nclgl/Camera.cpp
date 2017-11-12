@@ -21,9 +21,18 @@ void Camera::UpdateCamera(float msec)	{
 		yaw -= 360.0f;
 	}
 
-	msec *= 1.5f;
-	if (Window::GetKeyboard()->KeyDown(KEYBOARD_SHIFT)) {
-		msec *= 4.0f;
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_CONTROL))
+	{
+		goFaster = !goFaster;
+	}
+
+	if (goFaster)
+	{
+		msec *= 5.0f;
+	}
+	else
+	{
+		msec *= 1.5f;
 	}
 
 	if(Window::GetKeyboard()->KeyDown(KEYBOARD_W)) {
@@ -40,7 +49,7 @@ void Camera::UpdateCamera(float msec)	{
 		position -= Matrix4::Rotation(yaw, Vector3(0,1,0)) * Vector3(-1,0,0) * msec;
 	}
 
-	if(Window::GetKeyboard()->KeyDown(KEYBOARD_CONTROL)) {
+	if(Window::GetKeyboard()->KeyDown(KEYBOARD_SHIFT)) {
 		position.y -= msec;
 	}
 	if(Window::GetKeyboard()->KeyDown(KEYBOARD_SPACE)) {

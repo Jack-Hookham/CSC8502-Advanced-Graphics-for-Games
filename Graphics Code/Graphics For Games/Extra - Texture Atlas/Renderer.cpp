@@ -46,8 +46,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)	{
 	our quads textureCoordinates will automatically be translated to the appropriate place
 	to render its texture correctly
 	*/
-	basicShader = new Shader(SHADERDIR"texturedVertex.glsl", SHADERDIR"texturedFragment.glsl");
-	atlasShader = new Shader("AtlasVertex.glsl", SHADERDIR"texturedFragment.glsl");
+	basicShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
+	atlasShader = new Shader("AtlasVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
 
 	if(!basicShader->LinkProgram() ||
 	   !atlasShader->LinkProgram()) {

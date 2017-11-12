@@ -40,7 +40,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)	{
 	}
 	//We don't need to do anything fancy with shaders this time around, so we're
 	//going to borrow the scene shader from tutorial 6
-	currentShader = new Shader(SHADERDIR"SceneVertex.glsl", SHADERDIR"SceneFragment.glsl");
+	currentShader = new Shader(SHADERDIR"Tutorials/SceneVertex.glsl", SHADERDIR"Tutorials/SceneFragment.glsl");
 
 	if(!currentShader->LinkProgram()) {
 		return;
