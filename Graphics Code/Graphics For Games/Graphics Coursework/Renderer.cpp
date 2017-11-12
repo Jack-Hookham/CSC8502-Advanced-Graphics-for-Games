@@ -25,7 +25,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 		return;
 	}
 
-	root->AddChild(new SolarSystem());
+	root->AddChild(ss);
 
 	glEnable(GL_DEPTH_TEST);
 	init = true;

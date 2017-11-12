@@ -9,7 +9,7 @@ public:
 	SolarSystem(void);
 	~SolarSystem(void);
 
-	virtual void update(float msec);
+	virtual void Update(float msec);
 
 	static void createSolarSystem();
 	static void deleteSolarSystem();

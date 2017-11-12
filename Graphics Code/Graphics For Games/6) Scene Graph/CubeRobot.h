@@ -1,7 +1,5 @@
 #pragma once
 
-#define WEEK_2_CODE
-
 #include "../nclgl/OBJMesh.h"
 #include "../nclgl/SceneNode.h"
 

@@ -5,7 +5,7 @@
 
 int main()
 {
-	Window w("Scene Graphs!", 800, 600, false);
+	Window w("Scene Graphs!", 1200, 800, false);
 	if (!w.HasInitialised())
 	{
 		return -1;
@@ -20,7 +20,7 @@ int main()
 	w.LockMouseToWindow(true);
 	w.ShowOSPointer(false);
 
-	while (w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) 
+	while (w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE))
 	{
 		renderer.UpdateScene(w.GetTimer()->GetTimedMS());
 		renderer.RenderScene();

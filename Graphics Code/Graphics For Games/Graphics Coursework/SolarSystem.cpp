@@ -14,12 +14,12 @@ SolarSystem::SolarSystem()
 
 	planet = new SceneNode(sphere, Vector4(0.2f, 0.7f, 0.9f, 1.0f));
 	planet->SetModelScale(Vector3(20.0f, 20.0f, 20.0f));
-	planet->SetTransform(Matrix4::Translation(Vector3(200.0f, 35.0f, 0.0f)));
+	planet->SetTransform(Matrix4::Translation(Vector3(300.0f, 0.0f, 0.0f)));
 	sun->AddChild(planet);
 	
 	moon = new SceneNode(sphere, Vector4(0.4f, 0.4f, 0.4f, 1.0f));
 	moon->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
-	moon->SetTransform(Matrix4::Translation(Vector3(70.0f, 35.0f, 35.0f)));
+	moon->SetTransform(Matrix4::Translation(Vector3(70.0f, 0.0f, 35.0f)));
 	planet->AddChild(moon);
 }
 
@@ -27,13 +27,14 @@ SolarSystem::~SolarSystem()
 {
 }
 
-void SolarSystem::update(float msec)
+void SolarSystem::Update(float msec)
 {
-	transform = transform * Matrix4::Rotation(msec / 10.0f, Vector3(0, 1, 0));
+	//transform = transform * Matrix4::Rotation(msec / 10.0f, Vector3(0, 1, 0));
 
-	sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(msec / 10.0f, Vector3(0, 1, 0)));
-	planet->SetTransform(planet->GetTransform() * Matrix4::Translation(Vector3(msec * 1000.0f, 0.0f, 0.0f)));
-	moon->SetTransform(moon->GetTransform() * Matrix4::Rotation(msec / 10.0f, Vector3(1, 0, 0)));
+	sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(1.0f, Vector3(0, 1, 0)));
+	planet->SetTransform(planet->GetTransform() * Matrix4::Translation(Vector3(-300.0f, 0.0f, 0.0f)) *
+		Matrix4::Rotation(-1.0f, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(300.0f, 0.0f, 0.0f)));
+	moon->SetTransform(moon->GetTransform());// *Matrix4::Translation(Vector3(msec * 0.01f, 0.0f, 0.0f)));
 
 	SceneNode::Update(msec);
 }
