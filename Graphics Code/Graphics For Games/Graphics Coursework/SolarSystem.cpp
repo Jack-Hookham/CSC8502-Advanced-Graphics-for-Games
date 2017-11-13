@@ -26,6 +26,10 @@ SolarSystem::SolarSystem()
 	moon->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
 	moon->SetTransform(Matrix4::Translation(Vector3(70.0f, 0.0f, 0.0f)));
 	planet->AddChild(moon);
+
+	planet->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	moon->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	sun->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 }
 
 SolarSystem::~SolarSystem()
@@ -57,7 +61,7 @@ void SolarSystem::Update(float msec)
 void SolarSystem::createSphereObj()
 {
 	OBJMesh* m = new OBJMesh();
-	m->LoadOBJMesh(MESHDIR"sphereTest.obj");
+	m->LoadOBJMesh(MESHDIR"testSphere.obj");
 	sphere = m;
 }
 
