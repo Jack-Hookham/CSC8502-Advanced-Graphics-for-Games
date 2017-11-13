@@ -27,6 +27,9 @@
     <ClCompile Include="TextMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SolarObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SolarSystem.h">
@@ -37,6 +40,9 @@
     </ClInclude>
     <ClInclude Include="TextMesh.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SolarObject.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

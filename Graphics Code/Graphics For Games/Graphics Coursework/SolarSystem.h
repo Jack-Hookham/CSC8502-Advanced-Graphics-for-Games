@@ -1,8 +1,7 @@
 #pragma once
 
 #include "../nclgl/OBJMesh.h"
-#include "../nclgl/SceneNode.h"
-
+#include "SolarObject.h"
 class SolarSystem : public SceneNode
 {
 public:
@@ -20,9 +19,9 @@ public:
 
 private:
 	Mesh* root = NULL;
-	SceneNode* sun;
-	SceneNode* planet;
-	SceneNode* planet2;
-	SceneNode* ring;
-	SceneNode* moon;
+	SolarObject* sun;
+	SolarObject* planet;
+	SolarObject* planet2;
+	SolarObject* ring;
+	SolarObject* moon;
 };

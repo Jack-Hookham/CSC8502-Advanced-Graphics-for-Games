@@ -32,7 +32,7 @@ void main(void)
 	//fragColour.xy = IN.texCoord;
 
 
-	//------Triplanar texture mapping-------
+	//------------Triplanar texture mapping----------------------------------------------
 
 	vec3 wNorm = normalize(IN.normal);
 	vec3 blending = abs(wNorm);
@@ -49,28 +49,46 @@ void main(void)
 	fragColour = tex;
 
 
-	//------Add lighting----------
-	vec4 diffuse = texture(diffuseTex, IN.texCoord);
-	diffuse.rgb *= vec3(0.5, 0.42, 0.37);
-	mat3 TBN = mat3(IN.tangent, IN.binormal, IN.normal);
-	vec3 normal = normalize(TBN * (texture(bumpTex, IN.texCoord).rgb * 2.0 - 1.0));
+	//-----------Add lighting-------------------------------------------------------
 
+	vec4 diffuse = texture(diffuseTex, IN.texCoord);
+	
 	vec3 incident = normalize(lightPos - IN.worldPos);
-	float lambert = max(0.0, dot(incident, normal));
+	float lambert = max(0.0, dot(incident, IN.normal));
 	float dist = length(lightPos - IN.worldPos);
 	float atten = 1.0 - clamp(dist / lightRadius, 0.0, 1.0);
 	vec3 viewDir = normalize(cameraPos - IN.worldPos);
 	vec3 halfDir = normalize(incident + viewDir);
 	
-	float rFactor = max(0.0, dot(halfDir, normal));
-	float sFactor = pow(rFactor, 50.0);
+	float rFactor = max(0.0, dot(halfDir, IN.normal));
+	float sFactor = pow(rFactor, 32.0);
 	vec3 colour = (diffuse.rgb * lightColour.rgb);
-	colour += (lightColour.rgb * sFactor) * 0.2;
+	colour += (lightColour.rgb * sFactor) * 0.33;
 	
-	vec4 col = vec4(colour * atten * lambert, diffuse.a);
-	col.rgb += (diffuse.rgb * lightColour.rgb) * 0.1;
+	fragColour *= vec4(colour * atten * lambert, diffuse.a);
+	fragColour.rgb += (diffuse.rgb * lightColour.rgb) * 0.1;
 
-	fragColour *= col;
+	//vec4 diffuse = texture(diffuseTex, IN.texCoord);
+	//diffuse.rgb *= vec3(0.5, 0.42, 0.37);
+	//mat3 TBN = mat3(IN.tangent, IN.binormal, IN.normal);
+	//vec3 normal = normalize(TBN * (texture(bumpTex, IN.texCoord).rgb * 2.0 - 1.0));
+
+	//vec3 incident = normalize(lightPos - IN.worldPos);
+	//float lambert = max(0.0, dot(incident, normal));
+	//float dist = length(lightPos - IN.worldPos);
+	//float atten = 1.0 - clamp(dist / lightRadius, 0.0, 1.0);
+	//vec3 viewDir = normalize(cameraPos - IN.worldPos);
+	//vec3 halfDir = normalize(incident + viewDir);
+	
+	//float rFactor = max(0.0, dot(halfDir, normal));
+	//float sFactor = pow(rFactor, 32.0);
+	//vec3 colour = (diffuse.rgb * lightColour.rgb);
+	//colour += (lightColour.rgb * sFactor) * 0.2;
+	
+	//vec4 col = vec4(colour * atten * lambert, diffuse.a);
+	//col.rgb += (diffuse.rgb * lightColour.rgb) * 0.1;
+
+	//fragColour *= col;
 
 	//fragColour = diffuse;
 

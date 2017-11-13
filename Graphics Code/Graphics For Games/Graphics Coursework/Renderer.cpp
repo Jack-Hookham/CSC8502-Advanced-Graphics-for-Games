@@ -2,11 +2,12 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 {
-	sunLight = new Light(Vector3(0.0f, 2000.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 1000000.0f);
+	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 1000.0f);
 	//SolarSystem::createSphereObj();
 	camera = new Camera();
 
 	currentShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
+	//sunShader = new Shader(SHADERDIR, SHADERDIR);
 	ringShader = new Shader(SHADERDIR"CW/ringVertex.glsl", SHADERDIR"CW/ringFragment.glsl");
 	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 
