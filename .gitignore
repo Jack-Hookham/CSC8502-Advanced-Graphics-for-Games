@@ -305,3 +305,4 @@ __pycache__/
 OpenCover/
 
 # Coursework specific
+*profiling_*.csv
