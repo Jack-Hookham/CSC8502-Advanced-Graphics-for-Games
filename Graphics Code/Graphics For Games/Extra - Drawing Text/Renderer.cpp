@@ -77,8 +77,12 @@ void Renderer::RenderScene()	{
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 
 //Render function to encapsulate our font rendering!
-	DrawText("This is orthographic text!", Vector3(0,0,0), 16.0f);
+	DrawText("This is orthographic text!", Vector3(0, 0, 0), 16.0f);
 	DrawText("This is perspective text!!!!", Vector3(0,0,-1000), 64.0f, true);
+
+	std::ostringstream oss;
+	oss << std::fixed << std::setprecision(2) << fps;
+	DrawText(oss.str(), Vector3(50.0f, 50.0f, 0), 16.0f);
 
 	glUseProgram(0);	//That's everything!
 

@@ -7,11 +7,14 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	camera = new Camera();
 
 	currentShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
+	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 
-	if (!currentShader->LinkProgram())
+	if (!currentShader->LinkProgram() || !textShader->LinkProgram())
 	{
 		return;
 	}
+
+	basicFont = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
 
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 
@@ -20,17 +23,22 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	root = new SceneNode();	
 	SolarSystem* ss = new SolarSystem();
 
-	//ss->getPlanet()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	//ss->getSun()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	//ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	ss->getPlanet()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	ss->getSun()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	//ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	if (!ss->getMoon()->GetMesh()->GetTexture())
 	{
 		return;
 	}
 
+	SetTextureRepeating(ss->getPlanet()->GetMesh()->GetTexture(), true);
+	SetTextureRepeating(ss->getMoon()->GetMesh()->GetTexture(), true);
+	SetTextureRepeating(ss->getSun()->GetMesh()->GetTexture(), true);
+
 	root->AddChild(ss);
 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glEnable(GL_DEPTH_TEST);
 	init = true;
 }
@@ -40,6 +48,7 @@ Renderer::~Renderer(void)
 	delete root;
 	delete camera;
 	delete sunLight;
+	delete basicFont;
 
 	//SolarSystem::deleteSphereObj();
 }
@@ -76,9 +85,26 @@ void Renderer::RenderScene()
 	//glActiveTexture(GL_TEXTURE0);
 
 	DrawNode(root);
+	drawText();
 
 	glUseProgram(0);
 	SwapBuffers();
+}
+
+void Renderer::drawText()
+{
+	glEnable(GL_BLEND);
+
+	glUseProgram(textShader->GetProgram());
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), basicFont->texture);
+
+	//DrawText("This is orthographic text!", Vector3(0, 0, 0), 16.0f);
+
+	//std::ostringstream oss;
+	//oss << std::fixed << std::setprecision(2) << fps;
+	//DrawText(oss.str(), Vector3(50.0f, 50.0f, 0), 16.0f);
+
+	glDisable(GL_BLEND);
 }
 
 void Renderer::DrawNode(SceneNode* n)

@@ -1,9 +1,13 @@
 #pragma once
 
+#include <iomanip>
+#include <sstream>
+
 #include "../nclgl/OGLRenderer.h"
 #include "../nclgl/Camera.h"
 #include "../nclgl/SceneNode.h"
 #include "SolarSystem.h"
+#include "textmesh.h"
 
 class Renderer : public OGLRenderer
 {
@@ -14,6 +18,8 @@ public:
 	virtual void UpdateScene(float msec);
 	virtual void RenderScene();
 
+	void drawText();
+
 protected:
 	void DrawNode(SceneNode* n);
 
@@ -21,4 +27,10 @@ protected:
 
 	SceneNode* root;
 	Camera* camera;
+
+	bool showInfo = true;
+	float fps = 0.0f;
+
+	Shader* textShader; 
+	Font*	basicFont;
 };

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <iomanip>
+#include <sstream>
+
 #include "../NCLGL/OGLRenderer.h"
 #include "../NCLGL/Camera.h"
 #include "textmesh.h"
@@ -21,5 +24,7 @@ whether to draw it in orthographic or perspective mode.
 protected:
 	Camera* camera;		//A camera!
 	Font*	basicFont;	//A font! a basic one...
+
+	float fps = 0.0f;
 };
 

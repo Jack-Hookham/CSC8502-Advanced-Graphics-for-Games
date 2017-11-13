@@ -12,7 +12,6 @@ public:
 	virtual void Update(float msec);
 
 	Mesh* createSphereObj();
-	void deleteSphereObj();
 
 	SceneNode* getSun() const { return sun; }
 	SceneNode* getPlanet() const { return planet; }
@@ -23,5 +22,6 @@ private:
 	SceneNode* sun;
 	SceneNode* planet;
 	SceneNode* planet2;
+	SceneNode* ring;
 	SceneNode* moon;
 };

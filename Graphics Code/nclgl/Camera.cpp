@@ -32,7 +32,7 @@ void Camera::UpdateCamera(float msec)	{
 	}
 	else
 	{
-		msec *= 1.5f;
+		msec *= 0.2f;
 	}
 
 	if(Window::GetKeyboard()->KeyDown(KEYBOARD_W)) {

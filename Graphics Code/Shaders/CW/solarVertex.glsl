@@ -23,10 +23,17 @@ out Vertex
 } OUT;
 
 void main(void)
-{	
+{
 	mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
 
 	OUT.colour = nodeColour;
 	OUT.texCoord = texCoord;
+
+	OUT.normal = normalize(normalMatrix * normalize(normal));
+	//OUT.tangent = normalize(normalMatrix * normalize(tangent));
+	//OUT.binormal = normalize(normalMatrix * normalize(cross(normal, tangent)));
+
+	OUT.worldPos = (modelMatrix * vec4(position, 1)).xyz;
+
 	gl_Position = (projMatrix * viewMatrix * modelMatrix) * vec4(position, 1.0);
 }

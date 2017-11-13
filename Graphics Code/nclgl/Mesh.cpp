@@ -230,6 +230,14 @@ void Mesh::GenerateTangents()
 		tangents = new Vector3[numVertices];
 	}
 
+	if (!textureCoords)
+	{
+		for (GLuint i = 0; i < numVertices; i++) {
+			tangents[i] = Vector3(1, 0, 0);
+		}
+		return;
+	}
+
 	for (GLuint i = 0; i < numVertices; ++i)
 	{
 		tangents[i] = Vector3();

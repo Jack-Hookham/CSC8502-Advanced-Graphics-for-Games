@@ -23,10 +23,26 @@ out vec4 fragColour;
 void main(void)
 {
 	fragColour = IN.colour;
-	if (useTexture > 0)
-	{
-		fragColour *= texture(diffuseTex, IN.texCoord);
-	}
+	//if (useTexture > 0)
+	//{
+	//	fragColour *= texture(diffuseTex, IN.texCoord);
+	//}
 
 	//fragColour.xy = IN.texCoord;
+
+	vec3 wNorm = normalize(IN.normal);
+	vec3 blending = abs(wNorm);
+	blending = normalize(max(blending, 0.00001));
+	float b = (blending.x + blending.y + blending.z);
+	blending /= vec3(b, b, b);
+
+	vec4 xaxis = texture2D(diffuseTex, IN.worldPos.yz);
+	vec4 yaxis = texture2D(diffuseTex, IN.worldPos.xz);
+	vec4 zaxis = texture2D(diffuseTex, IN.worldPos.xy);
+
+	vec4 tex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
+
+	fragColour = tex;
+
+	//fragColour.rgb = vec3(blending);
 }
