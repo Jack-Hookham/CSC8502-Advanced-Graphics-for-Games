@@ -2,14 +2,15 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 {
-	sunLight = new Light(Vector3(0.0f, 35.0f, 0.0f));
+	sunLight = new Light(Vector3(0.0f, 2000.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 1000000.0f);
 	//SolarSystem::createSphereObj();
 	camera = new Camera();
 
 	currentShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
+	ringShader = new Shader(SHADERDIR"CW/ringVertex.glsl", SHADERDIR"CW/ringFragment.glsl");
 	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 
-	if (!currentShader->LinkProgram() || !textShader->LinkProgram())
+	if (!currentShader->LinkProgram() || !ringShader->LinkProgram() || !textShader->LinkProgram())
 	{
 		return;
 	}
@@ -24,6 +25,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	SolarSystem* ss = new SolarSystem();
 
 	ss->getPlanet()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	ss->getPlanet2()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"saturnmap.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	ss->getSun()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	//ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
@@ -33,6 +35,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	}
 
 	SetTextureRepeating(ss->getPlanet()->GetMesh()->GetTexture(), true);
+	SetTextureRepeating(ss->getPlanet2()->GetMesh()->GetTexture(), true);
 	SetTextureRepeating(ss->getMoon()->GetMesh()->GetTexture(), true);
 	SetTextureRepeating(ss->getSun()->GetMesh()->GetTexture(), true);
 
@@ -49,6 +52,9 @@ Renderer::~Renderer(void)
 	delete camera;
 	delete sunLight;
 	delete basicFont;
+
+	delete ringShader;
+	delete textShader;
 
 	//SolarSystem::deleteSphereObj();
 }

@@ -15,6 +15,7 @@ public:
 
 	SceneNode* getSun() const { return sun; }
 	SceneNode* getPlanet() const { return planet; }
+	SceneNode* getPlanet2() const { return planet2; }
 	SceneNode* getMoon() const { return moon; }
 
 private:

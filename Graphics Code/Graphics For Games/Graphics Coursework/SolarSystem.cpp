@@ -20,6 +20,14 @@ SolarSystem::SolarSystem()
 	planet2->SetModelScale(Vector3(40.0f, 40.0f, 40.0f));
 	planet2->SetTransform(Matrix4::Translation(Vector3(600.0f, 0.0f, 0.0f)));
 	sun->AddChild(planet2);
+
+	Mesh* ringMesh;
+	ringMesh = Mesh::GenerateQuad();
+	ring = new SceneNode(ringMesh, Vector4(0.5, 0.2, 0.7, 1.0));
+	ring->SetModelScale(Vector3(80.0f, 80.0f, 80.0f));
+	ring->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"SaturnRing.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	ring->SetTransform(Matrix4::Translation(Vector3(600.0f, 0.0f, 0.0f)) * Matrix4::Rotation(90.0f, Vector3(1.0f, 0.0f, 0.0f)));
+	//planet2->AddChild(ring);
 	
 	moon = new SceneNode(createSphereObj(), Vector4(0.4f, 0.4f, 0.4f, 1.0f));
 	moon->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));

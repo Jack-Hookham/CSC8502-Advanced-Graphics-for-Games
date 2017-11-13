@@ -1,6 +1,7 @@
 #version 150 core
 
 uniform sampler2D diffuseTex;
+uniform sampler2D bumpTex;
 uniform int useTexture;
 
 uniform vec3 cameraPos;
@@ -30,6 +31,9 @@ void main(void)
 
 	//fragColour.xy = IN.texCoord;
 
+
+	//------Triplanar texture mapping-------
+
 	vec3 wNorm = normalize(IN.normal);
 	vec3 blending = abs(wNorm);
 	blending = normalize(max(blending, 0.00001));
@@ -43,6 +47,32 @@ void main(void)
 	vec4 tex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 
 	fragColour = tex;
+
+
+	//------Add lighting----------
+	vec4 diffuse = texture(diffuseTex, IN.texCoord);
+	diffuse.rgb *= vec3(0.5, 0.42, 0.37);
+	mat3 TBN = mat3(IN.tangent, IN.binormal, IN.normal);
+	vec3 normal = normalize(TBN * (texture(bumpTex, IN.texCoord).rgb * 2.0 - 1.0));
+
+	vec3 incident = normalize(lightPos - IN.worldPos);
+	float lambert = max(0.0, dot(incident, normal));
+	float dist = length(lightPos - IN.worldPos);
+	float atten = 1.0 - clamp(dist / lightRadius, 0.0, 1.0);
+	vec3 viewDir = normalize(cameraPos - IN.worldPos);
+	vec3 halfDir = normalize(incident + viewDir);
+	
+	float rFactor = max(0.0, dot(halfDir, normal));
+	float sFactor = pow(rFactor, 50.0);
+	vec3 colour = (diffuse.rgb * lightColour.rgb);
+	colour += (lightColour.rgb * sFactor) * 0.2;
+	
+	vec4 col = vec4(colour * atten * lambert, diffuse.a);
+	col.rgb += (diffuse.rgb * lightColour.rgb) * 0.1;
+
+	fragColour *= col;
+
+	//fragColour = diffuse;
 
 	//fragColour.rgb = vec3(blending);
 }

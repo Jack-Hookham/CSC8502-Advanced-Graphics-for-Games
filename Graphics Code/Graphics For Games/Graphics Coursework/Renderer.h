@@ -31,6 +31,8 @@ protected:
 	bool showInfo = true;
 	float fps = 0.0f;
 
+	Shader* ringShader;
+
 	Shader* textShader; 
 	Font*	basicFont;
 };
