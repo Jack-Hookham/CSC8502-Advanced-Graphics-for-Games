@@ -3,7 +3,7 @@
 Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 {
 	sunLight = new Light(Vector3(0.0f, 35.0f, 0.0f));
-	SolarSystem::createSphereObj();
+	//SolarSystem::createSphereObj();
 	camera = new Camera();
 
 	currentShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
@@ -41,7 +41,7 @@ Renderer::~Renderer(void)
 	delete camera;
 	delete sunLight;
 
-	SolarSystem::deleteSphereObj();
+	//SolarSystem::deleteSphereObj();
 }
 
 void Renderer::UpdateScene(float msec)
