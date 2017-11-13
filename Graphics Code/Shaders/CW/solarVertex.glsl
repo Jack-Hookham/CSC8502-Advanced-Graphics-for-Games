@@ -27,6 +27,6 @@ void main(void)
 	mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
 
 	OUT.colour = nodeColour;
-
+	OUT.texCoord = texCoord;
 	gl_Position = (projMatrix * viewMatrix * modelMatrix) * vec4(position, 1.0);
 }

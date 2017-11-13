@@ -43,6 +43,17 @@ Renderer::~Renderer(void)
 
 void Renderer::UpdateScene(float msec)
 {
+	//Recompile shaders if R pressed
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_R))
+	{
+		currentShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
+
+		if (!currentShader->LinkProgram())
+		{
+			return;
+		}
+	}
+
 	camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
 	root->Update(msec);
@@ -58,9 +69,9 @@ void Renderer::RenderScene()
 	UpdateShaderMatrices();
 
 	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, (float*)&textureMatrix);
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 1);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 
-	//glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(GL_TEXTURE0);
 
 	DrawNode(root);
 

@@ -22,5 +22,6 @@ private:
 	static Mesh* sphere;
 	SceneNode* sun;
 	SceneNode* planet;
+	SceneNode* planet2;
 	SceneNode* moon;
 };
