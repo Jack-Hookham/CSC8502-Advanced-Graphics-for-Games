@@ -75,7 +75,7 @@ void SolarSystem::Update(float msec)
 	planet2->SetTransform(planet2->GetTransform() * Matrix4::Translation(Vector3(-600.0f, 0.0f, 0.0f)) *
 		Matrix4::Rotation(-sunRotate + planet2OrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(600.0f, 0.0f, 0.0f)));
 
-	planet3->SetTransform(planet2->GetTransform() * Matrix4::Translation(Vector3(-900.0f, 0.0f, 0.0f)) *
+	planet3->SetTransform(planet3->GetTransform() * Matrix4::Translation(Vector3(-900.0f, 0.0f, 0.0f)) *
 		Matrix4::Rotation(-sunRotate + planet3OrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(900.0f, 0.0f, 0.0f)));
 
 	moon->SetTransform(moon->GetTransform() * Matrix4::Translation(Vector3(-70.0f, 0.0f, 0.0f)) *
