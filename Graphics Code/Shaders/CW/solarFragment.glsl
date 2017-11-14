@@ -69,7 +69,9 @@ void main(void)
 	vec3 colour = (diffuse.rgb * lightColour.rgb);
 	colour += (lightColour.rgb * sFactor) * 0.33;
 	
-	fragColour *= vec4(colour * atten * lambert, diffuse.a);
+	vec4 ambient = vec4(0.1, 0.1, 0.1, 1.0);
+
+	fragColour *= vec4((colour * atten * lambert), diffuse.a) + ambient;
 	fragColour.rgb += (diffuse.rgb * lightColour.rgb) * 0.1;
 
 	// vec4 diffuse = texture(diffuseTex, IN.texCoord);

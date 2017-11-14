@@ -22,18 +22,18 @@ SolarSystem::SolarSystem()
 
 	planet = new SolarObject(createSphereObj(), Vector4(0.2f, 0.7f, 0.9f, 1.0f), SolarType::TYPE_PLANET);
 	planet->SetModelScale(Vector3(20.0f, 20.0f, 20.0f));
-	planet->SetTransform(Matrix4::Translation(Vector3(300.0f, 0.0f, 0.0f)));
+	planet->SetTransform(Matrix4::Translation(Vector3(600.0f, 0.0f, 0.0f)));
 	sun->AddChild(planet);
 	
 
 	planet2 = new SolarObject(createSphereObj(), Vector4(0.2f, 0.9f, 0.7f, 1.0f), SolarType::TYPE_PLANET);
 	planet2->SetModelScale(Vector3(40.0f, 40.0f, 40.0f));
-	planet2->SetTransform(Matrix4::Translation(Vector3(600.0f, 0.0f, 0.0f)));
+	planet2->SetTransform(Matrix4::Translation(Vector3(900.0f, 0.0f, 0.0f)));
 	sun->AddChild(planet2);
 
 	planet3 = new SolarObject(createSphereObj(), Vector4(0.2f, 0.9f, 0.7f, 1.0f), SolarType::TYPE_PLANET);
 	planet3->SetModelScale(Vector3(50.0f, 50.0f, 50.0f));
-	planet3->SetTransform(Matrix4::Translation(Vector3(900.0f, 0.0f, 0.0f)));
+	planet3->SetTransform(Matrix4::Translation(Vector3(300.0f, 0.0f, 0.0f)));
 	sun->AddChild(planet3);
 
 	Mesh* ringMesh;
@@ -69,14 +69,14 @@ void SolarSystem::Update(float msec)
 
 	sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(sunRotate, Vector3(0, 1, 0)));
 
-	planet->SetTransform(planet->GetTransform() * Matrix4::Translation(Vector3(-300.0f, 0.0f, 0.0f)) *
-		Matrix4::Rotation(-sunRotate + earthOrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(300.0f, 0.0f, 0.0f)));
+	planet->SetTransform(planet->GetTransform() * Matrix4::Translation(Vector3(-600.0f, 0.0f, 0.0f)) *
+		Matrix4::Rotation(-sunRotate + earthOrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(600.0f, 0.0f, 0.0f)));
 
-	planet2->SetTransform(planet2->GetTransform() * Matrix4::Translation(Vector3(-600.0f, 0.0f, 0.0f)) *
-		Matrix4::Rotation(-sunRotate + planet2OrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(600.0f, 0.0f, 0.0f)));
+	planet2->SetTransform(planet2->GetTransform() * Matrix4::Translation(Vector3(-900.0f, 0.0f, 0.0f)) *
+		Matrix4::Rotation(-sunRotate + planet2OrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(900.0f, 0.0f, 0.0f)));
 
-	planet3->SetTransform(planet3->GetTransform() * Matrix4::Translation(Vector3(-900.0f, 0.0f, 0.0f)) *
-		Matrix4::Rotation(-sunRotate + planet3OrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(900.0f, 0.0f, 0.0f)));
+	planet3->SetTransform(planet3->GetTransform() * Matrix4::Translation(Vector3(-300.0f, 0.0f, 0.0f)) *
+		Matrix4::Rotation(-sunRotate + planet3OrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(300.0f, 0.0f, 0.0f)));
 
 	moon->SetTransform(moon->GetTransform() * Matrix4::Translation(Vector3(-70.0f, 0.0f, 0.0f)) *
 		Matrix4::Rotation(-earthOrbitSpeed + moonOrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(70.0f, 0.0f, 0.0f)));

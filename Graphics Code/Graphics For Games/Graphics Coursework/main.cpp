@@ -5,7 +5,7 @@
 
 int main()
 {
-	Window w("Scene Graphs!", 1200, 800, false);
+	Window w("Scene Graphs!", 1600, 900, false);
 	if (!w.HasInitialised())
 	{
 		return -1;
