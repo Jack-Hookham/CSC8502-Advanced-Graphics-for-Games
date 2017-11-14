@@ -53,10 +53,10 @@ void main(void)
 
 	//-----------Add lighting-------------------------------------------------------
 
-	vec4 diffuse = texture(diffuseTex, IN.texCoord);
+	//vec4 diffuse = texture(diffuseTex, IN.texCoord);
 	
 	vec3 incident = normalize(lightPos - IN.worldPos);
-	//vec4 diffuse = (texture(diffuseTex, IN.texCoord) * clamp(dot(IN.normal, incident), 0.0, 1.0));
+	vec4 diffuse = (texture(diffuseTex, IN.texCoord) * clamp(dot(IN.normal, incident), 0.0, 1.0));
 
 	float lambert = max(0.0, dot(incident, IN.normal));
 	float dist = length(lightPos - IN.worldPos);

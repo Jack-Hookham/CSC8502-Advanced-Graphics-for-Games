@@ -64,18 +64,22 @@ void SolarSystem::Update(float msec)
 	float sunRotate = 1.0f;
 	float earthOrbitSpeed = 0.5f;
 	float planet2OrbitSpeed = 0.4f;
+	float planet3OrbitSpeed = 0.7f;
 	float moonOrbitSpeed = 1.3f;
 
-	//sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(sunRotate, Vector3(0, 1, 0)));
+	sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(sunRotate, Vector3(0, 1, 0)));
 
-	//planet->SetTransform(planet->GetTransform() * Matrix4::Translation(Vector3(-300.0f, 0.0f, 0.0f)) *
-	//	Matrix4::Rotation(-sunRotate + earthOrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(300.0f, 0.0f, 0.0f)));
+	planet->SetTransform(planet->GetTransform() * Matrix4::Translation(Vector3(-300.0f, 0.0f, 0.0f)) *
+		Matrix4::Rotation(-sunRotate + earthOrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(300.0f, 0.0f, 0.0f)));
 
-	//planet2->SetTransform(planet2->GetTransform() * Matrix4::Translation(Vector3(-600.0f, 0.0f, 0.0f)) *
-	//	Matrix4::Rotation(-sunRotate + planet2OrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(600.0f, 0.0f, 0.0f)));
+	planet2->SetTransform(planet2->GetTransform() * Matrix4::Translation(Vector3(-600.0f, 0.0f, 0.0f)) *
+		Matrix4::Rotation(-sunRotate + planet2OrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(600.0f, 0.0f, 0.0f)));
 
-	//moon->SetTransform(moon->GetTransform() * Matrix4::Translation(Vector3(-70.0f, 0.0f, 0.0f)) *
-	//	Matrix4::Rotation(-earthOrbitSpeed + moonOrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(70.0f, 0.0f, 0.0f)));
+	planet3->SetTransform(planet2->GetTransform() * Matrix4::Translation(Vector3(-900.0f, 0.0f, 0.0f)) *
+		Matrix4::Rotation(-sunRotate + planet3OrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(900.0f, 0.0f, 0.0f)));
+
+	moon->SetTransform(moon->GetTransform() * Matrix4::Translation(Vector3(-70.0f, 0.0f, 0.0f)) *
+		Matrix4::Rotation(-earthOrbitSpeed + moonOrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(70.0f, 0.0f, 0.0f)));
 
 	SolarObject::Update(msec);
 }
@@ -87,6 +91,7 @@ Mesh* SolarSystem::createSphereObj()
 	//m->LoadOBJMesh(MESHDIR"sphere2.obj");
 	//m->LoadOBJMesh(MESHDIR"mySphere.obj");
 	m->LoadOBJMesh(MESHDIR"smoothSphere.obj");
+	//m->LoadOBJMesh(MESHDIR"sphere.obj");
 	
 
 	return m;
