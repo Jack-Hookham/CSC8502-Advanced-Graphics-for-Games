@@ -38,10 +38,10 @@
     <ClInclude Include="Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextMesh.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="SolarObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

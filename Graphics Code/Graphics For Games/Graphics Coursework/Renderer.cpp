@@ -7,8 +7,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	camera = new Camera();
 
 	quad = Mesh::GenerateQuad();
-	spaceMap = SOIL_load_OGL_cubemap(TEXTUREDIR"spacemap_west.bmp", TEXTUREDIR"spacemap_east.bmp", TEXTUREDIR"spacemap_up.bmp",
-		TEXTUREDIR"spacemap_down.bmp", TEXTUREDIR"spacemap_south.bmp", TEXTUREDIR"spacemap_north.bmp",
+	spaceMap = SOIL_load_OGL_cubemap(TEXTUREDIR"galaxy_west.bmp", TEXTUREDIR"galaxy_east.bmp", TEXTUREDIR"galaxy_up.bmp",
+		TEXTUREDIR"galaxy_down.bmp", TEXTUREDIR"galaxy_south.bmp", TEXTUREDIR"galaxy_north.bmp",
 		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
 	//spaceMap = SOIL_load_OGL_cubemap(TEXTUREDIR"rusted_west.jpg", TEXTUREDIR"rusted_east.jpg", TEXTUREDIR"rusted_up.jpg",
@@ -109,6 +109,7 @@ void Renderer::compileShaders()
 	{
 		return;
 	}
+	SetCurrentShader(solarShader);
 }
 
 void Renderer::RenderScene()
