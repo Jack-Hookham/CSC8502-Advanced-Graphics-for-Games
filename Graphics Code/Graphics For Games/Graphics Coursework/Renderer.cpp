@@ -2,9 +2,18 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 {
-	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 1000.0f);
+	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 100000.0f);
 	//SolarSystem::createSphereObj();
 	camera = new Camera();
+
+	quad = Mesh::GenerateQuad();
+	spaceMap = SOIL_load_OGL_cubemap(TEXTUREDIR"spacemap_west.bmp", TEXTUREDIR"spacemap_east.bmp", TEXTUREDIR"spacemap_up.bmp",
+		TEXTUREDIR"spacemap_down.bmp", TEXTUREDIR"spacemap_south.bmp", TEXTUREDIR"spacemap_north.bmp",
+		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
+
+	//spaceMap = SOIL_load_OGL_cubemap(TEXTUREDIR"rusted_west.jpg", TEXTUREDIR"rusted_east.jpg", TEXTUREDIR"rusted_up.jpg",
+	//	TEXTUREDIR"rusted_down.jpg", TEXTUREDIR"rusted_south.jpg", TEXTUREDIR"rusted_north.jpg",
+	//	SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
 	currentShader = NULL;
 	compileShaders();
@@ -20,25 +29,33 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	root = new SolarObject();	
 	SolarSystem* ss = new SolarSystem();
 
-	ss->getPlanet()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"earthmap1k.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	ss->getPlanet2()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"saturnmap.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	ss->getSun()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	ss->getPlanet()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"earthTile2.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	ss->getPlanet2()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water05.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	ss->getPlanet3()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"lavaPlanet2.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	ss->getSun()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"TileFire.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	//ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	// | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
-	if (!ss->getMoon()->GetMesh()->GetTexture())
+	if (!ss->getSun()->GetMesh()->GetTexture() ||
+		!ss->getPlanet()->GetMesh()->GetTexture() ||
+		!ss->getPlanet2()->GetMesh()->GetTexture() ||
+		!ss->getMoon()->GetMesh()->GetTexture() ||
+		!spaceMap)
 	{
 		return;
 	}
 
 	SetTextureRepeating(ss->getPlanet()->GetMesh()->GetTexture(), true);
 	SetTextureRepeating(ss->getPlanet2()->GetMesh()->GetTexture(), true);
+	SetTextureRepeating(ss->getPlanet3()->GetMesh()->GetTexture(), true);
 	SetTextureRepeating(ss->getMoon()->GetMesh()->GetTexture(), true);
 	SetTextureRepeating(ss->getSun()->GetMesh()->GetTexture(), true);
 
 	root->AddChild(ss);
 
+	glEnable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glEnable(GL_DEPTH_TEST);
 	init = true;
 }
@@ -54,7 +71,10 @@ Renderer::~Renderer(void)
 	delete ringShader;
 	delete sunShader;
 	delete textShader;
+	delete skyboxShader;
 	currentShader = NULL;
+
+	delete quad;
 
 	//SolarSystem::deleteSphereObj();
 }
@@ -72,6 +92,25 @@ void Renderer::UpdateScene(float msec)
 	root->Update(msec);
 }
 
+void Renderer::compileShaders()
+{
+	solarShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
+	//Sun uses a different shader as it doesn't need lighting
+	sunShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl");
+	ringShader = new Shader(SHADERDIR"CW/ringVertex.glsl", SHADERDIR"CW/ringFragment.glsl");
+	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
+	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
+
+	if (!solarShader->LinkProgram() ||
+		!ringShader->LinkProgram() ||
+		!textShader->LinkProgram() ||
+		!sunShader->LinkProgram() ||
+		!skyboxShader->LinkProgram())
+	{
+		return;
+	}
+}
+
 void Renderer::RenderScene()
 {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -85,10 +124,11 @@ void Renderer::RenderScene()
 
 	//glActiveTexture(GL_TEXTURE0);
 
+	DrawSkybox();
 	DrawNode(root);
+	glUseProgram(0);
 	drawText();
 
-	glUseProgram(0);
 	SwapBuffers();
 }
 
@@ -106,23 +146,8 @@ void Renderer::drawText()
 	//oss << std::fixed << std::setprecision(2) << fps;
 	//DrawText(oss.str(), Vector3(50.0f, 50.0f, 0), 16.0f);
 
+	glUseProgram(0);
 	glDisable(GL_BLEND);
-}
-
-void Renderer::compileShaders()
-{
-	solarShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
-	sunShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl");				//Sun uses a different shader as it doesn't need lighting
-	ringShader = new Shader(SHADERDIR"CW/ringVertex.glsl", SHADERDIR"CW/ringFragment.glsl");
-	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
-
-	if (!solarShader->LinkProgram() ||
-		!ringShader->LinkProgram() ||
-		!textShader->LinkProgram() ||
-		!sunShader->LinkProgram())
-	{
-		return;
-	}
 }
 
 void Renderer::DrawNode(SolarObject* n)
@@ -154,4 +179,16 @@ void Renderer::DrawNode(SolarObject* n)
 	{
 		DrawNode(*i);
 	}
+}
+
+void Renderer::DrawSkybox()
+{
+	glDepthMask(GL_FALSE);
+	SetCurrentShader(skyboxShader);
+
+	UpdateShaderMatrices();
+	quad->Draw();
+
+	glUseProgram(0);
+	glDepthMask(GL_TRUE);
 }

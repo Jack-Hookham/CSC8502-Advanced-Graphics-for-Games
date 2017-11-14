@@ -30,6 +30,11 @@ SolarSystem::SolarSystem()
 	planet2->SetTransform(Matrix4::Translation(Vector3(600.0f, 0.0f, 0.0f)));
 	sun->AddChild(planet2);
 
+	planet3 = new SolarObject(createSphereObj(), Vector4(0.2f, 0.9f, 0.7f, 1.0f), SolarType::TYPE_PLANET);
+	planet3->SetModelScale(Vector3(50.0f, 50.0f, 50.0f));
+	planet3->SetTransform(Matrix4::Translation(Vector3(900.0f, 0.0f, 0.0f)));
+	sun->AddChild(planet3);
+
 	Mesh* ringMesh;
 	ringMesh = Mesh::GenerateQuad();
 	ring = new SolarObject(ringMesh, Vector4(0.5, 0.2, 0.7, 1.0), SolarType::TYPE_RING);

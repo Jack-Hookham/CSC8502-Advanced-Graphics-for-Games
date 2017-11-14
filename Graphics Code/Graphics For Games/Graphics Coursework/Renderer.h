@@ -19,6 +19,7 @@ public:
 	virtual void RenderScene();
 
 	void drawText();
+	void DrawSkybox();
 
 protected:
 	void compileShaders();
@@ -36,6 +37,10 @@ protected:
 	Shader* solarShader;
 	Shader* ringShader;
 	Shader* sunShader;
+	Shader* skyboxShader;
+
+	Mesh* quad;
+	GLuint spaceMap;
 
 	Shader* textShader; 
 	Font*	basicFont;

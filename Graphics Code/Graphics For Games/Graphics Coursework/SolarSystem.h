@@ -32,6 +32,7 @@ public:
 	SolarObject* getSun() const { return sun; }
 	SolarObject* getPlanet() const { return planet; }
 	SolarObject* getPlanet2() const { return planet2; }
+	SolarObject* getPlanet3() const { return planet3; }
 	SolarObject* getMoon() const { return moon; }
 
 private:
@@ -39,6 +40,7 @@ private:
 	SolarObject* sun;
 	SolarObject* planet;
 	SolarObject* planet2;
+	SolarObject* planet3;
 	SolarObject* ring;
 	SolarObject* moon;
 
