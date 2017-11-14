@@ -21,17 +21,21 @@ public:
 	void drawText();
 
 protected:
-	void DrawNode(SceneNode* n);
+	void compileShaders();
+
+	void DrawNode(SolarObject* n);
 
 	Light* sunLight;
 
-	SceneNode* root;
+	SolarObject* root;
 	Camera* camera;
 
 	bool showInfo = true;
 	float fps = 0.0f;
 
+	Shader* solarShader;
 	Shader* ringShader;
+	Shader* sunShader;
 
 	Shader* textShader; 
 	Font*	basicFont;

@@ -6,15 +6,10 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	//SolarSystem::createSphereObj();
 	camera = new Camera();
 
-	currentShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
-	//sunShader = new Shader(SHADERDIR, SHADERDIR);
-	ringShader = new Shader(SHADERDIR"CW/ringVertex.glsl", SHADERDIR"CW/ringFragment.glsl");
-	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
+	currentShader = NULL;
+	compileShaders();
 
-	if (!currentShader->LinkProgram() || !ringShader->LinkProgram() || !textShader->LinkProgram())
-	{
-		return;
-	}
+	SetCurrentShader(solarShader);
 
 	basicFont = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
 
@@ -22,12 +17,12 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 	camera->SetPosition(Vector3(0, 30.0f, 500.0f));
 
-	root = new SceneNode();	
+	root = new SolarObject();	
 	SolarSystem* ss = new SolarSystem();
 
-	ss->getPlanet()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	ss->getPlanet()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"earthmap1k.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	ss->getPlanet2()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"saturnmap.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	ss->getSun()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"TileFire.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	ss->getSun()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	//ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	// | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
@@ -55,8 +50,11 @@ Renderer::~Renderer(void)
 	delete sunLight;
 	delete basicFont;
 
+	delete solarShader;
 	delete ringShader;
+	delete sunShader;
 	delete textShader;
+	currentShader = NULL;
 
 	//SolarSystem::deleteSphereObj();
 }
@@ -66,12 +64,7 @@ void Renderer::UpdateScene(float msec)
 	//Recompile shaders if R pressed
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_R))
 	{
-		currentShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
-
-		if (!currentShader->LinkProgram())
-		{
-			return;
-		}
+		compileShaders();
 	}
 
 	camera->UpdateCamera(msec);
@@ -82,7 +75,7 @@ void Renderer::UpdateScene(float msec)
 void Renderer::RenderScene()
 {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	glUseProgram(currentShader->GetProgram());
+	//glUseProgram(currentShader->GetProgram());
 
 	SetShaderLight(*sunLight);
 
@@ -103,7 +96,8 @@ void Renderer::drawText()
 {
 	glEnable(GL_BLEND);
 
-	glUseProgram(textShader->GetProgram());
+	//glUseProgram(textShader->GetProgram());
+	SetCurrentShader(textShader);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), basicFont->texture);
 
 	//DrawText("This is orthographic text!", Vector3(0, 0, 0), 16.0f);
@@ -115,10 +109,37 @@ void Renderer::drawText()
 	glDisable(GL_BLEND);
 }
 
-void Renderer::DrawNode(SceneNode* n)
+void Renderer::compileShaders()
 {
+	solarShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
+	sunShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl");				//Sun uses a different shader as it doesn't need lighting
+	ringShader = new Shader(SHADERDIR"CW/ringVertex.glsl", SHADERDIR"CW/ringFragment.glsl");
+	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
+
+	if (!solarShader->LinkProgram() ||
+		!ringShader->LinkProgram() ||
+		!textShader->LinkProgram() ||
+		!sunShader->LinkProgram())
+	{
+		return;
+	}
+}
+
+void Renderer::DrawNode(SolarObject* n)
+{
+	if (n->getType() == SolarType::TYPE_SUN)
+	{
+		SetCurrentShader(sunShader);
+		//SetCurrentShader(solarShader);
+	}
+	else if (n->getType() == SolarType::TYPE_PLANET || n->getType() == SolarType::TYPE_MOON)
+	{
+		SetCurrentShader(solarShader);
+	}
+
 	if (n->GetMesh())
 	{
+		UpdateShaderMatrices();
 		Matrix4 transform = n->GetWorldTransform() * Matrix4::Scale(n->GetModelScale());
 
 		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, (float*)&transform);
@@ -129,7 +150,7 @@ void Renderer::DrawNode(SceneNode* n)
 		n->Draw();
 	}
 
-	for (vector<SceneNode*>::const_iterator i = n->GetChildIteratorStart(); i != n->GetChildIteratorEnd(); ++i)
+	for (vector<SolarObject*>::const_iterator i = n->GetChildIteratorStart(); i != n->GetChildIteratorEnd(); ++i)
 	{
 		DrawNode(*i);
 	}

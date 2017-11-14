@@ -2,7 +2,24 @@
 
 #include "../nclgl/OBJMesh.h"
 #include "SolarObject.h"
-class SolarSystem : public SceneNode
+
+enum SolarNames
+{
+	SUN,
+	//MERCURY,
+	//VENUS,
+	EARTH,
+	//MARS,
+	//JUPITER,
+	SATURN,
+	//URANUS,
+	//NEPTUNE,
+	//PLUTO,
+	MOON,
+	NUM_NAMES
+};
+
+class SolarSystem : public SolarObject
 {
 public:
 	SolarSystem(void);
@@ -12,10 +29,10 @@ public:
 
 	Mesh* createSphereObj();
 
-	SceneNode* getSun() const { return sun; }
-	SceneNode* getPlanet() const { return planet; }
-	SceneNode* getPlanet2() const { return planet2; }
-	SceneNode* getMoon() const { return moon; }
+	SolarObject* getSun() const { return sun; }
+	SolarObject* getPlanet() const { return planet; }
+	SolarObject* getPlanet2() const { return planet2; }
+	SolarObject* getMoon() const { return moon; }
 
 private:
 	Mesh* root = NULL;
@@ -24,4 +41,14 @@ private:
 	SolarObject* planet2;
 	SolarObject* ring;
 	SolarObject* moon;
+
+	SolarObject* solarObjects[NUM_NAMES];
+	float modelScales[NUM_NAMES] = { 100.0f, 20.0f, 40.0f, 10.0f };
+	float orbitRadii[NUM_NAMES] = { 0.0f, 300.0f, 600.0f, 70.0f };
+	float orbitSpeeds[NUM_NAMES] = { 0.0f, 0.3f, 0.5f, 1.3f };
+	float rotateSpeeds[NUM_NAMES] = { 1.0f, 0.5f, 0.7f, 0.3f };
+	SolarType types[NUM_NAMES] = { SolarType::TYPE_SUN, SolarType::TYPE_PLANET, SolarType::TYPE_PLANET, SolarType::TYPE_MOON };
+
+	Vector4 objectColours[NUM_NAMES] = { Vector4(0.9f, 0.7f, 0.3f, 1.0f),  Vector4(0.2f, 0.7f, 0.9f, 1.0f), 
+		Vector4(0.2f, 0.9f, 0.7f, 1.0f), Vector4(0.4f, 0.4f, 0.4f, 1.0f) };
 };

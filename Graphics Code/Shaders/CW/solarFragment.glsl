@@ -23,7 +23,7 @@ out vec4 fragColour;
 
 void main(void)
 {
-	fragColour = IN.colour;
+	//fragColour = IN.colour;
 	//if (useTexture > 0)
 	//{
 	//	fragColour *= texture(diffuseTex, IN.texCoord);
@@ -34,26 +34,28 @@ void main(void)
 
 	//------------Triplanar texture mapping----------------------------------------------
 
+	vec3 temp = IN.worldPos / 100;
 	vec3 wNorm = normalize(IN.normal);
 	vec3 blending = abs(wNorm);
 	blending = normalize(max(blending, 0.00001));
 	float b = (blending.x + blending.y + blending.z);
 	blending /= vec3(b, b, b);
 
-	vec4 xaxis = texture2D(diffuseTex, IN.worldPos.yz);
-	vec4 yaxis = texture2D(diffuseTex, IN.worldPos.xz);
-	vec4 zaxis = texture2D(diffuseTex, IN.worldPos.xy);
+	vec4 xaxis = texture2D(diffuseTex, temp.yz);
+	vec4 yaxis = texture2D(diffuseTex, temp.xz);
+	vec4 zaxis = texture2D(diffuseTex, temp.xy);
 
 	vec4 tex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 
 	fragColour = tex;
-
 
 	//-----------Add lighting-------------------------------------------------------
 
 	vec4 diffuse = texture(diffuseTex, IN.texCoord);
 	
 	vec3 incident = normalize(lightPos - IN.worldPos);
+	//vec4 diffuse = (texture(diffuseTex, IN.texCoord) * clamp(dot(IN.normal, incident), 0.0, 1.0));
+
 	float lambert = max(0.0, dot(incident, IN.normal));
 	float dist = length(lightPos - IN.worldPos);
 	float atten = 1.0 - clamp(dist / lightRadius, 0.0, 1.0);
@@ -65,30 +67,30 @@ void main(void)
 	vec3 colour = (diffuse.rgb * lightColour.rgb);
 	colour += (lightColour.rgb * sFactor) * 0.33;
 	
-	//fragColour *= vec4(colour * atten * lambert, diffuse.a);
-	//fragColour.rgb += (diffuse.rgb * lightColour.rgb) * 0.1;
+	fragColour *= vec4(colour * atten * lambert, diffuse.a);
+	fragColour.rgb += (diffuse.rgb * lightColour.rgb) * 0.1;
 
-	//vec4 diffuse = texture(diffuseTex, IN.texCoord);
-	//diffuse.rgb *= vec3(0.5, 0.42, 0.37);
-	//mat3 TBN = mat3(IN.tangent, IN.binormal, IN.normal);
-	//vec3 normal = normalize(TBN * (texture(bumpTex, IN.texCoord).rgb * 2.0 - 1.0));
+	// vec4 diffuse = texture(diffuseTex, IN.texCoord);
+	// diffuse.rgb *= vec3(0.5, 0.42, 0.37);
+	// mat3 TBN = mat3(IN.tangent, IN.binormal, IN.normal);
+	// vec3 normal = normalize(TBN * (texture(bumpTex, IN.texCoord).rgb * 2.0 - 1.0));
 
-	//vec3 incident = normalize(lightPos - IN.worldPos);
-	//float lambert = max(0.0, dot(incident, normal));
-	//float dist = length(lightPos - IN.worldPos);
-	//float atten = 1.0 - clamp(dist / lightRadius, 0.0, 1.0);
-	//vec3 viewDir = normalize(cameraPos - IN.worldPos);
-	//vec3 halfDir = normalize(incident + viewDir);
+	// vec3 incident = normalize(lightPos - IN.worldPos);
+	// float lambert = max(0.0, dot(incident, normal));
+	// float dist = length(lightPos - IN.worldPos);
+	// float atten = 1.0 - clamp(dist / lightRadius, 0.0, 1.0);
+	// vec3 viewDir = normalize(cameraPos - IN.worldPos);
+	// vec3 halfDir = normalize(incident + viewDir);
 	
-	//float rFactor = max(0.0, dot(halfDir, normal));
-	//float sFactor = pow(rFactor, 32.0);
-	//vec3 colour = (diffuse.rgb * lightColour.rgb);
-	//colour += (lightColour.rgb * sFactor) * 0.2;
+	// float rFactor = max(0.0, dot(halfDir, normal));
+	// float sFactor = pow(rFactor, 32.0);
+	// vec3 colour = (diffuse.rgb * lightColour.rgb);
+	// colour += (lightColour.rgb * sFactor) * 0.2;
 	
-	//vec4 col = vec4(colour * atten * lambert, diffuse.a);
-	//col.rgb += (diffuse.rgb * lightColour.rgb) * 0.1;
+	// vec4 col = vec4(colour * atten * lambert, diffuse.a);
+	// col.rgb += (diffuse.rgb * lightColour.rgb) * 0.1;
 
-	//fragColour *= col;
+	// fragColour *= col;
 
 	//fragColour = diffuse;
 
