@@ -68,7 +68,7 @@ time lighting tutorial, uncomment both OBJ_USE_NORMALS and OBJ_USE_TANGENTS_BUMP
 
 //New! 
 
-#define OBJ_FIX_TEXTURES
+//#define OBJ_FIX_TEXTURES
 
 
 #pragma once

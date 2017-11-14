@@ -20,6 +20,12 @@ f vert index / tex index / norm index  vert index / tex index / norm index  vert
 OBJ files can also be split up into a number of submeshes, making loading them
 in even more annoying.
 */
+
+#define OBJ_USE_NORMALS
+
+#define OBJ_USE_TANGENTS_BUMPMAPS
+//#define OBJ_FIX_TEXTURES
+
 bool	OBJMesh::LoadOBJMesh(std::string filename) {
 	std::ifstream f(filename.c_str(), std::ios::in);
 

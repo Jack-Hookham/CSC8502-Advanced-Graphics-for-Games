@@ -28,12 +28,13 @@ public:
 	//Lighting
 	void SetBumpMap(GLuint tex) { bumpTexture = tex; }
 	GLuint GetBumpMap() { return bumpTexture; }
-
-protected:
+	void GenerateNormals();
 	void BufferData();
+protected:
+	/*void BufferData();*/
 
 	//Lighting
-	void GenerateNormals();
+	//void GenerateNormals();
 	Vector3* normals;
 
 	void GenerateTangents();

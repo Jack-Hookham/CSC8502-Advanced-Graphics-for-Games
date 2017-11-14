@@ -24,6 +24,7 @@ SolarSystem::SolarSystem()
 	planet->SetModelScale(Vector3(20.0f, 20.0f, 20.0f));
 	planet->SetTransform(Matrix4::Translation(Vector3(300.0f, 0.0f, 0.0f)));
 	sun->AddChild(planet);
+	
 
 	planet2 = new SolarObject(createSphereObj(), Vector4(0.2f, 0.9f, 0.7f, 1.0f), SolarType::TYPE_PLANET);
 	planet2->SetModelScale(Vector3(40.0f, 40.0f, 40.0f));
@@ -85,6 +86,8 @@ Mesh* SolarSystem::createSphereObj()
 	OBJMesh* m = new OBJMesh();
 	//m->LoadOBJMesh(MESHDIR"sphere2.obj");
 	//m->LoadOBJMesh(MESHDIR"mySphere.obj");
-	m->LoadOBJMesh(MESHDIR"sphere.obj");
+	m->LoadOBJMesh(MESHDIR"smoothSphere.obj");
+	
+
 	return m;
 }
