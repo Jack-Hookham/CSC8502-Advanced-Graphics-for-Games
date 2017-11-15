@@ -23,6 +23,16 @@ out vec4 fragColour;
 
 void main(void)
 {
+	// fragColour = IN.colour;
+	// if (useTexture > 0)
+	// {
+	// 	fragColour = texture(diffuseTex, IN.texCoord);
+	// }
+
+	
+	//------------Triplanar texture mapping----------------------------------------------
+	//https://gamedevelopment.tutsplus.com/articles/use-tri-planar-texture-mapping-for-better-terrain--gamedev-13821
+
 	vec3 temp = IN.worldPos / 300;
 	vec3 wNorm = normalize(IN.normal);
 	vec3 blending = abs(wNorm);

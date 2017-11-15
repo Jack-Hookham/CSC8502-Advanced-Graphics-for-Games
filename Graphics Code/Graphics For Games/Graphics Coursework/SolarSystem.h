@@ -35,13 +35,15 @@ public:
 	SolarObject* getPlanet3() const { return planet3; }
 	SolarObject* getMoon() const { return moon; }
 
+	const bool getRotateObjects() const { return rotateObjects; }
+	void setRotateObjects(const bool v) { rotateObjects = v; }
+
 private:
 	Mesh* root = NULL;
 	SolarObject* sun;
 	SolarObject* planet;
 	SolarObject* planet2;
 	SolarObject* planet3;
-	SolarObject* ring;
 	SolarObject* moon;
 
 	SolarObject* solarObjects[NUM_NAMES];
@@ -53,4 +55,6 @@ private:
 
 	Vector4 objectColours[NUM_NAMES] = { Vector4(0.9f, 0.7f, 0.3f, 1.0f),  Vector4(0.2f, 0.7f, 0.9f, 1.0f), 
 		Vector4(0.2f, 0.9f, 0.7f, 1.0f), Vector4(0.4f, 0.4f, 0.4f, 1.0f) };
+
+	bool rotateObjects = false;
 };

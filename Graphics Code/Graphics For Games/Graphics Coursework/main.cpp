@@ -20,6 +20,8 @@ int main()
 	w.LockMouseToWindow(true);
 	w.ShowOSPointer(false);
 
+	renderer.setScene(SceneID::SPACE);
+
 	while (w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE))
 	{
 		renderer.UpdateScene(w.GetTimer()->GetTimedMS());

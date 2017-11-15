@@ -9,6 +9,14 @@
 #include "SolarSystem.h"
 #include "textmesh.h"
 
+enum SceneID
+{
+	SPACE,
+	SCENE2,
+	SCENE3,
+	NUM_SCENES
+};
+
 class Renderer : public OGLRenderer
 {
 public:
@@ -21,14 +29,17 @@ public:
 	void drawText();
 	void DrawSkybox();
 
+	void setScene(SceneID n) { sceneID = n; }
+	SceneID getScene() { return sceneID; }
+
 protected:
 	void compileShaders();
 
 	void DrawNode(SolarObject* n);
 
+	SolarSystem* ss;
 	Light* sunLight;
 
-	SolarObject* root;
 	Camera* camera;
 
 	bool showInfo = true;
@@ -44,4 +55,6 @@ protected:
 
 	Shader* textShader; 
 	Font*	basicFont;
+
+	SceneID sceneID = SceneID::SPACE;
 };

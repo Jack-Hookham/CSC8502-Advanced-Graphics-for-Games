@@ -26,8 +26,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 	camera->SetPosition(Vector3(0, 30.0f, 500.0f));
 
-	root = new SolarObject();	
-	SolarSystem* ss = new SolarSystem();
+	ss = new SolarSystem();
 
 	ss->getPlanet()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"earthTile2.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	ss->getPlanet2()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water05.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
@@ -51,8 +50,6 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	SetTextureRepeating(ss->getMoon()->GetMesh()->GetTexture(), true);
 	SetTextureRepeating(ss->getSun()->GetMesh()->GetTexture(), true);
 
-	root->AddChild(ss);
-
 	glEnable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -62,7 +59,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 Renderer::~Renderer(void)
 {
-	delete root;
+	delete ss;
 	delete camera;
 	delete sunLight;
 	delete basicFont;
@@ -87,9 +84,14 @@ void Renderer::UpdateScene(float msec)
 		compileShaders();
 	}
 
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_T))
+	{
+		ss->setRotateObjects(!ss->getRotateObjects());
+	}
+
 	camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
-	root->Update(msec);
+	ss->Update(msec);
 }
 
 void Renderer::compileShaders()
@@ -126,8 +128,10 @@ void Renderer::RenderScene()
 	//glActiveTexture(GL_TEXTURE0);
 
 	DrawSkybox();
-	DrawNode(root);
+	DrawNode(ss);
 	glUseProgram(0);
+
+
 	drawText();
 
 	SwapBuffers();
