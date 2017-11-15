@@ -76,6 +76,41 @@ SolarSystem::SolarSystem()
 	ico->SetTransform(Matrix4::Translation(Vector3(0.0f, -300.0f, 0.0f)));
 	sun->AddChild(ico);
 
+	SolarObject* planeSouth = new SolarObject(Mesh::GenerateQuad(), Vector4(1.0f, 1.0f, 1.0f, 1.0f), SolarType::TYPE_PLANET);
+	planeSouth->SetModelScale(Vector3(1000.0f, 1000.0f, 1000.0f));
+	//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
+	planeSouth->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 2000.0f)));
+	AddChild(planeSouth);
+
+	SolarObject* planeNorth = new SolarObject(Mesh::GenerateQuad(), Vector4(1.0f, 1.0f, 1.0f, 1.0f), SolarType::TYPE_PLANET);
+	planeNorth->SetModelScale(Vector3(1000.0f, 1000.0f, 1000.0f));
+	//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
+	planeNorth->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, -2000.0f)));
+	AddChild(planeNorth);
+
+	SolarObject* planeEast = new SolarObject(Mesh::GenerateQuad(), Vector4(1.0f, 1.0f, 1.0f, 1.0f), SolarType::TYPE_PLANET);
+	planeEast->SetModelScale(Vector3(1000.0f, 1000.0f, 1000.0f));
+	//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
+	planeEast->SetTransform(Matrix4::Translation(Vector3(2000.0f, 0.0f, 0.0f)) * Matrix4::Rotation(-90.0f, Vector3(0, 1, 0)));
+	AddChild(planeEast);
+
+	SolarObject* planeWest = new SolarObject(Mesh::GenerateQuad(), Vector4(1.0f, 1.0f, 1.0f, 1.0f), SolarType::TYPE_PLANET);
+	planeWest->SetModelScale(Vector3(1000.0f, 1000.0f, 1000.0f));
+	//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
+	planeWest->SetTransform(Matrix4::Translation(Vector3(-2000.0f, 0.0f, 0.0f)) * Matrix4::Rotation(90.0f, Vector3(0, 1, 0)));
+	AddChild(planeWest);
+
+	SolarObject* planeUp = new SolarObject(Mesh::GenerateQuad(), Vector4(1.0f, 1.0f, 1.0f, 1.0f), SolarType::TYPE_PLANET);
+	planeUp->SetModelScale(Vector3(1000.0f, 1000.0f, 1000.0f));
+	//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
+	planeUp->SetTransform(Matrix4::Translation(Vector3(0.0f, -2000.0f, 0.0f)) * Matrix4::Rotation(90.0f, Vector3(1, 0, 0)));
+	AddChild(planeUp);
+
+	SolarObject* planeDown = new SolarObject(Mesh::GenerateQuad(), Vector4(1.0f, 1.0f, 1.0f, 1.0f), SolarType::TYPE_PLANET);
+	planeDown->SetModelScale(Vector3(1000.0f, 1000.0f, 1000.0f));
+	//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
+	planeDown->SetTransform(Matrix4::Translation(Vector3(0.0f, 2000.0f, 0.0f)) * Matrix4::Rotation(90.0f, Vector3(1, 0, 0)));
+	AddChild(planeDown);
 }
 
 SolarSystem::~SolarSystem()

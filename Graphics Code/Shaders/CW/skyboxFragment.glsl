@@ -1,6 +1,7 @@
 #version 150 core
 
 uniform samplerCube cubeTex;
+uniform samplerCube shadowTex;
 uniform vec3 cameraPos;
 
 in Vertex {

@@ -232,8 +232,6 @@ void Renderer::DrawShadowScene()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
 
-	
-
 	glViewport(0, 0, SHADOWSIZE, SHADOWSIZE);
 
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);

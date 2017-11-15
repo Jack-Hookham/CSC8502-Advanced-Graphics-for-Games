@@ -89,7 +89,7 @@ void main(void)
 
 
 	float test2 = texture(shadowTex, incident).x;
-	fragColour = vec4(shadowDist,shadowDist,shadowDist,1);
+	fragColour = vec4(shadowDist, shadowDist, shadowDist,1);
 
 	return;
 
