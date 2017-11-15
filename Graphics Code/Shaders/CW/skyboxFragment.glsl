@@ -11,5 +11,5 @@ out vec4 fragColour;
 
 void main(void)	
 {
-	//fragColour = texture(cubeTex, normalize(IN.normal));
+	fragColour = texture(cubeTex, normalize(IN.normal));
 }
