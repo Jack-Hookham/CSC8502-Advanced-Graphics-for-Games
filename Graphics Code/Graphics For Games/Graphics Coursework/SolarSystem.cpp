@@ -53,6 +53,29 @@ SolarSystem::SolarSystem()
 	//planet->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	//moon->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	//sun->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+
+	OBJMesh* cubeMesh = new OBJMesh();
+	cubeMesh->LoadOBJMesh(MESHDIR"cube.obj");
+
+	SolarObject* cube = new SolarObject(cubeMesh, Vector4(0.2f, 0.9f, 0.7f, 1.0f), SolarType::TYPE_PLANET);
+	cube->SetModelScale(Vector3(50.0f, 50.0f, 50.0f));
+	cube->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 300.0f)));
+	sun->AddChild(cube);
+
+	OBJMesh* pyramidMesh = new OBJMesh();
+	pyramidMesh->LoadOBJMesh(MESHDIR"pyramid.obj");
+	SolarObject* pyramid = new SolarObject(pyramidMesh, Vector4(0.2f, 0.9f, 0.7f, 1.0f), SolarType::TYPE_PLANET);
+	pyramid->SetModelScale(Vector3(50.0f, 50.0f, 50.0f));
+	pyramid->SetTransform(Matrix4::Translation(Vector3(0.0f, 300.0f, 0.0f)));
+	sun->AddChild(pyramid);
+
+	OBJMesh* icoMesh = new OBJMesh();
+	icoMesh->LoadOBJMesh(MESHDIR"ico.obj");
+	SolarObject* ico = new SolarObject(icoMesh, Vector4(0.2f, 0.9f, 0.7f, 1.0f), SolarType::TYPE_PLANET);
+	ico->SetModelScale(Vector3(50.0f, 50.0f, 50.0f));
+	ico->SetTransform(Matrix4::Translation(Vector3(0.0f, -300.0f, 0.0f)));
+	sun->AddChild(ico);
+
 }
 
 SolarSystem::~SolarSystem()

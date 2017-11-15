@@ -78,10 +78,20 @@ void main(void)
 	float f = 1000.0;
 	float n = 0.1;
 	float shadowDist = (2 * n) / (f + n - (texture(shadowTex, incident).x) * (f - n));
+
 	if (dist > shadowDist)
 	{
 		shadow = 0.0;
 	}
+	float test = dist - (shadowDist * 1000.0f);
+
+	fragColour = vec4(test / 1000.0f,test / 1000.0f,test / 1000.0f,1);
+
+
+	float test2 = texture(shadowTex, incident).x;
+	fragColour = vec4(shadowDist,shadowDist,shadowDist,1);
+
+	return;
 
 	lambert *= shadow;
 

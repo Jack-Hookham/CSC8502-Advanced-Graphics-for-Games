@@ -34,9 +34,9 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 4, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 5, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 	glGenFramebuffers(1, &shadowFBO);
 
@@ -216,6 +216,11 @@ void Renderer::DrawSkybox()
 	glDepthMask(GL_FALSE);
 	SetCurrentShader(skyboxShader);
 
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 6);
+
+	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, spaceMap);
+
 	UpdateShaderMatrices();
 	quad->Draw();
 
@@ -242,13 +247,25 @@ void Renderer::DrawShadowScene()
 	UpdateShaderMatrices();
 
 	//DrawSkybox();
+	//https://gamedev.stackexchange.com/questions/19461/opengl-glsl-render-to-cube-map
+
+	Matrix4 rotations[6] = 
+	{
+		Matrix4::Rotation(90.0f, Vector3(0, 1, 0)),
+		Matrix4::Rotation(180.0f, Vector3(0, 1, 0)), 
+		Matrix4::Rotation(90.0f, Vector3(0, 0, 1)), 
+		Matrix4::Rotation(180.0f, Vector3(0, 0, 1)), 
+		Matrix4::Rotation(-90.0f, Vector3(1, 0, 0)),
+		Matrix4::Rotation(180.0f, Vector3(0, 1, 0))
+	};
+
 	glEnable(GL_CULL_FACE);
-	for (int face = 0; face < 1; face++)
-	{		
+	for (int face = 0; face < 6; face++)
+	{
+			viewMatrix = viewMatrix * rotations[face];
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, shadowTex, 0);
 			glClear(GL_DEPTH_BUFFER_BIT);
 			DrawNode(ss);
-			viewMatrix = viewMatrix * Matrix4::Rotation(90.f, Vector3(0, 1, 0));
 	}
 
 	glUseProgram(0);
@@ -270,7 +287,7 @@ void Renderer::DrawCombinedScene()
 	SetShaderLight(*sunLight);
 
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, shadowTex);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, shadowTex);
 
 	viewMatrix = camera->BuildViewMatrix();
 	UpdateShaderMatrices();

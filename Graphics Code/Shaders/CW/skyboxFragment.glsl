@@ -9,6 +9,7 @@ in Vertex {
 
 out vec4 fragColour;
 
-void main(void)	{
-	fragColour = texture(cubeTex, normalize(IN.normal));
+void main(void)	
+{
+	//fragColour = texture(cubeTex, normalize(IN.normal));
 }
