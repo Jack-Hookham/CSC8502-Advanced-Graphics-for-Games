@@ -249,21 +249,23 @@ void Renderer::DrawShadowScene()
 
 	Matrix4 rotations[6] = 
 	{
-		Matrix4::Rotation(90.0f, Vector3(0, 1, 0)),
-		Matrix4::Rotation(180.0f, Vector3(0, 1, 0)), 
-		Matrix4::Rotation(90.0f, Vector3(0, 0, 1)), 
-		Matrix4::Rotation(180.0f, Vector3(0, 0, 1)), 
-		Matrix4::Rotation(-90.0f, Vector3(1, 0, 0)),
-		Matrix4::Rotation(180.0f, Vector3(0, 1, 0))
+		Matrix4::Rotation(-90.0f, Vector3(0, 1, 0)),	//West
+		Matrix4::Rotation(90.0f, Vector3(0, 1, 0)),		//East
+		Matrix4::Rotation(90.0f, Vector3(1, 0, 0)),		//Down
+		Matrix4::Rotation(-90.0f, Vector3(1, 0, 0)),	//Up
+		Matrix4::Rotation(0.0f, Vector3(0, 0, 0)),		//North
+		Matrix4::Rotation(180.0f, Vector3(1, 0, 0))		//South
 	};
 
 	glEnable(GL_CULL_FACE);
 	for (int face = 0; face < 6; face++)
 	{
-			viewMatrix = viewMatrix * rotations[face];
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, shadowTex, 0);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			DrawNode(ss);
+		Matrix4 temp = viewMatrix;
+		viewMatrix = rotations[face];
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, shadowTex, 0);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		DrawNode(ss);
+		viewMatrix = temp;
 	}
 
 	glUseProgram(0);

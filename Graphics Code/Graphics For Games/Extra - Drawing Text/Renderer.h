@@ -5,7 +5,7 @@
 
 #include "../NCLGL/OGLRenderer.h"
 #include "../NCLGL/Camera.h"
-#include "textmesh.h"
+#include "TextMesh.h"
 
 class Renderer : public OGLRenderer	{
 public:

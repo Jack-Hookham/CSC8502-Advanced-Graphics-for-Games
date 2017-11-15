@@ -120,7 +120,7 @@ SolarSystem::~SolarSystem()
 void SolarSystem::Update(float msec)
 {
 	//transform = transform * Matrix4::Rotation(msec / 10.0f, Vector3(0, 1, 0));
-	float sunRotate = 0.5f;
+	float sunRotate = 1.0f;
 	float earthOrbitSpeed = 0.2f;
 	float planet2OrbitSpeed = 0.2f;
 	float planet3OrbitSpeed = 0.2f;

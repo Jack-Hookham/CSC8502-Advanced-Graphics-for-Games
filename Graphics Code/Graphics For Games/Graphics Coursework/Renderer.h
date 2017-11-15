@@ -7,7 +7,7 @@
 #include "../nclgl/Camera.h"
 #include "../nclgl/SceneNode.h"
 #include "SolarSystem.h"
-#include "textmesh.h"
+#include "TextMesh.h"
 
 #define SHADOWSIZE 2048
 
