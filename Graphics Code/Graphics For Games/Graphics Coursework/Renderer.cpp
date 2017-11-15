@@ -18,6 +18,33 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	currentShader = NULL;
 	compileShaders();
 
+	glGenTextures(1, &shadowTex);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, shadowTex);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 0, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 1, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 2, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 3, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 4, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 5, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glGenFramebuffers(1, &shadowFBO);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTex, 0);
+	glDrawBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	SetCurrentShader(solarShader);
 
 	basicFont = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
@@ -65,7 +92,6 @@ Renderer::~Renderer(void)
 	delete basicFont;
 
 	delete solarShader;
-	delete ringShader;
 	delete sunShader;
 	delete textShader;
 	delete skyboxShader;
@@ -84,6 +110,7 @@ void Renderer::UpdateScene(float msec)
 		compileShaders();
 	}
 
+	//Toggle rotation
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_T))
 	{
 		ss->setRotateObjects(!ss->getRotateObjects());
@@ -99,15 +126,15 @@ void Renderer::compileShaders()
 	solarShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
 	//Sun uses a different shader as it doesn't need lighting
 	sunShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl");
-	ringShader = new Shader(SHADERDIR"CW/ringVertex.glsl", SHADERDIR"CW/ringFragment.glsl");
 	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
+	shadowShader = new Shader(SHADERDIR"CW/shadowVert.glsl", SHADERDIR"CW/shadowFrag.glsl");
 
 	if (!solarShader->LinkProgram() ||
-		!ringShader->LinkProgram() ||
 		!textShader->LinkProgram() ||
 		!sunShader->LinkProgram() ||
-		!skyboxShader->LinkProgram())
+		!skyboxShader->LinkProgram() ||
+		!shadowShader->LinkProgram())
 	{
 		return;
 	}
@@ -121,16 +148,14 @@ void Renderer::RenderScene()
 
 	SetShaderLight(*sunLight);
 
-	UpdateShaderMatrices();
+	//UpdateShaderMatrices();
 
 	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, (float*)&textureMatrix);
 
 	//glActiveTexture(GL_TEXTURE0);
 
-	DrawSkybox();
-	DrawNode(ss);
-	glUseProgram(0);
-
+	DrawShadowScene();
+	DrawCombinedScene();
 
 	drawText();
 
@@ -196,4 +221,64 @@ void Renderer::DrawSkybox()
 
 	glUseProgram(0);
 	glDepthMask(GL_TRUE);
+}
+
+void Renderer::DrawShadowScene()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+
+	
+
+	glViewport(0, 0, SHADOWSIZE, SHADOWSIZE);
+
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+	SetCurrentShader(shadowShader);
+	projMatrix = Matrix4::Perspective(1.f, 100000.f, 1.f, 90.f);
+
+	viewMatrix.ToIdentity();// = Matrix4::BuildViewMatrix(sunLight->GetPosition(), Vector3(0, 0, 0));
+	textureMatrix = biasMatrix * (projMatrix * viewMatrix);
+
+	UpdateShaderMatrices();
+
+	//DrawSkybox();
+	glEnable(GL_CULL_FACE);
+	for (int face = 0; face < 1; face++)
+	{		
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, shadowTex, 0);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			DrawNode(ss);
+			viewMatrix = viewMatrix * Matrix4::Rotation(90.f, Vector3(0, 1, 0));
+	}
+
+	glUseProgram(0);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glViewport(0, 0, width, height);
+	glDisable(GL_CULL_FACE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::DrawCombinedScene()
+{
+	//glEnable(GL_CULL_FACE);
+	SetCurrentShader(solarShader);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex"), 2);
+	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
+
+	SetShaderLight(*sunLight);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, shadowTex);
+
+	viewMatrix = camera->BuildViewMatrix();
+	UpdateShaderMatrices();
+
+
+	DrawSkybox();
+	DrawNode(ss);
+
+	//glDisable(GL_CULL_FACE);
+	glUseProgram(0);
 }

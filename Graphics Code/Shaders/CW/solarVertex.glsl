@@ -20,6 +20,7 @@ out Vertex
 	vec3 	tangent;
 	vec3	binormal;
 	vec3 	worldPos;
+	vec4 	shadowProj;
 } OUT;
 
 void main(void)
@@ -34,6 +35,8 @@ void main(void)
 	OUT.binormal = normalize(normalMatrix * normalize(cross(normal, tangent)));
 
 	OUT.worldPos = (modelMatrix * vec4(position, 1)).xyz;
+
+	OUT.shadowProj = (textureMatrix * vec4(position + (normal * 1.5), 1));
 
 	gl_Position = (projMatrix * viewMatrix * modelMatrix) * vec4(position, 1.0);
 }

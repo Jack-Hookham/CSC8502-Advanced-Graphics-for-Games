@@ -9,6 +9,8 @@
 #include "SolarSystem.h"
 #include "textmesh.h"
 
+#define SHADOWSIZE 2048
+
 enum SceneID
 {
 	SPACE,
@@ -26,13 +28,16 @@ public:
 	virtual void UpdateScene(float msec);
 	virtual void RenderScene();
 
-	void drawText();
-	void DrawSkybox();
-
 	void setScene(SceneID n) { sceneID = n; }
 	SceneID getScene() { return sceneID; }
 
 protected:
+	void drawText();
+	void DrawSkybox();
+
+	void DrawShadowScene();
+	void DrawCombinedScene();
+
 	void compileShaders();
 
 	void DrawNode(SolarObject* n);
@@ -46,9 +51,14 @@ protected:
 	float fps = 0.0f;
 
 	Shader* solarShader;
-	Shader* ringShader;
 	Shader* sunShader;
 	Shader* skyboxShader;
+	Shader* shadowShader;
+
+	Matrix4 shadowMatrix;
+
+	GLuint shadowTex;
+	GLuint shadowFBO;
 
 	Mesh* quad;
 	GLuint spaceMap;

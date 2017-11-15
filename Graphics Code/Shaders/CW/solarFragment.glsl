@@ -2,6 +2,7 @@
 
 uniform sampler2D diffuseTex;
 uniform sampler2D bumpTex;
+uniform samplerCube shadowTex;
 uniform int useTexture;
 uniform float sphereRadius;
 
@@ -18,6 +19,7 @@ in Vertex
 	vec3 	tangent;
 	vec3 	binormal;
 	vec3 	worldPos;
+	vec4 	shadowProj;
 } IN;
 
 out vec4 fragColour;
@@ -36,22 +38,22 @@ void main(void)
 	//------------Triplanar texture mapping----------------------------------------------
 	//https://gamedevelopment.tutsplus.com/articles/use-tri-planar-texture-mapping-for-better-terrain--gamedev-13821
 
-	vec3 temp = IN.worldPos / 100;
+	vec3 worldPosScaled = IN.worldPos / 100;
 	vec3 wNorm = normalize(IN.normal);
 	vec3 blending = abs(wNorm);
 	blending = normalize(max(blending, 0.00001));
 	float b = (blending.x + blending.y + blending.z);
 	blending /= vec3(b, b, b);
 
-	vec4 xaxis = texture2D(diffuseTex, temp.yz);
-	vec4 yaxis = texture2D(diffuseTex, temp.xz);
-	vec4 zaxis = texture2D(diffuseTex, temp.xy);
+	vec4 xaxis = texture2D(diffuseTex, worldPosScaled.yz);
+	vec4 yaxis = texture2D(diffuseTex, worldPosScaled.xz);
+	vec4 zaxis = texture2D(diffuseTex, worldPosScaled.xy);
 
 	vec4 tex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 
 	fragColour = tex;
 
-	//-----------Add lighting-------------------------------------------------------
+	//-----------Add Lighting-------------------------------------------------------
 
 	//vec4 diffuse = texture(diffuseTex, IN.texCoord);
 	
@@ -66,13 +68,31 @@ void main(void)
 	
 	float rFactor = max(0.0, dot(halfDir, IN.normal));
 	float sFactor = pow(rFactor, 32.0);
+
+	//--------Shadow Stuff----------------------------------------------------------
+	float shadow = 1.0;
+	
+	//Linearize depth value 
+	//http://www.ozone3d.net/blogs/lab/20090206/how-to-linearize-the-depth-value/
+	//linearize(texture(shadowTex, incident).r);
+	float f = 1000.0;
+	float n = 0.1;
+	float shadowDist = (2 * n) / (f + n - (texture(shadowTex, incident).x) * (f - n));
+	if (dist > shadowDist)
+	{
+		shadow = 0.0;
+	}
+
+	lambert *= shadow;
+
 	vec3 colour = (diffuse.rgb * lightColour.rgb);
 	colour += (lightColour.rgb * sFactor) * 0.33;
 	
 	vec4 ambient = vec4(0.1, 0.1, 0.1, 1.0);
 
 	fragColour *= vec4((colour * atten * lambert), diffuse.a) + ambient;
-	fragColour.rgb += (diffuse.rgb * lightColour.rgb) * 0.1;
+
+	//fragColour.rgb += (diffuse.rgb * lightColour.rgb) * 0.1;
 
 	// vec4 diffuse = texture(diffuseTex, IN.texCoord);
 	// diffuse.rgb *= vec3(0.5, 0.42, 0.37);

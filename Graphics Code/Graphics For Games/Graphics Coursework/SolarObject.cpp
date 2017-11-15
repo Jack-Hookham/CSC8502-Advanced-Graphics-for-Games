@@ -39,6 +39,8 @@ void SolarObject::Update(float msec)
 		worldTransform = transform;
 	}
 
+	worldTransform = worldTransform * selfTransform;
+
 	for (vector<SolarObject*>::iterator i = children.begin(); i != children.end(); ++i)
 	{
 		(*i)->Update(msec);

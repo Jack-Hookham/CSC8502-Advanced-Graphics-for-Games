@@ -23,6 +23,8 @@ public:
 
 	void SetTransform(const Matrix4 &matrix) { transform = matrix; }
 	const Matrix4& GetTransform() const { return transform; }
+	void SetSelfTransform(const Matrix4 &matrix) { selfTransform = matrix; }
+	const Matrix4& GetSelfTransform() const { return selfTransform; }
 	Matrix4 GetWorldTransform() const { return worldTransform; }
 
 	Vector4 GetColour() const { return colour; }
@@ -67,6 +69,7 @@ protected:
 	Mesh* mesh;
 	Matrix4 worldTransform;
 	Matrix4 transform;
+	Matrix4 selfTransform;
 	Vector3 modelScale;
 	Vector4 colour;
 	std::vector<SolarObject*> children;

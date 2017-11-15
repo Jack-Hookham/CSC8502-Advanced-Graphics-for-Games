@@ -25,6 +25,7 @@ SolarSystem::SolarSystem()
 	planet->SetModelScale(Vector3(20.0f, 20.0f, 20.0f));
 	//planet->SetModelScale(Vector3(2.0f, 2.0f, 2.0f));
 	planet->SetTransform(Matrix4::Translation(Vector3(600.0f, 0.0f, 0.0f)));
+	sun->SetBoundingRadius(20.0f);
 	sun->AddChild(planet);
 	
 
@@ -32,18 +33,21 @@ SolarSystem::SolarSystem()
 	planet2->SetModelScale(Vector3(40.0f, 40.0f, 40.0f));
 	//planet2->SetModelScale(Vector3(4.0f, 4.0f, 4.0f));
 	planet2->SetTransform(Matrix4::Translation(Vector3(900.0f, 0.0f, 0.0f)));
+	sun->SetBoundingRadius(40.0f);
 	sun->AddChild(planet2);
 
 	planet3 = new SolarObject(createSphereObj(), Vector4(0.2f, 0.9f, 0.7f, 1.0f), SolarType::TYPE_PLANET);
 	planet3->SetModelScale(Vector3(50.0f, 50.0f, 50.0f));
 	//planet3->SetModelScale(Vector3(5.0f, 5.0f, 5.0f));
 	planet3->SetTransform(Matrix4::Translation(Vector3(300.0f, 0.0f, 0.0f)));
+	sun->SetBoundingRadius(50.0f);
 	sun->AddChild(planet3);
 	
 	moon = new SolarObject(createSphereObj(), Vector4(0.4f, 0.4f, 0.4f, 1.0f), SolarType::TYPE_MOON);
 	moon->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
 	//moon->SetModelScale(Vector3(1.0f, 1.0f, 1.0f));
 	moon->SetTransform(Matrix4::Translation(Vector3(70.0f, 0.0f, 0.0f)));
+	sun->SetBoundingRadius(10.0f);
 	planet->AddChild(moon);
 
 	//planet->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
@@ -59,9 +63,9 @@ void SolarSystem::Update(float msec)
 {
 	//transform = transform * Matrix4::Rotation(msec / 10.0f, Vector3(0, 1, 0));
 	float sunRotate = 1.0f;
-	float earthOrbitSpeed = 0.5f;
-	float planet2OrbitSpeed = 0.4f;
-	float planet3OrbitSpeed = 0.7f;
+	float earthOrbitSpeed = 0.2f;
+	float planet2OrbitSpeed = 0.2f;
+	float planet3OrbitSpeed = 0.2f;
 	float moonOrbitSpeed = 1.3f;
 
 	if (rotateObjects)

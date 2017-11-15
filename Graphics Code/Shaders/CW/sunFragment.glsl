@@ -29,20 +29,19 @@ void main(void)
 	// 	fragColour = texture(diffuseTex, IN.texCoord);
 	// }
 
-	
 	//------------Triplanar texture mapping----------------------------------------------
 	//https://gamedevelopment.tutsplus.com/articles/use-tri-planar-texture-mapping-for-better-terrain--gamedev-13821
 
-	vec3 temp = IN.worldPos / 300;
+	vec3 worldPosScaled = IN.worldPos / 300;
 	vec3 wNorm = normalize(IN.normal);
 	vec3 blending = abs(wNorm);
 	blending = normalize(max(blending, 0.00001));
 	float b = (blending.x + blending.y + blending.z);
 	blending /= vec3(b, b, b);
 
-	vec4 xaxis = texture2D(diffuseTex, temp.yz);
-	vec4 yaxis = texture2D(diffuseTex, temp.xz);
-	vec4 zaxis = texture2D(diffuseTex, temp.xy);
+	vec4 xaxis = texture2D(diffuseTex, worldPosScaled.yz);
+	vec4 yaxis = texture2D(diffuseTex, worldPosScaled.xz);
+	vec4 zaxis = texture2D(diffuseTex, worldPosScaled.xy);
 
 	vec4 tex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 
