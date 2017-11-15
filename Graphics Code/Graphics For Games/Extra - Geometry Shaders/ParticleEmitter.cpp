@@ -21,6 +21,8 @@ ParticleEmitter::ParticleEmitter(void)	{
 	numLaunchParticles	= 10;
 	largestSize			= 0;
 
+	initialDirection = Vector3(0.0f, 1.0f, 0.0f);
+
 	/*
 	Each particle is a white dot, which has an alpha fade on it,
 	so the edges fade to 0.0 alpha.
