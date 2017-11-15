@@ -46,10 +46,12 @@ _-_-_-_-_-_-_-""  ""
 #include "../../NCLGL/Mesh.h"
 #include <vector>
 
-struct Particle {
+struct Particle 
+{
 	Vector3 position;
 	Vector4 colour;
 	Vector3 direction;
+	float speed;
 };
 
 class ParticleEmitter : public Mesh	{

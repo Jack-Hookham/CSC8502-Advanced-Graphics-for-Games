@@ -93,7 +93,11 @@ void ParticleEmitter::Update(float msec)	{
 			//position by multiplying its normalised direction by the
 			//particle speed, and adding the result to the position. Easy!
 
-			p->position += p->direction*(msec*particleSpeed);
+			if (p->direction.y > -1.0f)
+			{
+				p->direction.y -= 0.02f;
+			}
+			p->position += p->direction * (msec*particleSpeed);
 
 
 			++i;	//Only update our iterator value here.
@@ -137,6 +141,8 @@ Particle* ParticleEmitter::GetFreeParticle()	{
 
 	p->direction.Normalise();	//Keep its direction normalised!
 	p->position.ToZero();
+
+	p->speed = particleSpeed;
 
 	return p;	//return the new particle :-)
 }
