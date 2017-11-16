@@ -2,7 +2,7 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 {
-	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
+	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000000.0f);
 	//SolarSystem::createSphereObj();
 	camera = new Camera();
 

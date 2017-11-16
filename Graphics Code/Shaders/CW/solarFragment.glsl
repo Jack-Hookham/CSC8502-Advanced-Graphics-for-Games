@@ -74,37 +74,39 @@ void main(void)
 	//--------Shadow Stuff----------------------------------------------------------
 	float shadow = 1.0;
 	
+	//Inverse incident so that it's taken from the light perspective rather than the object
+	vec3 invIncident = -incident;
+
 	//Linearize depth value 
 	//http://www.ozone3d.net/blogs/lab/20090206/how-to-linearize-the-depth-value/
 	//linearize(texture(shadowTex, incident).r);
-	incident = -incident;
 
-	float n = 1.0f;
-	float f = 1000000.f;
-	float z_b = texture(shadowTex, incident).x;
+	float n = 1.0;
+	float f = 1000000.0;
+	float z_b = texture(shadowTex, invIncident).x;
     float z_n = 2.0 * z_b - 1.0;
 	float shadowDist = 2.0 * n * f / (f + n - z_n * (f - n));
 
    	float A = projMatrix[2].z;
     float B = projMatrix[3].z;
-	//dist = length(lightPos - IN.worldPos - wNorm * 10.f);
-	dist -= 80.f;
-    dist  = 0.5*(-A*dist + B) / dist + 0.5;
+	dist = length(lightPos - IN.worldPos + wNorm * 10.0);
+	dist -= 80.0;
+    dist  = 0.5 * (-A * dist + B) / dist + 0.5;
 
-	shadowDist = texture(shadowTex, incident).x;
+	shadowDist = texture(shadowTex, invIncident).x;
 	if (dist > shadowDist)
 	{
 		shadow = 0.0;
 	}
 
 	//shadow = clamp((shadowDist - dist), 0, 1);
-	float test = dist - (shadowDist);
+	float test = dist - shadowDist;
 
 	//fragColour = vec4(test / 1000.0f,test / 1000.0f,test / 1000.0f,1);
 
-	shadowDist = max(dist - shadowDist, 0);
+	//shadowDist = max(dist - shadowDist, 0);
 
-	//fragColour = vec4(shadowDist/100.f, shadowDist/1000.f, shadowDist/10000.f,1);
+	//fragColour = vec4(shadowDist/100.0, shadowDist/1000.0, shadowDist/10000.0,1);
 	//return;
 
 	//fragColour = vec4(vec3(shadow), 1);

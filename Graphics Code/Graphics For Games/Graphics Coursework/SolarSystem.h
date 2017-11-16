@@ -57,4 +57,8 @@ private:
 		Vector4(0.2f, 0.9f, 0.7f, 1.0f), Vector4(0.4f, 0.4f, 0.4f, 1.0f) };
 
 	bool rotateObjects = false;
+
+	bool debugShadows = false;
+	bool shadowShapes = false;
+	float scale = 1.0f;
 };
