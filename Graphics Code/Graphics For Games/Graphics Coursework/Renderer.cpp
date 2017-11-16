@@ -34,7 +34,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 4, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 5, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
-//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
@@ -49,7 +49,9 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 	basicFont = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
 
-	projMatrix = Matrix4::Perspective(1.0f, 100000.f, (float)width / (float)height, 45.0f);
+	defaultProjMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
+	shadowMatrix = Matrix4::Perspective(1.0f, 10000.0f, 1.0f, 90.0f);
+	projMatrix = defaultProjMatrix;
 
 	camera->SetPosition(Vector3(0, 30.0f, 500.0f));
 
@@ -240,7 +242,7 @@ void Renderer::DrawShadowScene()
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
 	SetCurrentShader(shadowShader);
-	projMatrix = Matrix4::Perspective(1.0f, 100000.0f, 1.0f, 90.0f);
+	//projMatrix = Matrix4::Perspective(1.0f, 100000.0f, 1.0f, 90.0f);
 
 	viewMatrix= Matrix4::BuildViewMatrix(sunLight->GetPosition(), Vector3(0, 0, 0));
 	textureMatrix = biasMatrix * (projMatrix * viewMatrix);
@@ -275,7 +277,7 @@ void Renderer::DrawShadowScene()
 	{
 		Matrix4 temp = viewMatrix;
 		viewMatrix = rotations[face];
-		projMatrix = Matrix4::Perspective(1.f, 100000.f, 1.f, 90.f);
+		projMatrix = shadowMatrix;
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, shadowTex, 0);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		DrawNode(ss);
@@ -287,6 +289,7 @@ void Renderer::DrawShadowScene()
 	glViewport(0, 0, width, height);
 	glDisable(GL_CULL_FACE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	projMatrix = defaultProjMatrix;
 }
 
 void Renderer::DrawCombinedScene()

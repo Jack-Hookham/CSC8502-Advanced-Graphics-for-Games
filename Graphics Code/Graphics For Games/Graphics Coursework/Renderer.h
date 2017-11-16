@@ -55,6 +55,7 @@ protected:
 	Shader* skyboxShader;
 	Shader* shadowShader;
 
+	Matrix4 defaultProjMatrix;
 	Matrix4 shadowMatrix;
 
 	GLuint shadowTex;
