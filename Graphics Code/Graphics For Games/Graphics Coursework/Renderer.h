@@ -32,7 +32,7 @@ public:
 	SceneID getScene() { return sceneID; }
 
 protected:
-	void drawText();
+	void DrawInfo();
 	void DrawSkybox();
 
 	void DrawShadowScene();

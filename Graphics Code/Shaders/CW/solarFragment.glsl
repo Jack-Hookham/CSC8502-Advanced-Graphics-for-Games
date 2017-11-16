@@ -79,10 +79,11 @@ void main(void)
 
 	//Linearize depth value 
 	//http://www.ozone3d.net/blogs/lab/20090206/how-to-linearize-the-depth-value/
+	//https://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
 	//linearize(texture(shadowTex, incident).r);
 
 	float n = 1.0;
-	float f = 1000000.0;
+	float f = 10000.0;
 	float z_b = texture(shadowTex, invIncident).x;
     float z_n = 2.0 * z_b - 1.0;
 	float shadowDist = 2.0 * n * f / (f + n - z_n * (f - n));
@@ -91,7 +92,7 @@ void main(void)
     float B = projMatrix[3].z;
 	dist = length(lightPos - IN.worldPos + wNorm * 10.0);
 	dist -= 80.0;
-    dist  = 0.5 * (-A * dist + B) / dist + 0.5;
+    dist = 0.5 * (-A * dist + B) / dist + 0.5;
 
 	shadowDist = texture(shadowTex, invIncident).x;
 	if (dist > shadowDist)

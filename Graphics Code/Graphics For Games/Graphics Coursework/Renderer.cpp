@@ -2,7 +2,7 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 {
-	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000000.0f);
+	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
 	//SolarSystem::createSphereObj();
 	camera = new Camera();
 
@@ -162,12 +162,12 @@ void Renderer::RenderScene()
 	DrawShadowScene();
 	DrawCombinedScene();
 
-	drawText();
+	DrawInfo();
 
 	SwapBuffers();
 }
 
-void Renderer::drawText()
+void Renderer::DrawInfo()
 {
 	glEnable(GL_BLEND);
 
@@ -308,7 +308,6 @@ void Renderer::DrawCombinedScene()
 
 	viewMatrix = camera->BuildViewMatrix();
 	UpdateShaderMatrices();
-
 
 	DrawSkybox();
 	DrawNode(ss);
