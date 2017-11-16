@@ -22,7 +22,6 @@ in even more annoying.
 */
 
 #define OBJ_USE_NORMALS
-
 #define OBJ_USE_TANGENTS_BUMPMAPS
 //#define OBJ_FIX_TEXTURES
 

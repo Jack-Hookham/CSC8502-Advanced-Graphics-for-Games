@@ -27,12 +27,12 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 0, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 1, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 2, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 3, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 4, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 5, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 0, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 1, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 2, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 3, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 4, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 5, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
 //	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 
@@ -62,9 +62,11 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	//ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	// | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
+
 	if (!ss->getSun()->GetMesh()->GetTexture() ||
 		!ss->getPlanet()->GetMesh()->GetTexture() ||
 		!ss->getPlanet2()->GetMesh()->GetTexture() ||
+		!ss->getPlanet3()->GetMesh()->GetTexture() ||
 		!ss->getMoon()->GetMesh()->GetTexture() ||
 		!spaceMap)
 	{
@@ -77,9 +79,10 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	SetTextureRepeating(ss->getMoon()->GetMesh()->GetTexture(), true);
 	SetTextureRepeating(ss->getSun()->GetMesh()->GetTexture(), true);
 
+	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	//glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glEnable(GL_DEPTH_TEST);
 	init = true;
 }
@@ -247,14 +250,24 @@ void Renderer::DrawShadowScene()
 	//DrawSkybox();
 	//https://gamedev.stackexchange.com/questions/19461/opengl-glsl-render-to-cube-map
 
-	Matrix4 rotations[6] = 
+	//Matrix4 rotations[6] = 
+	//{
+	//	Matrix4::Rotation(-90.0f, Vector3(0, 1, 0)),	//West		-X
+	//	Matrix4::Rotation(90.0f, Vector3(0, 1, 0)),		//East		+X
+	//	Matrix4::Rotation(90.0f, Vector3(1, 0, 0)),		//Down		-Y
+	//	Matrix4::Rotation(-90.0f, Vector3(1, 0, 0)),	//Up		+Y
+	//	Matrix4::Rotation(0.0f, Vector3(0, 0, 0)),		//North		+Z
+	//	Matrix4::Rotation(180.0f, Vector3(1, 0, 0))		//South		-Z
+	//};
+
+	Matrix4 rotations[6] =
 	{
-		Matrix4::Rotation(-90.0f, Vector3(0, 1, 0)),	//West
-		Matrix4::Rotation(90.0f, Vector3(0, 1, 0)),		//East
-		Matrix4::Rotation(90.0f, Vector3(1, 0, 0)),		//Down
-		Matrix4::Rotation(-90.0f, Vector3(1, 0, 0)),	//Up
-		Matrix4::Rotation(0.0f, Vector3(0, 0, 0)),		//North
-		Matrix4::Rotation(180.0f, Vector3(1, 0, 0))		//South
+		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3( 1, 0, 0), Vector3(0, -1, 0)),	//West		+X
+		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3(-1, 0, 0), Vector3(0,- 1, 0)),	//East		-X
+		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3(0, 1, 0), Vector3(-1, 0, 0)),	//Down		-Y
+		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3(0,  -1, 0), Vector3(-1, 0, 0)),	//Up	+Y
+		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3(0, 0, 1), Vector3(0, -1, 0)),	//North		+Z
+		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3(0, 0,  -1), Vector3(0, -1, 0))	//South		-Z
 	};
 
 	glEnable(GL_CULL_FACE);
@@ -262,6 +275,7 @@ void Renderer::DrawShadowScene()
 	{
 		Matrix4 temp = viewMatrix;
 		viewMatrix = rotations[face];
+		projMatrix = Matrix4::Perspective(1.f, 100000.f, 1.f, 90.f);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, shadowTex, 0);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		DrawNode(ss);
@@ -277,7 +291,7 @@ void Renderer::DrawShadowScene()
 
 void Renderer::DrawCombinedScene()
 {
-	//glEnable(GL_CULL_FACE);
+	glDisable(GL_CULL_FACE);
 	SetCurrentShader(solarShader);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
@@ -296,6 +310,6 @@ void Renderer::DrawCombinedScene()
 	DrawSkybox();
 	DrawNode(ss);
 
-	//glDisable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 	glUseProgram(0);
 }

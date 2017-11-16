@@ -11,6 +11,8 @@ uniform vec4 lightColour;
 uniform vec3 lightPos;
 uniform float lightRadius;
 
+uniform mat4 projMatrix;
+
 in Vertex
 {
 	vec4 	colour;
@@ -75,25 +77,52 @@ void main(void)
 	//Linearize depth value 
 	//http://www.ozone3d.net/blogs/lab/20090206/how-to-linearize-the-depth-value/
 	//linearize(texture(shadowTex, incident).r);
-	float f = 1000.0;
-	float n = 0.1;
-	float shadowDist = (2 * n) / (f + n - (texture(shadowTex, incident).x) * (f - n));
+	incident = -incident;
 
+	float n = 1.0f;
+	float f = 1000000.f;
+	float z_b = texture(shadowTex, incident).x;
+    float z_n = 2.0 * z_b - 1.0;
+	float shadowDist = 2.0 * n * f / (f + n - z_n * (f - n));
+
+   	float A = projMatrix[2].z;
+    float B = projMatrix[3].z;
+	//dist = length(lightPos - IN.worldPos - wNorm * 10.f);
+	dist -= 80.f;
+    dist  = 0.5*(-A*dist + B) / dist + 0.5;
+
+	shadowDist = texture(shadowTex, incident).x;
 	if (dist > shadowDist)
 	{
 		shadow = 0.0;
 	}
-	float test = dist - (shadowDist * 1000.0f);
 
-	fragColour = vec4(test / 1000.0f,test / 1000.0f,test / 1000.0f,1);
+	//shadow = clamp((shadowDist - dist), 0, 1);
+	float test = dist - (shadowDist);
 
+	//fragColour = vec4(test / 1000.0f,test / 1000.0f,test / 1000.0f,1);
 
-	float test2 = texture(shadowTex, incident).x;
-	fragColour = vec4(shadowDist, shadowDist, shadowDist,1);
+	shadowDist = max(dist - shadowDist, 0);
 
-	return;
+	//fragColour = vec4(shadowDist/100.f, shadowDist/1000.f, shadowDist/10000.f,1);
+	//return;
+
+	//fragColour = vec4(vec3(shadow), 1);
+	//return;
 
 	lambert *= shadow;
+
+	// vec4 csDepth = (projMatrix * vec4(0, 0, dist, 1));
+	// 	float depth = csDepth.z / csDepth.w;
+
+	// 	vec4 samplerId = vec4(0);
+	// 	samplerId.xyw = incident;
+	// 	samplerId.z = depth;
+		
+	// 	shadow = texture(shadowTex, samplerId);
+	// 	fragColour = vec4(vec3(shadow), 1);
+	// 	return;
+
 
 	vec3 colour = (diffuse.rgb * lightColour.rgb);
 	colour += (lightColour.rgb * sFactor) * 0.33;

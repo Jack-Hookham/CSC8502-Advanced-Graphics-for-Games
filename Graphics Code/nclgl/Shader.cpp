@@ -106,6 +106,7 @@ GLuint Shader::GenerateShader(string from, GLenum type)
 	{
 		cout << "Compiling failed!" << endl;
 		loadFailed = true;
+		__debugbreak;
 		return 0;
 	}
 
@@ -125,6 +126,7 @@ GLuint Shader::GenerateShader(string from, GLenum type)
 		glGetInfoLogARB(shader, sizeof(error), NULL, error);
 		cout << error;
 		loadFailed = true;
+		__debugbreak;
 		return 0;
 	}
 
