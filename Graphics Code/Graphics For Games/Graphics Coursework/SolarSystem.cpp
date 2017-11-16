@@ -1,7 +1,10 @@
 #include "SolarSystem.h"
 
 SolarSystem::SolarSystem()
-{	
+{
+	debugShadows = false;
+	shadowShapes = false;
+
 	//Populate object information
 	for (int i = 0; i < NUM_NAMES; ++i)
 	{

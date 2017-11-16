@@ -49,7 +49,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 	basicFont = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
 
-	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
+	projMatrix = Matrix4::Perspective(1.0f, 100000.f, (float)width / (float)height, 45.0f);
 
 	camera->SetPosition(Vector3(0, 30.0f, 500.0f));
 
@@ -240,9 +240,9 @@ void Renderer::DrawShadowScene()
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
 	SetCurrentShader(shadowShader);
-	projMatrix = Matrix4::Perspective(1.f, 100000.f, 1.f, 90.f);
+	projMatrix = Matrix4::Perspective(1.0f, 100000.0f, 1.0f, 90.0f);
 
-	viewMatrix.ToIdentity();// = Matrix4::BuildViewMatrix(sunLight->GetPosition(), Vector3(0, 0, 0));
+	viewMatrix= Matrix4::BuildViewMatrix(sunLight->GetPosition(), Vector3(0, 0, 0));
 	textureMatrix = biasMatrix * (projMatrix * viewMatrix);
 
 	UpdateShaderMatrices();
