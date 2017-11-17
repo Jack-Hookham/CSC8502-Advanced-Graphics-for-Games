@@ -75,4 +75,14 @@ protected:
 	SceneID sceneID = SceneID::SPACE;
 
 	float mod;
+
+	Matrix4 shadowMapRotations[6] =
+	{
+		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3( 1,  0,  0), Vector3(0, -1, 0)),	//+X
+		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3(-1,  0,  0), Vector3(0, -1, 0)),	//-X
+		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3( 0,  1,  0), Vector3(-1, 0, 0)),	//+Y
+		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3( 0, -1,  0), Vector3(-1, 0, 0)),	//-Y
+		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3( 0,  0,  1), Vector3(0, -1, 0)),	//+Z
+		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3( 0,  0, -1), Vector3(0, -1, 0))	//-Z
+	};
 };

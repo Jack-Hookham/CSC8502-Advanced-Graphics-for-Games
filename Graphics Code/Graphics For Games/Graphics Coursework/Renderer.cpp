@@ -235,9 +235,9 @@ void Renderer::DrawSkybox()
 	glDepthMask(GL_FALSE);
 	SetCurrentShader(skyboxShader);
 
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 6);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 3);
 
-	glActiveTexture(GL_TEXTURE6);
+	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, spaceMap);
 
 	UpdateShaderMatrices();
@@ -267,21 +267,11 @@ void Renderer::DrawShadowScene()
 	//DrawSkybox();
 	//https://gamedev.stackexchange.com/questions/19461/opengl-glsl-render-to-cube-map
 
-	Matrix4 rotations[6] =
-	{
-		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3(1,  0,  0), Vector3(0, -1, 0)),	//+X
-		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3(-1,  0,  0), Vector3(0, -1, 0)),	//-X
-		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3( 0, 1,  0), Vector3(-1, 0, 0)),	//+Y
-		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3( 0, -1,  0), Vector3(-1, 0, 0)),	//-Y
-		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3( 0,  0, 1), Vector3(0, -1, 0)),	//+Z
-		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3( 0,  0, -1), Vector3(0, -1, 0))	//-Z
-	};
-
 	glEnable(GL_CULL_FACE);
 	for (int face = 0; face < 6; face++)
 	{
 		Matrix4 temp = viewMatrix;
-		viewMatrix = rotations[face];
+		viewMatrix = shadowMapRotations[face];
 		projMatrix = shadowMatrix;
 		textureMatrix = biasMatrix * (projMatrix * viewMatrix);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, shadowTex, 0);
