@@ -2,45 +2,42 @@
 
 SolarSystem::SolarSystem()
 {
+	initPlanets();
+
+	Mesh* sphereMesh = createSphereObj();
+
 	debugShadows = false;
 	shadowShapes = false;
 
-	//Populate object information
-	for (int i = 0; i < NUM_NAMES; ++i)
-	{
-		RenderObjects[i] = new RenderObject(createSphereObj(), objectColours[i], types[i]); 
-		RenderObjects[i]->SetModelScale(Vector3(modelScales[i], modelScales[i], modelScales[i]));
-		RenderObjects[i]->SetTransform(Matrix4::Translation(Vector3(orbitRadii[i], 0.0f, 0.0f)));
-	}
 
-	sun = new RenderObject(createSphereObj(), Vector4(0.9f, 0.7f, 0.3f, 1.0f), RenderType::TYPE_SUN);
-	sun->SetModelScale(Vector3(100.0f * scale, 100.0f * scale, 100.0f * scale));
+	sun = new RenderObject(new Mesh(*sphereMesh), Vector4(0.9f, 0.7f, 0.3f, 1.0f), RenderType::TYPE_SUN);
+	sun->SetModelScale(Vector3(300.0f * scale, 300.0f * scale, 300.0f * scale));
 	sun->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)));
 	sun->SetBoundingRadius(100.0f * scale);
 	AddChild(sun);
 
-	planet = new RenderObject(createSphereObj(), Vector4(0.2f, 0.7f, 0.9f, 1.0f), RenderType::TYPE_PLANET);
+	planet = new RenderObject(new Mesh(*sphereMesh), Vector4(0.2f, 0.7f, 0.9f, 1.0f), RenderType::TYPE_PLANET);
 	planet->SetModelScale(Vector3(20.0f * scale, 20.0f * scale, 20.0f * scale));
 	//planet->SetModelScale(Vector3(2.0f, 2.0f, 2.0f));
 	planet->SetTransform(Matrix4::Translation(Vector3(300.0f * scale, 0.0f, 0.0f)));
 	sun->SetBoundingRadius(20.0f * scale);
 	sun->AddChild(planet);
 
-	planet2 = new RenderObject(createSphereObj(), Vector4(0.2f, 0.9f, 0.7f, 1.0f), RenderType::TYPE_PLANET);
+	planet2 = new RenderObject(new Mesh(*sphereMesh), Vector4(0.2f, 0.9f, 0.7f, 1.0f), RenderType::TYPE_PLANET);
 	planet2->SetModelScale(Vector3(70.0f * scale, 70.0f * scale, 70.0f * scale));
 	//planet2->SetModelScale(Vector3(4.0f, 4.0f, 4.0f));
 	planet2->SetTransform(Matrix4::Translation(Vector3(900.0f * scale, 0.0f, 0.0f)));
 	sun->SetBoundingRadius(40.0f * scale);
 	sun->AddChild(planet2);
 
-	planet3 = new RenderObject(createSphereObj(), Vector4(0.2f, 0.9f, 0.7f, 1.0f), RenderType::TYPE_PLANET);
+	planet3 = new RenderObject(new Mesh(*sphereMesh), Vector4(0.2f, 0.9f, 0.7f, 1.0f), RenderType::TYPE_PLANET);
 	planet3->SetModelScale(Vector3(50.0f * scale, 50.0f * scale, 50.0f * scale));
 	//planet3->SetModelScale(Vector3(5.0f, 5.0f, 5.0f));
 	planet3->SetTransform(Matrix4::Translation(Vector3(600.0f * scale, 0.0f, 0.0f)));
 	sun->SetBoundingRadius(50.0f * scale);
 	sun->AddChild(planet3);
 	
-	moon = new RenderObject(createSphereObj(), Vector4(0.4f, 0.4f, 0.4f, 1.0f), RenderType::TYPE_MOON);
+	moon = new RenderObject(new Mesh(*sphereMesh), Vector4(0.4f, 0.4f, 0.4f, 1.0f), RenderType::TYPE_MOON);
 	moon->SetModelScale(Vector3(10.0f * scale, 10.0f * scale, 10.0f * scale));
 	//moon->SetModelScale(Vector3(1.0f, 1.0f, 1.0f));
 	moon->SetTransform(Matrix4::Rotation(180.0f, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(70.0f * scale, 0.0f, 0.0f)));
@@ -118,6 +115,7 @@ SolarSystem::SolarSystem()
 
 SolarSystem::~SolarSystem()
 {
+	delete sphereMesh;
 }
 
 void SolarSystem::Update(float msec)
@@ -144,9 +142,9 @@ void SolarSystem::Update(float msec)
 
 	//transform = transform * Matrix4::Rotation(msec / 10.0f, Vector3(0, 1, 0));
 	float sunRotate = 0.7f;
-	float earthOrbitSpeed = 0.05f;
-	float planet2OrbitSpeed = 0.05f;
-	float planet3OrbitSpeed = 0.05f;
+	float earthOrbitSpeed = 0.2f;
+	float planet2OrbitSpeed = 0.3f;
+	float planet3OrbitSpeed = 0.4f;
 	float moonOrbitSpeed = 1.3f;
 
 	Vector3 sunDir = Vector3(0, 1, 0);
@@ -174,7 +172,6 @@ void SolarSystem::Update(float msec)
 
 Mesh* SolarSystem::createSphereObj()
 {
-	//Tri planar mapping?
 	OBJMesh* m = new OBJMesh();
 	//m->LoadOBJMesh(MESHDIR"sphere2.obj");
 	//m->LoadOBJMesh(MESHDIR"mySphere.obj");
@@ -184,4 +181,74 @@ Mesh* SolarSystem::createSphereObj()
 	
 
 	return m;
+}
+
+void SolarSystem::initPlanets()
+{
+	planets[PlanetNames::LAVA].bodyRadius = 40.0f;
+	planets[PlanetNames::LAVA].orbitRadius = 600.0f;
+	planets[PlanetNames::LAVA].orbitSpeed = 0.2f;
+	planets[PlanetNames::LAVA].orbitSpeed = 30.0f;
+	planets[PlanetNames::LAVA].initialRotation = 30.0f;
+	planets[PlanetNames::LAVA].texture = TEXTUREDIR"earthTile2.jpg";
+	planets[PlanetNames::LAVA].moons = 0;
+
+	planets[PlanetNames::EARTH2].bodyRadius = 30.0f;
+	planets[PlanetNames::EARTH2].orbitRadius = 900.0f;
+	planets[PlanetNames::EARTH2].orbitSpeed = 30.0f;
+	planets[PlanetNames::EARTH2].orbitSpeed = 30.0f;
+	planets[PlanetNames::EARTH2].initialRotation = 30.0f;
+	planets[PlanetNames::EARTH2].texture = TEXTUREDIR"lavaPlanet2.jpg";
+	planets[PlanetNames::EARTH2].moons = 1;
+
+	planets[PlanetNames::SAND].bodyRadius = 50.0f;
+	planets[PlanetNames::SAND].orbitRadius = 1200.0f;
+	planets[PlanetNames::SAND].orbitSpeed = 30.0f;
+	planets[PlanetNames::SAND].orbitSpeed = 30.0f;
+	planets[PlanetNames::SAND].initialRotation = 30.0f;
+	planets[PlanetNames::SAND].texture = TEXTUREDIR"Barren Reds.jpg";
+	planets[PlanetNames::SAND].moons = 3;
+
+	planets[PlanetNames::ROCK].bodyRadius = 35.0f;
+	planets[PlanetNames::ROCK].orbitRadius = 1700.0f;
+	planets[PlanetNames::ROCK].orbitSpeed = 30.0f;
+	planets[PlanetNames::ROCK].orbitSpeed = 30.0f;
+	planets[PlanetNames::ROCK].initialRotation = 30.0f;
+	planets[PlanetNames::ROCK].texture = TEXTUREDIR"brick.tga";
+	planets[PlanetNames::ROCK].moons = 1;
+
+	planets[PlanetNames::ICE].bodyRadius = 70.0f;
+	planets[PlanetNames::ICE].orbitRadius = 2000.0f;
+	planets[PlanetNames::ICE].orbitSpeed = 30.0f;
+	planets[PlanetNames::ICE].orbitSpeed = 30.0f;
+	planets[PlanetNames::ICE].initialRotation = 30.0f;
+	planets[PlanetNames::ICE].texture = TEXTUREDIR"water05.jpg";
+	planets[PlanetNames::ICE].moons = 0;
+
+	planets[PlanetNames::GAS].bodyRadius = 100.0f;
+	planets[PlanetNames::GAS].orbitRadius = 2400.0f;
+	planets[PlanetNames::GAS].orbitSpeed = 30.0f;
+	planets[PlanetNames::GAS].colour.w = 0.5f;
+	planets[PlanetNames::GAS].orbitSpeed = 30.0f;
+	planets[PlanetNames::GAS].initialRotation = 30.0f;
+	planets[PlanetNames::GAS].texture = TEXTUREDIR"saturnmap.jpg";
+	planets[PlanetNames::GAS].moons = 2;
+
+
+	//Populate object information
+	for (int i = 0; i < PlanetNames::NUM_PLANETS; ++i)
+	{
+		RenderObjects[i] = new RenderObject(new Mesh(*sphereMesh), objectColours[i], types[i]);
+		RenderObjects[i]->SetModelScale(Vector3(modelScales[i], modelScales[i], modelScales[i]));
+		RenderObjects[i]->SetTransform(Matrix4::Translation(Vector3(orbitRadii[i], 0.0f, 0.0f)));
+	}
+
+	float modelScales[NUM_NAMES] = { 100.0f, 20.0f, 40.0f, 10.0f };
+	float orbitRadii[NUM_NAMES] = { 0.0f, 300.0f, 600.0f, 70.0f };
+	float orbitSpeeds[NUM_NAMES] = { 0.0f, 0.3f, 0.5f, 1.3f };
+	float rotateSpeeds[NUM_NAMES] = { 1.0f, 0.5f, 0.7f, 0.3f };
+	RenderType types[NUM_NAMES] = { RenderType::TYPE_SUN, RenderType::TYPE_PLANET, RenderType::TYPE_PLANET, RenderType::TYPE_MOON };
+
+	Vector4 objectColours[NUM_NAMES] = { Vector4(0.9f, 0.7f, 0.3f, 1.0f),  Vector4(0.2f, 0.7f, 0.9f, 1.0f),
+		Vector4(0.2f, 0.9f, 0.7f, 1.0f), Vector4(0.4f, 0.4f, 0.4f, 1.0f) };
 }

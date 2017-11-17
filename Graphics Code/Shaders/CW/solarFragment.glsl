@@ -49,7 +49,7 @@ void main(void)
 		vec4 zaxis = texture2D(diffuseTex, worldPosScaled.xy);
 
 		vec4 tex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
-		fragColour = tex;
+		fragColour = tex * nodeColour.a;
 	}
 
 	//-----------Add Lighting-------------------------------------------------------

@@ -25,30 +25,30 @@ Mesh::Mesh(void)
 	bumpTexture = 0;
 }
 
-//Mesh::Mesh(Mesh* m)
-//{
-//	for (int i = 0; i < MAX_BUFFER; ++i)
-//	{
-//		bufferObject[i] = 0;
-//	}
-//
-//	glGenVertexArrays(1, &arrayObject);
-//
-//	numVertices = m->numVertices;
-//	vertices = m->vertices;
-//	colours = m->colours;
-//	type = m->type;
-//	texture = m->texture;
-//	textureCoords = m->textureCoords;
-//
-//	indices = m->indices;
-//	numIndices = m->numIndices;
-//
-//	//Lighting
-//	normals = m->normals;
-//	tangents = m->tangents;
-//	bumpTexture = m->bumpTexture;
-//}
+Mesh::Mesh(Mesh* m)
+{
+	for (int i = 0; i < MAX_BUFFER; ++i)
+	{
+		bufferObject[i] = m->bufferObject[i];
+	}
+
+	glGenVertexArrays(1, &arrayObject);
+
+	numVertices = m->numVertices;
+	vertices = m->vertices;
+	colours = m->colours;
+	type = m->type;
+	texture = m->texture;
+	textureCoords = m->textureCoords;
+
+	indices = m->indices;
+	numIndices = m->numIndices;
+
+	//Lighting
+	normals = m->normals;
+	tangents = m->tangents;
+	bumpTexture = m->bumpTexture;
+}
 
 Mesh::~Mesh(void)
 {

@@ -3,20 +3,28 @@
 #include "../nclgl/OBJMesh.h"
 #include "RenderObject.h"
 
-enum SolarNames
+
+struct Planet
 {
-	SUN,
-	//MERCURY,
-	//VENUS,
-	EARTH,
-	//MARS,
-	//JUPITER,
-	SATURN,
-	//URANUS,
-	//NEPTUNE,
-	//PLUTO,
-	MOON,
-	NUM_NAMES
+	float bodyRadius = 10.0f;
+	float orbitRadius = 500.0f;
+	float orbitSpeed = 1.0f;
+	float rotationSpeed = 1.0f;
+	float initialRotation = 0.0f;
+	Vector4 colour = Vector4(0.0, 1.0, 1.0, 1.0);
+	std::string texture;
+	int moons = 0;
+};
+
+enum PlanetNames
+{
+	LAVA,
+	EARTH2,
+	SAND,
+	ROCK,
+	ICE,
+	GAS,
+	NUM_PLANETS
 };
 
 class SolarSystem : public RenderObject
@@ -42,21 +50,17 @@ public:
 	void setExploding(const bool value) { sunExploding = value; }
 
 private:
+	void initPlanets();
+
+	Mesh* sphereMesh;
 	RenderObject* sun;
 	RenderObject* planet;
 	RenderObject* planet2;
 	RenderObject* planet3;
 	RenderObject* moon;
 
-	RenderObject* RenderObjects[NUM_NAMES];
-	float modelScales[NUM_NAMES] = { 100.0f, 20.0f, 40.0f, 10.0f };
-	float orbitRadii[NUM_NAMES] = { 0.0f, 300.0f, 600.0f, 70.0f };
-	float orbitSpeeds[NUM_NAMES] = { 0.0f, 0.3f, 0.5f, 1.3f };
-	float rotateSpeeds[NUM_NAMES] = { 1.0f, 0.5f, 0.7f, 0.3f };
-	RenderType types[NUM_NAMES] = { RenderType::TYPE_SUN, RenderType::TYPE_PLANET, RenderType::TYPE_PLANET, RenderType::TYPE_MOON };
-
-	Vector4 objectColours[NUM_NAMES] = { Vector4(0.9f, 0.7f, 0.3f, 1.0f),  Vector4(0.2f, 0.7f, 0.9f, 1.0f), 
-		Vector4(0.2f, 0.9f, 0.7f, 1.0f), Vector4(0.4f, 0.4f, 0.4f, 1.0f) };
+	Planet planets[NUM_PLANETS];
+	std::vector<RenderObject*> RenderObjects;
 
 	bool rotateObjects = false;
 
