@@ -13,11 +13,6 @@ SolarSystem::SolarSystem()
 		RenderObjects[i]->SetTransform(Matrix4::Translation(Vector3(orbitRadii[i], 0.0f, 0.0f)));
 	}
 
-	//Optional, uncomment if you want a local origin marker!
-	//root = createSphereObj();
-	//SetMesh(root);
-
-
 	sun = new RenderObject(createSphereObj(), Vector4(0.9f, 0.7f, 0.3f, 1.0f), RenderType::TYPE_SUN);
 	sun->SetModelScale(Vector3(100.0f * scale, 100.0f * scale, 100.0f * scale));
 	sun->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)));
@@ -127,6 +122,26 @@ SolarSystem::~SolarSystem()
 
 void SolarSystem::Update(float msec)
 {
+	//Toggle rotation
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_T))
+	{
+		setRotateObjects(!getRotateObjects());
+	}
+
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E))
+	{
+		//mod = 0.0f;
+		sunExploding = !sunExploding;
+		if (sunExploding)
+		{
+			sun->GetMesh()->setType(GL_PATCHES);
+		}
+		else
+		{
+			sun->GetMesh()->setType(GL_TRIANGLES);
+		}
+	}
+
 	//transform = transform * Matrix4::Rotation(msec / 10.0f, Vector3(0, 1, 0));
 	float sunRotate = 0.7f;
 	float earthOrbitSpeed = 0.05f;

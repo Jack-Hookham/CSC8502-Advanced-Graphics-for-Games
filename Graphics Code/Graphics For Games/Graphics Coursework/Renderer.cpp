@@ -12,10 +12,6 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 		TEXTUREDIR"galaxy_down.bmp", TEXTUREDIR"galaxy_south.bmp", TEXTUREDIR"galaxy_north.bmp",
 		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
-	//spaceMap = SOIL_load_OGL_cubemap(TEXTUREDIR"rusted_west.jpg", TEXTUREDIR"rusted_east.jpg", TEXTUREDIR"rusted_up.jpg",
-	//	TEXTUREDIR"rusted_down.jpg", TEXTUREDIR"rusted_south.jpg", TEXTUREDIR"rusted_north.jpg",
-	//	SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
-
 	currentShader = NULL;
 	compileShaders();
 
@@ -81,6 +77,9 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	SetTextureRepeating(ss->getMoon()->GetMesh()->GetTexture(), true);
 	SetTextureRepeating(ss->getSun()->GetMesh()->GetTexture(), true);
 
+	root = new SceneNode();
+	root->AddChild((SceneNode*)ss);
+
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -91,7 +90,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 Renderer::~Renderer(void)
 {
-	delete ss;
+	delete root;
+
 	delete camera;
 	delete sunLight;
 	delete basicFont;
@@ -111,35 +111,16 @@ Renderer::~Renderer(void)
 void Renderer::UpdateScene(float msec)
 {
 	//mod += msec * 0.4f;
+
 	//Recompile shaders if R pressed
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_R))
 	{
 		compileShaders();
 	}
 
-	//Toggle rotation
-	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_T))
-	{
-		ss->setRotateObjects(!ss->getRotateObjects());
-	}
-
-	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E))
-	{
-		mod = 0.0f;
-		sunExploding = !sunExploding;
-		if (sunExploding)
-		{
-			ss->getSun()->GetMesh()->setType(GL_PATCHES);
-		}
-		else
-		{
-			ss->getSun()->GetMesh()->setType(GL_TRIANGLES);
-		}
-	}
-
 	camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
-	ss->Update(msec);
+	root->Update(msec);
 }
 
 void Renderer::compileShaders()
@@ -147,7 +128,8 @@ void Renderer::compileShaders()
 	solarShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
 	//Sun uses a different shader as it doesn't need lighting
 	sunShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl");
-	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
+	//textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
+	textShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
 	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
 	shadowShader = new Shader(SHADERDIR"CW/shadowVert.glsl", SHADERDIR"CW/shadowFrag.glsl");	
 	blackHoleShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl",	
@@ -198,11 +180,12 @@ void Renderer::DrawInfo()
 	SetCurrentShader(textShader);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), basicFont->texture);
 
-	//DrawText("This is orthographic text!", Vector3(0, 0, 0), 16.0f);
+	DrawText("This is orthographic text!", Vector3(0, 0, 0), 16.0f);
+	DrawText("This is perspective text!!!!", Vector3(0, 0, -1000), 64.0f, true);
 
-	//std::ostringstream oss;
-	//oss << std::fixed << std::setprecision(2) << fps;
-	//DrawText(oss.str(), Vector3(50.0f, 50.0f, 0), 16.0f);
+	std::ostringstream oss;
+	oss << std::fixed << std::setprecision(2) << fps;
+	DrawText(oss.str(), Vector3(50.0f, 50.0f, 0), 16.0f);
 
 	glUseProgram(0);
 	glDisable(GL_BLEND);
@@ -212,13 +195,12 @@ void Renderer::DrawNode(RenderObject* n)
 {
 	if (n->getType() == RenderType::TYPE_SUN)
 	{
-		if (sunExploding)
+		if (ss->getExploding())
 		{
 			SetCurrentShader(blackHoleShader);
 		}
 		else
 		{
-
 			SetCurrentShader(sunShader);
 			//SetCurrentShader(solarShader);
 		}
@@ -249,6 +231,7 @@ void Renderer::DrawNode(RenderObject* n)
 
 void Renderer::DrawSkybox()
 {
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glDepthMask(GL_FALSE);
 	SetCurrentShader(skyboxShader);
 
@@ -261,6 +244,7 @@ void Renderer::DrawSkybox()
 	quad->Draw();
 
 	glUseProgram(0);
+	glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glDepthMask(GL_TRUE);
 }
 
@@ -336,4 +320,30 @@ void Renderer::DrawCombinedScene()
 
 	glEnable(GL_CULL_FACE);
 	glUseProgram(0);
+}
+
+void Renderer::DrawText(const std::string &text, const Vector3 &position, const float size, const bool perspective) {
+	//Create a new temporary TextMesh, using our line of text and our font
+	TextMesh* mesh = new TextMesh(text, *basicFont);
+
+	//This just does simple matrix setup to render in either perspective or
+	//orthographic mode, there's nothing here that's particularly tricky.
+	if (perspective) {
+		modelMatrix = Matrix4::Translation(position) * Matrix4::Scale(Vector3(size, size, 1));
+		viewMatrix = camera->BuildViewMatrix();
+		projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
+	}
+	else {
+		//In ortho mode, we subtract the y from the height, so that a height of 0
+		//is at the top left of the screen, which is more intuitive
+		//(for me anyway...)
+		modelMatrix = Matrix4::Translation(Vector3(position.x, height - position.y, position.z)) * Matrix4::Scale(Vector3(size, size, 1));
+		viewMatrix.ToIdentity();
+		projMatrix = Matrix4::Orthographic(-1.0f, 1.0f, (float)width, 0.0f, (float)height, 0.0f);
+	}
+	//Either way, we update the matrices, and draw the mesh
+	UpdateShaderMatrices();
+	mesh->Draw();
+
+	delete mesh; //Once it's drawn, we don't need it anymore!
 }

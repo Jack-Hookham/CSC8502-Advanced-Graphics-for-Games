@@ -38,8 +38,10 @@ public:
 	const bool getRotateObjects() const { return rotateObjects; }
 	void setRotateObjects(const bool v) { rotateObjects = v; }
 
+	bool getExploding() { return sunExploding; }
+	void setExploding(const bool value) { sunExploding = value; }
+
 private:
-	Mesh* root = NULL;
 	RenderObject* sun;
 	RenderObject* planet;
 	RenderObject* planet2;
@@ -61,4 +63,6 @@ private:
 	bool debugShadows = false;
 	bool shadowShapes = false;
 	float scale = 1.0f;
+
+	bool sunExploding = false;
 };

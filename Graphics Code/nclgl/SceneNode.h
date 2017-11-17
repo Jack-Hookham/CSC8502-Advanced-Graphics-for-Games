@@ -40,6 +40,8 @@ public:
 		return children.end();
 	}
 
+	SceneNode* getChild(int i) { return children[i]; }
+
 	float GetBoundingRadius() const { return boundingRadius; }
 	void SetBoundingRadius(float f) { boundingRadius = f; }
 

@@ -76,7 +76,7 @@ void Renderer::RenderScene()	{
 	//And turn on texture unit 0
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 
-//Render function to encapsulate our font rendering!
+	//Render function to encapsulate our font rendering!
 	DrawText("This is orthographic text!", Vector3(0, 0, 0), 16.0f);
 	DrawText("This is perspective text!!!!", Vector3(0,0,-1000), 64.0f, true);
 

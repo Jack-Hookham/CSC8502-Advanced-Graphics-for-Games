@@ -31,6 +31,8 @@ public:
 	void setScene(SceneID n) { sceneID = n; }
 	SceneID getScene() { return sceneID; }
 
+	void DrawText(const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
+
 protected:
 	void DrawInfo();
 	void DrawSkybox();
@@ -42,7 +44,9 @@ protected:
 
 	void DrawNode(RenderObject* n);
 
+	SceneNode* root;
 	SolarSystem* ss;
+
 	Light* sunLight;
 
 	Camera* camera;
@@ -71,5 +75,4 @@ protected:
 	SceneID sceneID = SceneID::SPACE;
 
 	float mod;
-	bool sunExploding = false;
 };
