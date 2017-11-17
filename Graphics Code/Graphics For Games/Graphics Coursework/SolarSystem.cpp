@@ -2,8 +2,8 @@
 
 SolarSystem::SolarSystem()
 {
-	debugShadows = false;
-	shadowShapes = false;
+	debugShadows = true;
+	shadowShapes = true;
 
 	//Populate object information
 	for (int i = 0; i < NUM_NAMES; ++i)
