@@ -82,24 +82,25 @@ void main(void)
 	//https://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
 	//linearize(texture(shadowTex, incident).r);
 
-	float n = -300.0;
-	float f = -10000.0;
+	float n = 1.0;
+	float f = 100000.0f;
 	float z_b = texture(shadowTex, invIncident).x;
-    float z_n = 2.0 * z_b - 1.0;
+	float z_n = 2.0 * z_b - 1.0;
 	float shadowDist = (2.0 * n * f) / (f + n - z_n * (f - n));
 
-   	float A = projMatrix[2].z;
-    float B = projMatrix[3].z;
-	float realDistance = length(lightPos - IN.worldPos);
-	dist = length(lightPos - IN.worldPos + wNorm * 10);
-	dist -= 50.0;
-    dist = 0.5 * (-A * dist + B) / dist + 0.5;
-
-	shadowDist = texture(shadowTex, invIncident).x;
-	if (dist > shadowDist)
+	//Get the distance from light
+	
+	vec3 absVec = abs(lightPos - IN.worldPos);
+	dist = max(absVec.x, max(absVec.y, absVec.z));
+	
+	if (shadowDist < dist)
 	{
-		shadow = 0.0;
+	shadow = 0.0;
 	}
+
+	fragColour.a = 1;
+	//fragColour.xyz = vec3(shadow * lambert);
+	//return;
 
 	//shadow = clamp((shadowDist - dist), 0, 1);
 	//float test = dist - shadowDist;
