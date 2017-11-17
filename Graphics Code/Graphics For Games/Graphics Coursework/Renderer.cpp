@@ -2,6 +2,7 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 {
+	mod = 0.0f;
 	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
 	//SolarSystem::createSphereObj();
 	camera = new Camera();
@@ -84,7 +85,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	//glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glEnable(GL_DEPTH_TEST);
 	init = true;
 }
@@ -100,6 +101,7 @@ Renderer::~Renderer(void)
 	delete sunShader;
 	delete textShader;
 	delete skyboxShader;
+	delete blackHoleShader;
 	currentShader = NULL;
 
 	delete quad;
@@ -109,6 +111,7 @@ Renderer::~Renderer(void)
 
 void Renderer::UpdateScene(float msec)
 {
+	mod += msec * 0.4f;
 	//Recompile shaders if R pressed
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_R))
 	{
@@ -134,13 +137,18 @@ void Renderer::compileShaders()
 	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
 	shadowShader = new Shader(SHADERDIR"CW/shadowVert.glsl", SHADERDIR"CW/shadowFrag.glsl");	
-	blackHoleShader = new Shader("tessVert.glsl", "basicFrag.glsl",	"blackHoleGeom.glsl", "tessControl.glsl", "tessEval.glsl");
+	blackHoleShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl",	
+		SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
+
+	//blackHoleShader = new Shader(SHADERDIR"CW/tessVert.glsl", SHADERDIR"CW/basicFrag.glsl",
+	//	SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
 
 	if (!solarShader->LinkProgram() ||
 		!textShader->LinkProgram() ||
 		!sunShader->LinkProgram() ||
 		!skyboxShader->LinkProgram() ||
-		!shadowShader->LinkProgram())
+		!shadowShader->LinkProgram() ||
+		!blackHoleShader->LinkProgram())
 	{
 		return;
 	}
@@ -157,6 +165,7 @@ void Renderer::RenderScene()
 	//UpdateShaderMatrices();
 
 	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, (float*)&textureMatrix);
+	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "mod"), mod);
 
 	//glActiveTexture(GL_TEXTURE0);
 
@@ -190,7 +199,8 @@ void Renderer::DrawNode(RenderObject* n)
 {
 	if (n->getType() == RenderType::TYPE_SUN)
 	{
-		SetCurrentShader(sunShader);
+		SetCurrentShader(blackHoleShader);
+		//SetCurrentShader(sunShader);
 		//SetCurrentShader(solarShader);
 	}
 	else if (n->getType() == RenderType::TYPE_PLANET || n->getType() == RenderType::TYPE_MOON)
@@ -265,12 +275,12 @@ void Renderer::DrawShadowScene()
 
 	Matrix4 rotations[6] =
 	{
-		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3( 1, 0, 0), Vector3(0, -1, 0)),	//West		+X
-		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3(-1, 0, 0), Vector3(0,- 1, 0)),	//East		-X
-		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3(0, 1, 0), Vector3(-1, 0, 0)),	//Down		-Y
-		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3(0,  -1, 0), Vector3(-1, 0, 0)),	//Up	+Y
-		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3(0, 0, 1), Vector3(0, -1, 0)),	//North		+Z
-		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3(0, 0,  -1), Vector3(0, -1, 0))	//South		-Z
+		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3( 1,  0,  0), Vector3(0, -1, 0)),	//+X
+		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3(-1,  0,  0), Vector3(0,- 1, 0)),	//-X
+		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3( 0,  1,  0), Vector3(-1, 0, 0)),	//+Y
+		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3( 0, -1,  0), Vector3(-1, 0, 0)),	//-Y
+		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3( 0,  0,  1), Vector3(0, -1, 0)),	//+Z
+		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3( 0,  0, -1), Vector3(0, -1, 0))	//-Z
 	};
 
 	glEnable(GL_CULL_FACE);

@@ -1,4 +1,4 @@
-#version 150 core
+#version 330 core
 //sun
 uniform sampler2D diffuseTex;
 uniform sampler2D bumpTex;
@@ -44,7 +44,4 @@ void main(void)
 
 		fragColour = tex;
 	}
-
-
-
 }

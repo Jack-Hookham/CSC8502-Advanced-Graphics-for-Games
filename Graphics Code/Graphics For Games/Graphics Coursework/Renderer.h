@@ -69,4 +69,6 @@ protected:
 	Font*	basicFont;
 
 	SceneID sceneID = SceneID::SPACE;
+
+	float mod;
 };
