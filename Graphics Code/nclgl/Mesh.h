@@ -31,6 +31,9 @@ public:
 	GLuint GetBumpMap() { return bumpTexture; }
 	void GenerateNormals();
 	void BufferData();
+
+	void setType(GLuint t) { type = t; }
+	GLuint getType(GLuint t) { return type; }
 protected:
 	/*void BufferData();*/
 

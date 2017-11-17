@@ -10,13 +10,21 @@ layout (triangle_strip, max_vertices = 3) out;
 uniform float mod;
 
 in Vertex {
-	vec4 colour;
-	vec2 texCoord;
+	vec4 	colour;
+	vec2 	texCoord;
+	vec3 	normal;
+	vec3 	tangent;
+	vec3 	binormal;
+	vec3 	worldPos;
 } IN[];
 
 out Vertex {
-	vec4 colour;
-	vec2 texCoord;
+	vec4 	colour;
+	vec2 	texCoord;
+	vec3 	normal;
+	vec3 	tangent;
+	vec3 	binormal;
+	vec3 	worldPos;
 } OUT;
 
 void main()

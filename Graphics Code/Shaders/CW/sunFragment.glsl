@@ -3,6 +3,7 @@
 uniform sampler2D diffuseTex;
 uniform sampler2D bumpTex;
 uniform int useTexture;
+uniform vec4 nodeColour;
 
 uniform vec3 cameraPos;
 uniform vec4 lightColour;

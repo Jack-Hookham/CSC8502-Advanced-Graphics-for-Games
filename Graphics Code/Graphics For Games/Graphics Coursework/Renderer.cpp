@@ -63,7 +63,6 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	ss->getPlanet3()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"lavaPlanet2.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	ss->getSun()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"TileFire.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	//ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	// | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
 
 	if (!ss->getSun()->GetMesh()->GetTexture() ||
@@ -85,7 +84,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	//glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glEnable(GL_DEPTH_TEST);
 	init = true;
 }
@@ -111,7 +110,7 @@ Renderer::~Renderer(void)
 
 void Renderer::UpdateScene(float msec)
 {
-	mod += msec * 0.4f;
+	//mod += msec * 0.4f;
 	//Recompile shaders if R pressed
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_R))
 	{
@@ -122,6 +121,20 @@ void Renderer::UpdateScene(float msec)
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_T))
 	{
 		ss->setRotateObjects(!ss->getRotateObjects());
+	}
+
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E))
+	{
+		mod = 0.0f;
+		sunExploding = !sunExploding;
+		if (sunExploding)
+		{
+			ss->getSun()->GetMesh()->setType(GL_PATCHES);
+		}
+		else
+		{
+			ss->getSun()->GetMesh()->setType(GL_TRIANGLES);
+		}
 	}
 
 	camera->UpdateCamera(msec);
@@ -199,9 +212,16 @@ void Renderer::DrawNode(RenderObject* n)
 {
 	if (n->getType() == RenderType::TYPE_SUN)
 	{
-		SetCurrentShader(blackHoleShader);
-		//SetCurrentShader(sunShader);
-		//SetCurrentShader(solarShader);
+		if (sunExploding)
+		{
+			SetCurrentShader(blackHoleShader);
+		}
+		else
+		{
+
+			SetCurrentShader(sunShader);
+			//SetCurrentShader(solarShader);
+		}
 	}
 	else if (n->getType() == RenderType::TYPE_PLANET || n->getType() == RenderType::TYPE_MOON)
 	{
@@ -263,24 +283,14 @@ void Renderer::DrawShadowScene()
 	//DrawSkybox();
 	//https://gamedev.stackexchange.com/questions/19461/opengl-glsl-render-to-cube-map
 
-	//Matrix4 rotations[6] = 
-	//{
-	//	Matrix4::Rotation(-90.0f, Vector3(0, 1, 0)),	//West		-X
-	//	Matrix4::Rotation(90.0f, Vector3(0, 1, 0)),		//East		+X
-	//	Matrix4::Rotation(90.0f, Vector3(1, 0, 0)),		//Down		-Y
-	//	Matrix4::Rotation(-90.0f, Vector3(1, 0, 0)),	//Up		+Y
-	//	Matrix4::Rotation(0.0f, Vector3(0, 0, 0)),		//North		+Z
-	//	Matrix4::Rotation(180.0f, Vector3(1, 0, 0))		//South		-Z
-	//};
-
 	Matrix4 rotations[6] =
 	{
-		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3( 1,  0,  0), Vector3(0, -1, 0)),	//+X
-		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3(-1,  0,  0), Vector3(0,- 1, 0)),	//-X
-		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3( 0,  1,  0), Vector3(-1, 0, 0)),	//+Y
-		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3( 0, -1,  0), Vector3(-1, 0, 0)),	//-Y
-		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3( 0,  0,  1), Vector3(0, -1, 0)),	//+Z
-		Matrix4::BuildViewMatrix(Vector3(0,0,0), Vector3( 0,  0, -1), Vector3(0, -1, 0))	//-Z
+		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3(1,  0,  0), Vector3(0, -1, 0)),	//+X
+		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3(-1,  0,  0), Vector3(0, -1, 0)),	//-X
+		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3( 0, 1,  0), Vector3(-1, 0, 0)),	//+Y
+		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3( 0, -1,  0), Vector3(-1, 0, 0)),	//-Y
+		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3( 0,  0, 1), Vector3(0, -1, 0)),	//+Z
+		Matrix4::BuildViewMatrix(Vector3(0, 0, 0), Vector3( 0,  0, -1), Vector3(0, -1, 0))	//-Z
 	};
 
 	glEnable(GL_CULL_FACE);
@@ -289,6 +299,7 @@ void Renderer::DrawShadowScene()
 		Matrix4 temp = viewMatrix;
 		viewMatrix = rotations[face];
 		projMatrix = shadowMatrix;
+		textureMatrix = biasMatrix * (projMatrix * viewMatrix);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, shadowTex, 0);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		DrawNode(ss);

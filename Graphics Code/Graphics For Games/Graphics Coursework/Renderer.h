@@ -71,4 +71,5 @@ protected:
 	SceneID sceneID = SceneID::SPACE;
 
 	float mod;
+	bool sunExploding = false;
 };

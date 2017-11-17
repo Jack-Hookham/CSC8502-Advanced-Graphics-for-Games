@@ -5,6 +5,7 @@ uniform sampler2D bumpTex;
 uniform samplerCube shadowTex;
 uniform int useTexture;
 uniform float sphereRadius;
+uniform vec4 nodeColour;
 
 uniform vec3 cameraPos;
 uniform vec4 lightColour;
@@ -28,14 +29,7 @@ out vec4 fragColour;
 
 void main(void)
 {
-	// fragColour = IN.colour;
-	// if (useTexture > 0)
-	// {
-	// 	fragColour = texture(diffuseTex, IN.texCoord);
-	// }
-
-	//fragColour.xy = IN.texCoord;
-
+	fragColour = nodeColour;
 
 	//------------Triplanar texture mapping----------------------------------------------
 	//https://gamedevelopment.tutsplus.com/articles/use-tri-planar-texture-mapping-for-better-terrain--gamedev-13821
@@ -53,7 +47,13 @@ void main(void)
 
 	vec4 tex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 
-	fragColour = tex;
+	if (useTexture > 0)
+	{
+		fragColour = tex;
+	}
+	//fragColour.xy = IN.texCoord;
+
+
 
 	//-----------Add Lighting-------------------------------------------------------
 
@@ -82,16 +82,17 @@ void main(void)
 	//https://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
 	//linearize(texture(shadowTex, incident).r);
 
-	float n = 1.0;
-	float f = 10000.0;
+	float n = -300.0;
+	float f = -10000.0;
 	float z_b = texture(shadowTex, invIncident).x;
     float z_n = 2.0 * z_b - 1.0;
-	float shadowDist = 2.0 * n * f / (f + n - z_n * (f - n));
+	float shadowDist = (2.0 * n * f) / (f + n - z_n * (f - n));
 
    	float A = projMatrix[2].z;
     float B = projMatrix[3].z;
-	dist = length(lightPos - IN.worldPos + wNorm * 10.0);
-	dist -= 80.0;
+	float realDistance = length(lightPos - IN.worldPos);
+	dist = length(lightPos - IN.worldPos + wNorm * 10);
+	dist -= 50.0;
     dist = 0.5 * (-A * dist + B) / dist + 0.5;
 
 	shadowDist = texture(shadowTex, invIncident).x;
@@ -101,7 +102,7 @@ void main(void)
 	}
 
 	//shadow = clamp((shadowDist - dist), 0, 1);
-	float test = dist - shadowDist;
+	//float test = dist - shadowDist;
 
 	//fragColour = vec4(test / 1000.0f,test / 1000.0f,test / 1000.0f,1);
 
@@ -110,10 +111,13 @@ void main(void)
 	//fragColour = vec4(shadowDist/100.0, shadowDist/1000.0, shadowDist/10000.0,1);
 	//return;
 
+	//fragColour = vec4(vec3(realDistance/1000.0), 1);
+	//fragColour = vec4(vec3(0.5 + z_b/10.0,0,0), 1);
 	//fragColour = vec4(vec3(shadow), 1);
 	//return;
-
+	
 	lambert *= shadow;
+	fragColour *= lambert;
 
 	// vec4 csDepth = (projMatrix * vec4(0, 0, dist, 1));
 	// 	float depth = csDepth.z / csDepth.w;
@@ -126,11 +130,11 @@ void main(void)
 	// 	fragColour = vec4(vec3(shadow), 1);
 	// 	return;
 
-
 	vec3 colour = (diffuse.rgb * lightColour.rgb);
 	colour += (lightColour.rgb * sFactor) * 0.33;
 	
 	vec4 ambient = vec4(0.2, 0.2, 0.2, 1.0);
+	fragColour += ambient;
 
 	fragColour *= vec4((colour * atten * lambert), diffuse.a) + ambient;
 
