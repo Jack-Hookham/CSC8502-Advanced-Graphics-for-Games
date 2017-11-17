@@ -8,9 +8,9 @@ SolarSystem::SolarSystem()
 	//Populate object information
 	for (int i = 0; i < NUM_NAMES; ++i)
 	{
-		solarObjects[i] = new SolarObject(createSphereObj(), objectColours[i], types[i]); 
-		solarObjects[i]->SetModelScale(Vector3(modelScales[i], modelScales[i], modelScales[i]));
-		solarObjects[i]->SetTransform(Matrix4::Translation(Vector3(orbitRadii[i], 0.0f, 0.0f)));
+		RenderObjects[i] = new RenderObject(createSphereObj(), objectColours[i], types[i]); 
+		RenderObjects[i]->SetModelScale(Vector3(modelScales[i], modelScales[i], modelScales[i]));
+		RenderObjects[i]->SetTransform(Matrix4::Translation(Vector3(orbitRadii[i], 0.0f, 0.0f)));
 	}
 
 	//Optional, uncomment if you want a local origin marker!
@@ -18,35 +18,35 @@ SolarSystem::SolarSystem()
 	//SetMesh(root);
 
 
-	sun = new SolarObject(createSphereObj(), Vector4(0.9f, 0.7f, 0.3f, 1.0f), SolarType::TYPE_SUN);
+	sun = new RenderObject(createSphereObj(), Vector4(0.9f, 0.7f, 0.3f, 1.0f), RenderType::TYPE_SUN);
 	sun->SetModelScale(Vector3(100.0f * scale, 100.0f * scale, 100.0f * scale));
 	//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
 	sun->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)));
 	sun->SetBoundingRadius(100.0f * scale);
 	AddChild(sun);
 
-	planet = new SolarObject(createSphereObj(), Vector4(0.2f, 0.7f, 0.9f, 1.0f), SolarType::TYPE_PLANET);
+	planet = new RenderObject(createSphereObj(), Vector4(0.2f, 0.7f, 0.9f, 1.0f), RenderType::TYPE_PLANET);
 	planet->SetModelScale(Vector3(20.0f * scale, 20.0f * scale, 20.0f * scale));
 	//planet->SetModelScale(Vector3(2.0f, 2.0f, 2.0f));
 	planet->SetTransform(Matrix4::Translation(Vector3(600.0f * scale, 0.0f, 0.0f)));
 	sun->SetBoundingRadius(20.0f * scale);
 	sun->AddChild(planet);
 	
-	planet2 = new SolarObject(createSphereObj(), Vector4(0.2f, 0.9f, 0.7f, 1.0f), SolarType::TYPE_PLANET);
+	planet2 = new RenderObject(createSphereObj(), Vector4(0.2f, 0.9f, 0.7f, 1.0f), RenderType::TYPE_PLANET);
 	planet2->SetModelScale(Vector3(40.0f * scale, 40.0f * scale, 40.0f * scale));
 	//planet2->SetModelScale(Vector3(4.0f, 4.0f, 4.0f));
 	planet2->SetTransform(Matrix4::Translation(Vector3(900.0f * scale, 0.0f, 0.0f)));
 	sun->SetBoundingRadius(40.0f * scale);
 	sun->AddChild(planet2);
 
-	planet3 = new SolarObject(createSphereObj(), Vector4(0.2f, 0.9f, 0.7f, 1.0f), SolarType::TYPE_PLANET);
+	planet3 = new RenderObject(createSphereObj(), Vector4(0.2f, 0.9f, 0.7f, 1.0f), RenderType::TYPE_PLANET);
 	planet3->SetModelScale(Vector3(50.0f * scale, 50.0f * scale, 50.0f * scale));
 	//planet3->SetModelScale(Vector3(5.0f, 5.0f, 5.0f));
 	planet3->SetTransform(Matrix4::Translation(Vector3(300.0f * scale, 0.0f, 0.0f)));
 	sun->SetBoundingRadius(50.0f * scale);
 	sun->AddChild(planet3);
 	
-	moon = new SolarObject(createSphereObj(), Vector4(0.4f, 0.4f, 0.4f, 1.0f), SolarType::TYPE_MOON);
+	moon = new RenderObject(createSphereObj(), Vector4(0.4f, 0.4f, 0.4f, 1.0f), RenderType::TYPE_MOON);
 	moon->SetModelScale(Vector3(10.0f * scale, 10.0f * scale, 10.0f * scale));
 	//moon->SetModelScale(Vector3(1.0f, 1.0f, 1.0f));
 	moon->SetTransform(Matrix4::Rotation(180.0f, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(70.0f * scale, 0.0f, 0.0f)));
@@ -64,57 +64,57 @@ SolarSystem::SolarSystem()
 			OBJMesh* cubeMesh = new OBJMesh();
 			cubeMesh->LoadOBJMesh(MESHDIR"cube.obj");
 
-			SolarObject* cube = new SolarObject(cubeMesh, Vector4(0.2f, 0.9f, 0.7f, 1.0f), SolarType::TYPE_PLANET);
+			RenderObject* cube = new RenderObject(cubeMesh, Vector4(0.2f, 0.9f, 0.7f, 1.0f), RenderType::TYPE_PLANET);
 			cube->SetModelScale(Vector3(50.0f, 50.0f, 50.0f));
 			cube->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 300.0f)));
 			sun->AddChild(cube);
 
 			OBJMesh* pyramidMesh = new OBJMesh();
 			pyramidMesh->LoadOBJMesh(MESHDIR"pyramid.obj");
-			SolarObject* pyramid = new SolarObject(pyramidMesh, Vector4(0.2f, 0.9f, 0.7f, 1.0f), SolarType::TYPE_PLANET);
+			RenderObject* pyramid = new RenderObject(pyramidMesh, Vector4(0.2f, 0.9f, 0.7f, 1.0f), RenderType::TYPE_PLANET);
 			pyramid->SetModelScale(Vector3(50.0f, 50.0f, 50.0f));
 			pyramid->SetTransform(Matrix4::Translation(Vector3(0.0f, 300.0f, 0.0f)));
 			sun->AddChild(pyramid);
 
 			OBJMesh* icoMesh = new OBJMesh();
 			icoMesh->LoadOBJMesh(MESHDIR"ico.obj");
-			SolarObject* ico = new SolarObject(icoMesh, Vector4(0.2f, 0.9f, 0.7f, 1.0f), SolarType::TYPE_PLANET);
+			RenderObject* ico = new RenderObject(icoMesh, Vector4(0.2f, 0.9f, 0.7f, 1.0f), RenderType::TYPE_PLANET);
 			ico->SetModelScale(Vector3(50.0f, 50.0f, 50.0f));
 			ico->SetTransform(Matrix4::Translation(Vector3(0.0f, -300.0f, 0.0f)));
 			sun->AddChild(ico);
 		}
 
-		SolarObject* planeSouth = new SolarObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), SolarType::TYPE_PLANET);
+		RenderObject* planeSouth = new RenderObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), RenderType::TYPE_PLANET);
 		planeSouth->SetModelScale(Vector3(2000.0f, 2000.0f, 1.0f));
 		//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
 		planeSouth->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 2000.0f)));
 		AddChild(planeSouth);
 
-		SolarObject* planeNorth = new SolarObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), SolarType::TYPE_PLANET);
+		RenderObject* planeNorth = new RenderObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), RenderType::TYPE_PLANET);
 		planeNorth->SetModelScale(Vector3(2000.0f, 2000.0f, 1.0f));
 		//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
 		planeNorth->SetTransform(Matrix4::Rotation(180.0f, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(0.0f, 0.0f, 2000.0f)) /* Matrix4::Rotation(180.0f, Vector3(0, 1, 0))*/);
 		AddChild(planeNorth);
 
-		SolarObject* planeEast = new SolarObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), SolarType::TYPE_PLANET);
+		RenderObject* planeEast = new RenderObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), RenderType::TYPE_PLANET);
 		planeEast->SetModelScale(Vector3(2000.0f, 2000.0f, 1.0f));
 		//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
 		planeEast->SetTransform(Matrix4::Translation(Vector3(2000.0f, 0.0f, 0.0f)) * Matrix4::Rotation(90.0f, Vector3(0, 1, 0)));
 		AddChild(planeEast);
 
-		SolarObject* planeWest = new SolarObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), SolarType::TYPE_PLANET);
+		RenderObject* planeWest = new RenderObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), RenderType::TYPE_PLANET);
 		planeWest->SetModelScale(Vector3(2000.0f, 2000.0f, 1.0f));
 		//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
 		planeWest->SetTransform(Matrix4::Rotation(180.0f, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(2000.0f, 0.0f, 0.0f)) * Matrix4::Rotation(90.0f, Vector3(0, 1, 0)));
 		AddChild(planeWest);
 
-		SolarObject* planeUp = new SolarObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), SolarType::TYPE_PLANET);
+		RenderObject* planeUp = new RenderObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), RenderType::TYPE_PLANET);
 		planeUp->SetModelScale(Vector3(500.0f, 500.0f, 1.0f));
 		//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
 		planeUp->SetTransform(Matrix4::Translation(Vector3(0.0f, 2000.0f, 0.0f)) * Matrix4::Rotation(90.0f, Vector3(1, 0, 0)));
 		AddChild(planeUp);
 
-		SolarObject* planeDown = new SolarObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), SolarType::TYPE_PLANET);
+		RenderObject* planeDown = new RenderObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), RenderType::TYPE_PLANET);
 		planeDown->SetModelScale(Vector3(500.0f, 500.0f, 1.0f));
 		//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
 		planeDown->SetTransform(Matrix4::Rotation(180.0f, Vector3(0, 0, 1)) * Matrix4::Translation(Vector3(0.0f, 2000.0f, 0.0f)) * Matrix4::Rotation(90.0f, Vector3(1, 0, 0)));
@@ -153,7 +153,7 @@ void SolarSystem::Update(float msec)
 		//	Matrix4::Rotation(-earthOrbitSpeed + moonOrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(70.0f, 0.0f, 0.0f)));
 	}
 
-	SolarObject::Update(msec);
+	RenderObject::Update(msec);
 }
 
 Mesh* SolarSystem::createSphereObj()

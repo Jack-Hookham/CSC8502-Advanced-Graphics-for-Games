@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../nclgl/OBJMesh.h"
-#include "SolarObject.h"
+#include "RenderObject.h"
 
 enum SolarNames
 {
@@ -19,7 +19,7 @@ enum SolarNames
 	NUM_NAMES
 };
 
-class SolarSystem : public SolarObject
+class SolarSystem : public RenderObject
 {
 public:
 	SolarSystem(void);
@@ -29,29 +29,29 @@ public:
 
 	Mesh* createSphereObj();
 
-	SolarObject* getSun() const { return sun; }
-	SolarObject* getPlanet() const { return planet; }
-	SolarObject* getPlanet2() const { return planet2; }
-	SolarObject* getPlanet3() const { return planet3; }
-	SolarObject* getMoon() const { return moon; }
+	RenderObject* getSun() const { return sun; }
+	RenderObject* getPlanet() const { return planet; }
+	RenderObject* getPlanet2() const { return planet2; }
+	RenderObject* getPlanet3() const { return planet3; }
+	RenderObject* getMoon() const { return moon; }
 
 	const bool getRotateObjects() const { return rotateObjects; }
 	void setRotateObjects(const bool v) { rotateObjects = v; }
 
 private:
 	Mesh* root = NULL;
-	SolarObject* sun;
-	SolarObject* planet;
-	SolarObject* planet2;
-	SolarObject* planet3;
-	SolarObject* moon;
+	RenderObject* sun;
+	RenderObject* planet;
+	RenderObject* planet2;
+	RenderObject* planet3;
+	RenderObject* moon;
 
-	SolarObject* solarObjects[NUM_NAMES];
+	RenderObject* RenderObjects[NUM_NAMES];
 	float modelScales[NUM_NAMES] = { 100.0f, 20.0f, 40.0f, 10.0f };
 	float orbitRadii[NUM_NAMES] = { 0.0f, 300.0f, 600.0f, 70.0f };
 	float orbitSpeeds[NUM_NAMES] = { 0.0f, 0.3f, 0.5f, 1.3f };
 	float rotateSpeeds[NUM_NAMES] = { 1.0f, 0.5f, 0.7f, 0.3f };
-	SolarType types[NUM_NAMES] = { SolarType::TYPE_SUN, SolarType::TYPE_PLANET, SolarType::TYPE_PLANET, SolarType::TYPE_MOON };
+	RenderType types[NUM_NAMES] = { RenderType::TYPE_SUN, RenderType::TYPE_PLANET, RenderType::TYPE_PLANET, RenderType::TYPE_MOON };
 
 	Vector4 objectColours[NUM_NAMES] = { Vector4(0.9f, 0.7f, 0.3f, 1.0f),  Vector4(0.2f, 0.7f, 0.9f, 1.0f), 
 		Vector4(0.2f, 0.9f, 0.7f, 1.0f), Vector4(0.4f, 0.4f, 0.4f, 1.0f) };

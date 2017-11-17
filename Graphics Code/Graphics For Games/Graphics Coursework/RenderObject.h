@@ -6,20 +6,19 @@
 #include "../../nclgl/Mesh.h"
 #include <vector>
 
-enum SolarType
+enum RenderType
 {
 	TYPE_NONE,
 	TYPE_SUN,
 	TYPE_PLANET,
-	TYPE_MOON,
-	TYPE_RING
+	TYPE_MOON
 };
 
-class SolarObject
+class RenderObject
 {
 public:
-	SolarObject(Mesh* m = NULL, Vector4 colour = Vector4(1, 1, 1, 1), SolarType t = SolarType::TYPE_NONE);
-	~SolarObject(void);
+	RenderObject(Mesh* m = NULL, Vector4 colour = Vector4(1, 1, 1, 1), RenderType t = RenderType::TYPE_NONE);
+	~RenderObject(void);
 
 	void SetTransform(const Matrix4 &matrix) { transform = matrix; }
 	const Matrix4& GetTransform() const { return transform; }
@@ -36,17 +35,17 @@ public:
 	Mesh* GetMesh() const { return mesh; }
 	void SetMesh(Mesh* m) { mesh = m; }
 
-	void AddChild(SolarObject* s);
+	void AddChild(RenderObject* s);
 
 	virtual void Update(float msec);
 	virtual void Draw();
 
-	std::vector<SolarObject*>::const_iterator GetChildIteratorStart()
+	std::vector<RenderObject*>::const_iterator GetChildIteratorStart()
 	{
 		return children.begin();
 	}
 
-	std::vector<SolarObject*>::const_iterator GetChildIteratorEnd()
+	std::vector<RenderObject*>::const_iterator GetChildIteratorEnd()
 	{
 		return children.end();
 	}
@@ -57,26 +56,26 @@ public:
 	float GetCameraDistance() const { return distanceFromCamera; }
 	void SetCameraDistance(float f) { distanceFromCamera = f; }
 
-	static bool CompareByCameraDistance(SolarObject* a, SolarObject* b)
+	static bool CompareByCameraDistance(RenderObject* a, RenderObject* b)
 	{
 		return (a->distanceFromCamera < b->distanceFromCamera) ? true : false;
 	}
 
-	SolarType getType() const { return type; }
+	RenderType getType() const { return type; }
 
 protected:
-	SolarObject* parent;
+	RenderObject* parent;
 	Mesh* mesh;
 	Matrix4 worldTransform;
 	Matrix4 transform;
 	Matrix4 selfTransform;
 	Vector3 modelScale;
 	Vector4 colour;
-	std::vector<SolarObject*> children;
+	std::vector<RenderObject*> children;
 
 	float distanceFromCamera;
 	float boundingRadius;
 
-	SolarType type;
+	RenderType type;
 };
 

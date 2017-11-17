@@ -1,6 +1,6 @@
-#include "SolarObject.h"
+#include "RenderObject.h"
 
-SolarObject::SolarObject(Mesh* m, Vector4 colour, SolarType t)
+RenderObject::RenderObject(Mesh* m, Vector4 colour, RenderType t)
 {
 	type = t;
 	this->mesh = m;
@@ -11,7 +11,7 @@ SolarObject::SolarObject(Mesh* m, Vector4 colour, SolarType t)
 	distanceFromCamera = 0.0f;
 }
 
-SolarObject::~SolarObject(void)
+RenderObject::~RenderObject(void)
 {
 	delete mesh;
 	for (unsigned int i = 0; i < children.size(); ++i)
@@ -20,13 +20,13 @@ SolarObject::~SolarObject(void)
 	}
 }
 
-void SolarObject::AddChild(SolarObject* s)
+void RenderObject::AddChild(RenderObject* s)
 {
 	children.push_back(s);
 	s->parent = this;
 }
 
-void SolarObject::Update(float msec)
+void RenderObject::Update(float msec)
 {
 	//This node has a parent...
 	if (parent)
@@ -41,13 +41,13 @@ void SolarObject::Update(float msec)
 
 	worldTransform = worldTransform * selfTransform;
 
-	for (vector<SolarObject*>::iterator i = children.begin(); i != children.end(); ++i)
+	for (vector<RenderObject*>::iterator i = children.begin(); i != children.end(); ++i)
 	{
 		(*i)->Update(msec);
 	}
 }
 
-void SolarObject::Draw()
+void RenderObject::Draw()
 {
 	if (mesh)
 	{

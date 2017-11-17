@@ -73,13 +73,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SolarSystem.cpp" />
-    <ClCompile Include="SolarObject.cpp" />
+    <ClCompile Include="RenderObject.cpp" />
     <ClCompile Include="TextMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SolarSystem.h" />
-    <ClInclude Include="SolarObject.h" />
+    <ClInclude Include="RenderObject.h" />
     <ClInclude Include="TextMesh.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

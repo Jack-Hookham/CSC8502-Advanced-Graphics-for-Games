@@ -40,7 +40,7 @@ protected:
 
 	void compileShaders();
 
-	void DrawNode(SolarObject* n);
+	void DrawNode(RenderObject* n);
 
 	SolarSystem* ss;
 	Light* sunLight;
@@ -54,6 +54,7 @@ protected:
 	Shader* sunShader;
 	Shader* skyboxShader;
 	Shader* shadowShader;
+	Shader* blackHoleShader;
 
 	Matrix4 defaultProjMatrix;
 	Matrix4 shadowMatrix;

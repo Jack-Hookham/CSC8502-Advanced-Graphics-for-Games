@@ -133,7 +133,8 @@ void Renderer::compileShaders()
 	sunShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl");
 	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
-	shadowShader = new Shader(SHADERDIR"CW/shadowVert.glsl", SHADERDIR"CW/shadowFrag.glsl");
+	shadowShader = new Shader(SHADERDIR"CW/shadowVert.glsl", SHADERDIR"CW/shadowFrag.glsl");	
+	blackHoleShader = new Shader("tessVert.glsl", "basicFrag.glsl",	"blackHoleGeom.glsl", "tessControl.glsl", "tessEval.glsl");
 
 	if (!solarShader->LinkProgram() ||
 		!textShader->LinkProgram() ||
@@ -185,14 +186,14 @@ void Renderer::DrawInfo()
 	glDisable(GL_BLEND);
 }
 
-void Renderer::DrawNode(SolarObject* n)
+void Renderer::DrawNode(RenderObject* n)
 {
-	if (n->getType() == SolarType::TYPE_SUN)
+	if (n->getType() == RenderType::TYPE_SUN)
 	{
 		SetCurrentShader(sunShader);
 		//SetCurrentShader(solarShader);
 	}
-	else if (n->getType() == SolarType::TYPE_PLANET || n->getType() == SolarType::TYPE_MOON)
+	else if (n->getType() == RenderType::TYPE_PLANET || n->getType() == RenderType::TYPE_MOON)
 	{
 		SetCurrentShader(solarShader);
 	}
@@ -210,7 +211,7 @@ void Renderer::DrawNode(SolarObject* n)
 		n->Draw();
 	}
 
-	for (vector<SolarObject*>::const_iterator i = n->GetChildIteratorStart(); i != n->GetChildIteratorEnd(); ++i)
+	for (vector<RenderObject*>::const_iterator i = n->GetChildIteratorStart(); i != n->GetChildIteratorEnd(); ++i)
 	{
 		DrawNode(*i);
 	}

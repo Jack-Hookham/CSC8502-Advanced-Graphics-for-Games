@@ -27,7 +27,7 @@
     <ClCompile Include="TextMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SolarObject.cpp">
+    <ClCompile Include="RenderObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,10 +38,10 @@
     <ClInclude Include="Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SolarObject.h">
+    <ClInclude Include="TextMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextMesh.h">
+    <ClInclude Include="RenderObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
