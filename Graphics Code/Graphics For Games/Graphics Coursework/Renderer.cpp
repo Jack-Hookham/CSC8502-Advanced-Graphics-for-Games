@@ -43,8 +43,6 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	glDrawBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
-
 	basicFont = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
 
 	defaultProjMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
@@ -91,6 +89,16 @@ void Renderer::UpdateScene(float msec)
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_R))
 	{
 		compileShaders();
+	}
+
+	//Change scenes on key press
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_LEFT))
+	{
+		sceneID++;
+		if (sceneID >= SceneID::NUM_SCENES)
+		{
+			sceneID = 0;
+		}
 	}
 
 	camera->UpdateCamera(msec);

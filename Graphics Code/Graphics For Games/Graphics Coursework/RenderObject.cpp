@@ -13,11 +13,11 @@ RenderObject::RenderObject(Mesh* m, Vector4 colour, RenderType t)
 
 RenderObject::~RenderObject(void)
 {
+	delete mesh;
 	for (unsigned int i = 0; i < children.size(); ++i)
 	{
 		delete children[i];
 	}
-	delete mesh;
 }
 
 void RenderObject::AddChild(RenderObject* s)

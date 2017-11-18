@@ -28,8 +28,8 @@ public:
 	virtual void UpdateScene(float msec);
 	virtual void RenderScene();
 
-	void setScene(SceneID n) { sceneID = n; }
-	SceneID getScene() { return sceneID; }
+	void setScene(int n) { sceneID = n; }
+	int getScene() { return sceneID; }
 
 	void DrawText(const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
 
@@ -44,7 +44,7 @@ protected:
 
 	void DrawNode(RenderObject* n);
 
-	SceneID sceneID = SceneID::SPACE;
+	int sceneID = SceneID::SPACE;
 	RenderObject* currentScene;
 	SolarSystem* ss;
 
