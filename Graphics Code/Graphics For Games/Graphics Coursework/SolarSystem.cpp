@@ -100,7 +100,7 @@ void SolarSystem::Update(float msec)
 			//Rotate each moon around its planet
 			for (int j = 0; j < planets[i].moons.size(); ++j)
 			{
-				moon = planet->GetChild(j);
+				RenderObject* moon = planet->GetChild(j);
 				moon->SetTransform(moon->GetTransform() * Matrix4::Translation(Vector3(-planets[i].moons[j].orbitRadius * scale, 0.0f, 0.0f)) *
 					Matrix4::Rotation(planets[i].moons[j].orbitSpeed, sunDir) * Matrix4::Translation(Vector3(planets[i].moons[j].orbitRadius * scale, 0.0f, 0.0f)));
 			}

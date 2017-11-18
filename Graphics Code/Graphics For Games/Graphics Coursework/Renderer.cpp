@@ -4,8 +4,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 {
 	mod = 0.0f;
 	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
-	//SolarSystem::createSphereObj();
-	camera = new Camera();
+	camera = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
 
 	quad = Mesh::GenerateQuad();
 	spaceMap = SOIL_load_OGL_cubemap(TEXTUREDIR"galaxy_west.bmp", TEXTUREDIR"galaxy_east.bmp", TEXTUREDIR"galaxy_up.bmp",
@@ -42,15 +41,11 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	glDrawBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	SetCurrentShader(solarShader);
-
 	basicFont = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
 
 	defaultProjMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 	shadowMatrix = Matrix4::Perspective(1.0f, 10000.0f, 1.0f, 90.0f);
 	projMatrix = defaultProjMatrix;
-
-	camera->SetPosition(Vector3(0, 30.0f, 500.0f));
 
 	ss = new SolarSystem();
 
@@ -247,14 +242,12 @@ void Renderer::DrawShadowScene()
 	glEnable(GL_CULL_FACE);
 	for (int face = 0; face < 6; face++)
 	{
-		Matrix4 temp = viewMatrix;
 		viewMatrix = shadowMapRotations[face];
 		projMatrix = shadowMatrix;
 		textureMatrix = biasMatrix * (projMatrix * viewMatrix);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, shadowTex, 0);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		DrawNode(ss);
-		viewMatrix = temp;
 	}
 
 	glUseProgram(0);

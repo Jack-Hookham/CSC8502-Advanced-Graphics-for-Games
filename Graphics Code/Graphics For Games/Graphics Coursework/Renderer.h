@@ -56,9 +56,9 @@ protected:
 
 	Shader* solarShader;
 	Shader* sunShader;
+	Shader* blackHoleShader;
 	Shader* skyboxShader;
 	Shader* shadowShader;
-	Shader* blackHoleShader;
 
 	Matrix4 defaultProjMatrix;
 	Matrix4 shadowMatrix;

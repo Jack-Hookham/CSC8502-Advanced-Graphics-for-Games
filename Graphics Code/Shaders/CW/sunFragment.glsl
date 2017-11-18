@@ -43,6 +43,6 @@ void main(void)
 
 		vec4 tex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 
-		fragColour = tex * nodeColour.a;
+		fragColour = tex;
 	}
 }

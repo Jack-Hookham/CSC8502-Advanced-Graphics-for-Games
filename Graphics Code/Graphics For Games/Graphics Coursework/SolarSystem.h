@@ -41,7 +41,7 @@ enum PlanetNames
 class SolarSystem : public RenderObject
 {
 public:
-	SolarSystem(void);
+	SolarSystem();
 	~SolarSystem(void);
 
 	virtual void Update(float msec);
@@ -49,10 +49,6 @@ public:
 	Mesh* createSphereObj();
 
 	RenderObject* getSun() const { return sun; }
-	RenderObject* getPlanet() const { return planet; }
-	RenderObject* getPlanet2() const { return planet2; }
-	RenderObject* getPlanet3() const { return planet3; }
-	RenderObject* getMoon() const { return moon; }
 
 	const bool getRotateObjects() const { return rotateObjects; }
 	void setRotateObjects(const bool v) { rotateObjects = v; }
@@ -67,14 +63,10 @@ private:
 
 	Mesh* sphereMesh;
 	RenderObject* sun;
-	RenderObject* planet;
-	RenderObject* planet2;
-	RenderObject* planet3;
-	RenderObject* moon;
 
 	Planet planets[NUM_PLANETS];
 
-	bool rotateObjects = false;
+	bool rotateObjects = true;
 
 	float scale = 1.0f;
 
