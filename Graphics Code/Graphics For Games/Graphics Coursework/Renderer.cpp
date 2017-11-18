@@ -54,28 +54,28 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 	ss = new SolarSystem();
 
-	ss->getPlanet()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"earthTile2.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	ss->getPlanet2()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water05.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	ss->getPlanet3()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"lavaPlanet2.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	ss->getSun()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"TileFire.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	//ss->getPlanet()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"earthTile2.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	//ss->getPlanet2()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water05.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	//ss->getPlanet3()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"lavaPlanet2.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	//ss->getSun()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"TileFire.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	//ss->getMoon()->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	// | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
 
-	if (!ss->getSun()->GetMesh()->GetTexture() ||
-		!ss->getPlanet()->GetMesh()->GetTexture() ||
-		!ss->getPlanet2()->GetMesh()->GetTexture() ||
-		!ss->getPlanet3()->GetMesh()->GetTexture() ||
-		!ss->getMoon()->GetMesh()->GetTexture() ||
-		!spaceMap)
-	{
-		return;
-	}
+	//if (!ss->getSun()->GetMesh()->GetTexture() ||
+	//	!ss->getPlanet()->GetMesh()->GetTexture() ||
+	//	!ss->getPlanet2()->GetMesh()->GetTexture() ||
+	//	!ss->getPlanet3()->GetMesh()->GetTexture() ||
+	//	!ss->getMoon()->GetMesh()->GetTexture() ||
+	//	!spaceMap)
+	//{
+	//	return;
+	//}
 
-	SetTextureRepeating(ss->getPlanet()->GetMesh()->GetTexture(), true);
-	SetTextureRepeating(ss->getPlanet2()->GetMesh()->GetTexture(), true);
-	SetTextureRepeating(ss->getPlanet3()->GetMesh()->GetTexture(), true);
-	SetTextureRepeating(ss->getMoon()->GetMesh()->GetTexture(), true);
-	SetTextureRepeating(ss->getSun()->GetMesh()->GetTexture(), true);
+	//SetTextureRepeating(ss->getPlanet()->GetMesh()->GetTexture(), true);
+	//SetTextureRepeating(ss->getPlanet2()->GetMesh()->GetTexture(), true);
+	//SetTextureRepeating(ss->getPlanet3()->GetMesh()->GetTexture(), true);
+	//SetTextureRepeating(ss->getMoon()->GetMesh()->GetTexture(), true);
+	//SetTextureRepeating(ss->getSun()->GetMesh()->GetTexture(), true);
 
 	root = new SceneNode();
 	root->AddChild((SceneNode*)ss);

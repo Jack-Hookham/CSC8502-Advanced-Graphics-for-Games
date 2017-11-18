@@ -12,7 +12,7 @@ struct Planet
 	float rotationSpeed = 1.0f;
 	float initialRotation = 0.0f;
 	Vector4 colour = Vector4(0.0, 1.0, 1.0, 1.0);
-	std::string texture;
+	char* texture;
 	int moons = 0;
 };
 
@@ -52,6 +52,8 @@ public:
 private:
 	void initPlanets();
 
+	void SetTextureRepeating(GLuint target, bool state);
+
 	Mesh* sphereMesh;
 	RenderObject* sun;
 	RenderObject* planet;
@@ -60,7 +62,6 @@ private:
 	RenderObject* moon;
 
 	Planet planets[NUM_PLANETS];
-	std::vector<RenderObject*> RenderObjects;
 
 	bool rotateObjects = false;
 
