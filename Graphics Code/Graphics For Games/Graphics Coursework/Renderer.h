@@ -7,6 +7,8 @@
 #include "../nclgl/Camera.h"
 #include "../nclgl/SceneNode.h"
 #include "SolarSystem.h"
+#include "Volcano.h"
+#include "Mountains.h"
 #include "TextMesh.h"
 
 #define SHADOWSIZE 2048
@@ -34,6 +36,8 @@ public:
 	void DrawText(const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
 
 protected:
+	float sceneTimer = 0.0f;
+
 	void DrawInfo();
 	void DrawSkybox();
 
@@ -46,7 +50,11 @@ protected:
 
 	int sceneID = SceneID::SPACE;
 	RenderObject* currentScene;
+	RenderObject* scenes[SceneID::NUM_SCENES];
+
 	SolarSystem* ss;
+	Volcano* volcano;
+	Mountains* mountains;
 
 	Light* sunLight;
 
@@ -72,8 +80,6 @@ protected:
 
 	Shader* textShader; 
 	Font*	basicFont;
-
-	float mod;
 
 	Matrix4 shadowMapRotations[6] =
 	{

@@ -72,7 +72,6 @@ void SolarSystem::Update(float msec)
 
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E))
 	{
-		//mod = 0.0f;
 		sunExploding = !sunExploding;
 		if (sunExploding)
 		{

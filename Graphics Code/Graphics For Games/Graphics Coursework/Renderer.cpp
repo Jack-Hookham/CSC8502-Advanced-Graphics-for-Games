@@ -2,7 +2,6 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 {
-	mod = 0.0f;
 	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
 	camera = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
 
@@ -49,8 +48,16 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	shadowMatrix = Matrix4::Perspective(1.0f, 10000.0f, 1.0f, 90.0f);
 	projMatrix = defaultProjMatrix;
 
+
 	ss = new SolarSystem();
-	currentScene = ss;
+	volcano = new Volcano();
+	mountains = new Mountains();
+
+	scenes[SceneID::SPACE] = ss;
+	scenes[SceneID::SCENE2] = new Volcano();
+	scenes[SceneID::SCENE3] = new Mountains();
+
+	currentScene = scenes[sceneID];
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -63,7 +70,10 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 Renderer::~Renderer(void)
 {
 	currentScene = NULL;
-	delete ss;
+	for (int i = 0; i < SceneID::NUM_SCENES; ++i)
+	{
+		delete scenes[i];
+	}
 
 	delete camera;
 	delete sunLight;
@@ -83,7 +93,7 @@ Renderer::~Renderer(void)
 
 void Renderer::UpdateScene(float msec)
 {
-	//mod += msec * 0.4f;
+	sceneTimer += msec;
 
 	//Recompile shaders if R pressed
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_R))
@@ -91,14 +101,28 @@ void Renderer::UpdateScene(float msec)
 		compileShaders();
 	}
 
-	//Change scenes on key press
-	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_LEFT))
+	//Forward scene
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_RIGHT))
 	{
+		sceneTimer = 0.0f;
 		sceneID++;
 		if (sceneID >= SceneID::NUM_SCENES)
 		{
 			sceneID = 0;
 		}
+		currentScene = scenes[sceneID];
+	}
+
+	//Backward scene
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_LEFT))
+	{
+		sceneTimer = 0.0f;
+		sceneID--;
+		if (sceneID < 0)
+		{
+			sceneID = SceneID::NUM_SCENES - 1;
+		}
+		currentScene = scenes[sceneID];
 	}
 
 	camera->UpdateCamera(msec);
@@ -146,6 +170,7 @@ void Renderer::RenderScene()
 		//UpdateShaderMatrices();
 
 		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, (float*)&textureMatrix);
+		float mod = 0.0f;
 		glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "mod"), mod);
 
 		//glActiveTexture(GL_TEXTURE0);
