@@ -14,6 +14,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	currentShader = NULL;
 	compileShaders();
 
+	//Set up the shadow cube map for the solar system scene
+	//initShadowMap();
 	glGenTextures(1, &shadowTex);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, shadowTex);
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -41,6 +43,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	glDrawBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+
+
 	basicFont = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
 
 	defaultProjMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
@@ -48,9 +52,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	projMatrix = defaultProjMatrix;
 
 	ss = new SolarSystem();
-
-	root = new SceneNode();
-	root->AddChild((SceneNode*)ss);
+	currentScene = ss;
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -62,13 +64,14 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 Renderer::~Renderer(void)
 {
-	delete root;
+	currentScene = NULL;
+	delete ss;
 
 	delete camera;
 	delete sunLight;
 	delete basicFont;
 
-	delete solarShader;
+	delete satelliteShader;
 	delete sunShader;
 	delete textShader;
 	delete skyboxShader;
@@ -92,12 +95,13 @@ void Renderer::UpdateScene(float msec)
 
 	camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
-	root->Update(msec);
+	currentScene->Update(msec);
 }
 
 void Renderer::compileShaders()
 {
-	solarShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
+	//Satellite shader (planets and moons) generates light and shadows
+	satelliteShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
 	//Sun uses a different shader as it doesn't need lighting
 	sunShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl");
 	//textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
@@ -110,7 +114,7 @@ void Renderer::compileShaders()
 	//blackHoleShader = new Shader(SHADERDIR"CW/tessVert.glsl", SHADERDIR"CW/basicFrag.glsl",
 	//	SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
 
-	if (!solarShader->LinkProgram() ||
+	if (!satelliteShader->LinkProgram() ||
 		!textShader->LinkProgram() ||
 		!sunShader->LinkProgram() ||
 		!skyboxShader->LinkProgram() ||
@@ -119,7 +123,7 @@ void Renderer::compileShaders()
 	{
 		return;
 	}
-	SetCurrentShader(solarShader);
+	SetCurrentShader(satelliteShader);
 }
 
 void Renderer::RenderScene()
@@ -127,17 +131,20 @@ void Renderer::RenderScene()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	//glUseProgram(currentShader->GetProgram());
 
-	SetShaderLight(*sunLight);
+	if (sceneID == SceneID::SPACE)
+	{
+		SetShaderLight(*sunLight);
 
-	//UpdateShaderMatrices();
+		//UpdateShaderMatrices();
 
-	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, (float*)&textureMatrix);
-	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "mod"), mod);
+		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, (float*)&textureMatrix);
+		glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "mod"), mod);
 
-	//glActiveTexture(GL_TEXTURE0);
+		//glActiveTexture(GL_TEXTURE0);
 
-	DrawShadowScene();
-	DrawCombinedScene();
+		DrawShadowScene();
+		DrawCombinedScene();
+	}
 
 	DrawInfo();
 
@@ -174,12 +181,11 @@ void Renderer::DrawNode(RenderObject* n)
 		else
 		{
 			SetCurrentShader(sunShader);
-			//SetCurrentShader(solarShader);
 		}
 	}
-	else if (n->getType() == RenderType::TYPE_PLANET || n->getType() == RenderType::TYPE_MOON)
+	else if (n->getType() == RenderType::TYPE_SATELLITE)
 	{
-		SetCurrentShader(solarShader);
+		SetCurrentShader(satelliteShader);
 	}
 
 	if (n->GetMesh())
@@ -236,7 +242,6 @@ void Renderer::DrawShadowScene()
 
 	UpdateShaderMatrices();
 
-	//DrawSkybox();
 	//https://gamedev.stackexchange.com/questions/19461/opengl-glsl-render-to-cube-map
 
 	glEnable(GL_CULL_FACE);
@@ -261,7 +266,7 @@ void Renderer::DrawShadowScene()
 void Renderer::DrawCombinedScene()
 {
 	glDisable(GL_CULL_FACE);
-	SetCurrentShader(solarShader);
+	SetCurrentShader(satelliteShader);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex"), 2);

@@ -6,12 +6,12 @@
 #include "../../nclgl/Mesh.h"
 #include <vector>
 
+//Render types determine which shader is used for rendering
 enum RenderType
 {
 	TYPE_NONE,
 	TYPE_SUN,
-	TYPE_PLANET,
-	TYPE_MOON
+	TYPE_SATELLITE		//planet/moon
 };
 
 class RenderObject

@@ -5,10 +5,10 @@ SolarSystem::SolarSystem()
 	//Initialise planet data
 	initPlanets();
 
-	Mesh* sphereMesh = createSphereObj();
+	//Mesh* sphereMesh = createSphereObj();
 
 	//Populate object information
-	sun = new RenderObject(new Mesh(*sphereMesh), Vector4(0.9f, 0.7f, 0.3f, 1.0f), RenderType::TYPE_SUN);
+	sun = new RenderObject(createSphereObj(), Vector4(0.9f, 0.7f, 0.3f, 1.0f), RenderType::TYPE_SUN);
 	sun->SetModelScale(Vector3(sunRadius * scale));
 	sun->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)));
 	sun->SetBoundingRadius(sunRadius * scale);
@@ -25,7 +25,7 @@ SolarSystem::SolarSystem()
 
 	for (int i = 0; i < PlanetNames::NUM_PLANETS; ++i)
 	{
-		RenderObject* o = new RenderObject(new Mesh(*sphereMesh), planets[i].colour, RenderType::TYPE_PLANET);
+		RenderObject* o = new RenderObject(createSphereObj(), planets[i].colour, RenderType::TYPE_SATELLITE);
 		o->SetModelScale(Vector3(planets[i].bodyRadius));
 		o->SetTransform(Matrix4::Rotation(planets[i].initialRotation, Vector3(0.0f, 1.0f, 0.0f)) * Matrix4::Translation(Vector3(planets[i].orbitRadius, 0.0f, 0.0f)));
 		o->GetMesh()->SetTexture(SOIL_load_OGL_texture(planets[i].texture, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
@@ -39,7 +39,7 @@ SolarSystem::SolarSystem()
 
 		for (int j = 0; j < planets[i].moons.size(); ++j)
 		{
-			RenderObject* om = new RenderObject(new Mesh(*sphereMesh), Vector4(0.5f, 0.5f, 0.5f, 1.0f), RenderType::TYPE_MOON);
+			RenderObject* om = new RenderObject(createSphereObj(), Vector4(0.5f, 0.5f, 0.5f, 1.0f), RenderType::TYPE_SATELLITE);
 			om->SetModelScale(Vector3(planets[i].moons[j].bodyRadius));
 			om->SetTransform(Matrix4::Rotation(planets[i].moons[j].initialRotation, Vector3(0.0f, 1.0f, 0.0f)) * Matrix4::Translation(Vector3(planets[i].moons[j].orbitRadius, 0.0f, 0.0f)));
 			om->GetMesh()->SetTexture(SOIL_load_OGL_texture(planets[i].moons[j].texture, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
@@ -59,7 +59,7 @@ SolarSystem::SolarSystem()
 
 SolarSystem::~SolarSystem()
 {
-	delete sphereMesh;
+	RenderObject::~RenderObject();
 }
 
 void SolarSystem::Update(float msec)
@@ -118,7 +118,6 @@ Mesh* SolarSystem::createSphereObj()
 	//m->LoadOBJMesh(MESHDIR"sphereDLed.obj");
 	//m->LoadOBJMesh(MESHDIR"sphere.obj");
 	m->LoadOBJMesh(MESHDIR"smoothSphere.obj");
-	
 
 	return m;
 }

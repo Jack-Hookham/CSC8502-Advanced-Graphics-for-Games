@@ -11,6 +11,7 @@ CubeRobot::CubeRobot()
 	body->SetModelScale(Vector3(10, 15, 5));
 	body->SetTransform(Matrix4::Translation(Vector3(0, 35, 0)));
 	body->SetBoundingRadius(15.0f);
+	//body->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"TileFire.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	AddChild(body);
 
 	head = new SceneNode(cube, Vector4(0, 1, 0, 1));				//Green

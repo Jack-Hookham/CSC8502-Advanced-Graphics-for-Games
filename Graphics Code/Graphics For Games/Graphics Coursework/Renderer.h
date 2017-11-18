@@ -44,7 +44,8 @@ protected:
 
 	void DrawNode(RenderObject* n);
 
-	SceneNode* root;
+	SceneID sceneID = SceneID::SPACE;
+	RenderObject* currentScene;
 	SolarSystem* ss;
 
 	Light* sunLight;
@@ -54,7 +55,7 @@ protected:
 	bool showInfo = true;
 	float fps = 0.0f;
 
-	Shader* solarShader;
+	Shader* satelliteShader;
 	Shader* sunShader;
 	Shader* blackHoleShader;
 	Shader* skyboxShader;
@@ -71,8 +72,6 @@ protected:
 
 	Shader* textShader; 
 	Font*	basicFont;
-
-	SceneID sceneID = SceneID::SPACE;
 
 	float mod;
 
