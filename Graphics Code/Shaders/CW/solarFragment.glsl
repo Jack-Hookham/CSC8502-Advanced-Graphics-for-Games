@@ -49,7 +49,8 @@ void main(void)
 		vec4 zaxis = texture2D(diffuseTex, worldPosScaled.xy);
 
 		vec4 tex = xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
-		fragColour = tex * nodeColour.a;
+		fragColour = tex;
+		//fragColour *= nodeColour.a;
 	}
 
 	//-----------Add Lighting-------------------------------------------------------
@@ -91,6 +92,8 @@ void main(void)
 	float z_n = 2.0 * z_b - 1.0;
 	float shadowDist = (2.0 * n * f) / (f + n - z_n * (f - n));
 
+	float ambient = 0.15;
+
 	if (shadowDist < worldDepth)
 	{
 		shadow = 0.0;
@@ -105,13 +108,10 @@ void main(void)
 	// shadow = texture(shadowTex, shadowTc);
 	
 	lambert *= shadow;
-	fragColour *= lambert;
 
 	vec3 colour = (diffuse.rgb * lightColour.rgb);
 	colour += (lightColour.rgb * sFactor) * 0.33;
 	
-	vec4 ambient = vec4(0.2, 0.2, 0.2, 1.0);
-	fragColour += ambient;
 
-	fragColour *= vec4((colour * atten * lambert), diffuse.a) + ambient;
+	fragColour *= vec4((colour * atten * lambert) + vec3(ambient), diffuse.a);
 }

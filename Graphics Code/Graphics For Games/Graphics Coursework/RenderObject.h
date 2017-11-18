@@ -36,6 +36,7 @@ public:
 	void SetMesh(Mesh* m) { mesh = m; }
 
 	void AddChild(RenderObject* s);
+	RenderObject* GetChild(int n) { return children[n]; }
 
 	virtual void Update(float msec);
 	virtual void Draw();

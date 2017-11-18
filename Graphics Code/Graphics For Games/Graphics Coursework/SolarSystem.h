@@ -3,17 +3,27 @@
 #include "../nclgl/OBJMesh.h"
 #include "RenderObject.h"
 
+struct Moon
+{
+	float bodyRadius = 10.0f;
+	float orbitRadius = 100.0f;
+	float orbitSpeed = 1.0f;
+	float rotationSpeed = 1.0f;
+	float initialRotation = 0.0f;
+	Vector4 colour = Vector4(0.0, 1.0, 1.0, 1.0);
+	char* texture;
+};
 
 struct Planet
 {
-	float bodyRadius = 10.0f;
+	float bodyRadius = 50.0f;
 	float orbitRadius = 500.0f;
 	float orbitSpeed = 1.0f;
 	float rotationSpeed = 1.0f;
 	float initialRotation = 0.0f;
 	Vector4 colour = Vector4(0.0, 1.0, 1.0, 1.0);
 	char* texture;
-	int moons = 0;
+	std::vector<Moon> moons;
 };
 
 enum PlanetNames
@@ -21,9 +31,10 @@ enum PlanetNames
 	LAVA,
 	EARTH2,
 	SAND,
-	ROCK,
+	RED,
+	GREEN,
 	ICE,
-	GAS,
+	BLUE,
 	NUM_PLANETS
 };
 
@@ -65,9 +76,11 @@ private:
 
 	bool rotateObjects = false;
 
-	bool debugShadows = false;
-	bool shadowShapes = false;
 	float scale = 1.0f;
 
 	bool sunExploding = false;
+
+	//Sun data
+	float sunRadius = 300.0f;
+	float sunRotationSpeed = 0.7f;
 };

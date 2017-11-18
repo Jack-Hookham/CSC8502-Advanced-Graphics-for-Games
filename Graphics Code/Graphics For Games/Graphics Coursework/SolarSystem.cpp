@@ -2,24 +2,23 @@
 
 SolarSystem::SolarSystem()
 {
+	//Initialise planet data
 	initPlanets();
 
 	Mesh* sphereMesh = createSphereObj();
 
-	debugShadows = false;
-	shadowShapes = false;
-
 	//Populate object information
 	sun = new RenderObject(new Mesh(*sphereMesh), Vector4(0.9f, 0.7f, 0.3f, 1.0f), RenderType::TYPE_SUN);
-	sun->SetModelScale(Vector3(300.0f * scale));
+	sun->SetModelScale(Vector3(sunRadius * scale));
 	sun->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)));
-	sun->SetBoundingRadius(100.0f * scale);
+	sun->SetBoundingRadius(sunRadius * scale);
 	sun->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"TileFire.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
 	if (!sun->GetMesh()->GetTexture())
 	{
 		return;
 	}
+
 	SetTextureRepeating(sun->GetMesh()->GetTexture(), true);
 
 	AddChild(sun);
@@ -28,7 +27,7 @@ SolarSystem::SolarSystem()
 	{
 		RenderObject* o = new RenderObject(new Mesh(*sphereMesh), planets[i].colour, RenderType::TYPE_PLANET);
 		o->SetModelScale(Vector3(planets[i].bodyRadius));
-		o->SetTransform(Matrix4::Translation(Vector3(planets[i].orbitRadius, 0.0f, 0.0f)));
+		o->SetTransform(Matrix4::Rotation(planets[i].initialRotation, Vector3(0.0f, 1.0f, 0.0f)) * Matrix4::Translation(Vector3(planets[i].orbitRadius, 0.0f, 0.0f)));
 		o->GetMesh()->SetTexture(SOIL_load_OGL_texture(planets[i].texture, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
 		if (!o->GetMesh()->GetTexture())
@@ -38,103 +37,23 @@ SolarSystem::SolarSystem()
 
 		SetTextureRepeating(o->GetMesh()->GetTexture(), true);
 
-		sun->AddChild(o);
-	}
-
-	//planet = new RenderObject(new Mesh(*sphereMesh), Vector4(0.2f, 0.7f, 0.9f, 1.0f), RenderType::TYPE_PLANET);
-	//planet->SetModelScale(Vector3(20.0f * scale, 20.0f * scale, 20.0f * scale));
-	////planet->SetModelScale(Vector3(2.0f, 2.0f, 2.0f));
-	//planet->SetTransform(Matrix4::Translation(Vector3(300.0f * scale, 0.0f, 0.0f)));
-	//sun->SetBoundingRadius(20.0f * scale);
-	//sun->AddChild(planet);
-
-	//planet2 = new RenderObject(new Mesh(*sphereMesh), Vector4(0.2f, 0.9f, 0.7f, 1.0f), RenderType::TYPE_PLANET);
-	//planet2->SetModelScale(Vector3(70.0f * scale, 70.0f * scale, 70.0f * scale));
-	////planet2->SetModelScale(Vector3(4.0f, 4.0f, 4.0f));
-	//planet2->SetTransform(Matrix4::Translation(Vector3(900.0f * scale, 0.0f, 0.0f)));
-	//sun->SetBoundingRadius(40.0f * scale);
-	//sun->AddChild(planet2);
-
-	//planet3 = new RenderObject(new Mesh(*sphereMesh), Vector4(0.2f, 0.9f, 0.7f, 1.0f), RenderType::TYPE_PLANET);
-	//planet3->SetModelScale(Vector3(50.0f * scale, 50.0f * scale, 50.0f * scale));
-	////planet3->SetModelScale(Vector3(5.0f, 5.0f, 5.0f));
-	//planet3->SetTransform(Matrix4::Translation(Vector3(600.0f * scale, 0.0f, 0.0f)));
-	//sun->SetBoundingRadius(50.0f * scale);
-	//sun->AddChild(planet3);
-	//
-	//moon = new RenderObject(new Mesh(*sphereMesh), Vector4(0.4f, 0.4f, 0.4f, 1.0f), RenderType::TYPE_MOON);
-	//moon->SetModelScale(Vector3(10.0f * scale, 10.0f * scale, 10.0f * scale));
-	////moon->SetModelScale(Vector3(1.0f, 1.0f, 1.0f));
-	//moon->SetTransform(Matrix4::Rotation(180.0f, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(70.0f * scale, 0.0f, 0.0f)));
-	//sun->SetBoundingRadius(10.0f * scale);
-	//planet->AddChild(moon);
-
-	//planet->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	//moon->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	//sun->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"sunmap.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-
-	if (debugShadows)
-	{
-		if (shadowShapes)
+		for (int j = 0; j < planets[i].moons.size(); ++j)
 		{
-			OBJMesh* cubeMesh = new OBJMesh();
-			cubeMesh->LoadOBJMesh(MESHDIR"cube.obj");
+			RenderObject* om = new RenderObject(new Mesh(*sphereMesh), Vector4(0.5f, 0.5f, 0.5f, 1.0f), RenderType::TYPE_MOON);
+			om->SetModelScale(Vector3(planets[i].moons[j].bodyRadius));
+			om->SetTransform(Matrix4::Rotation(planets[i].moons[j].initialRotation, Vector3(0.0f, 1.0f, 0.0f)) * Matrix4::Translation(Vector3(planets[i].moons[j].orbitRadius, 0.0f, 0.0f)));
+			om->GetMesh()->SetTexture(SOIL_load_OGL_texture(planets[i].moons[j].texture, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-			RenderObject* cube = new RenderObject(cubeMesh, Vector4(0.2f, 0.9f, 0.7f, 1.0f), RenderType::TYPE_PLANET);
-			cube->SetModelScale(Vector3(50.0f, 50.0f, 50.0f));
-			cube->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 700.0f)));
-			sun->AddChild(cube);
+			if (!om->GetMesh()->GetTexture())
+			{
+				return;
+			}
 
-			OBJMesh* pyramidMesh = new OBJMesh();
-			pyramidMesh->LoadOBJMesh(MESHDIR"pyramid.obj");
-			RenderObject* pyramid = new RenderObject(pyramidMesh, Vector4(0.2f, 0.9f, 0.1f, 1.0f), RenderType::TYPE_PLANET);
-			pyramid->SetModelScale(Vector3(50.0f, 50.0f, 50.0f));
-			pyramid->SetTransform(Matrix4::Translation(Vector3(0.0f, 700.0f, 0.0f)));
-			sun->AddChild(pyramid);
+			SetTextureRepeating(om->GetMesh()->GetTexture(), true);
 
-			OBJMesh* icoMesh = new OBJMesh();
-			icoMesh->LoadOBJMesh(MESHDIR"ico.obj");
-			RenderObject* ico = new RenderObject(icoMesh, Vector4(0.9f, 0.9f, 0.7f, 1.0f), RenderType::TYPE_PLANET);
-			ico->SetModelScale(Vector3(50.0f, 50.0f, 50.0f));
-			ico->SetTransform(Matrix4::Rotation(180.0f, Vector3(1, 0, 0)) * Matrix4::Translation(Vector3(0.0f, 700.0f, 0.0f)));
-			sun->AddChild(ico);
+			o->AddChild(om);
 		}
-
-		RenderObject* planeSouth = new RenderObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), RenderType::TYPE_PLANET);
-		planeSouth->SetModelScale(Vector3(1950.0f, 1950.0f, 1.0f));
-		//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
-		planeSouth->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 2000.0f)));
-		AddChild(planeSouth);
-
-		RenderObject* planeNorth = new RenderObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), RenderType::TYPE_PLANET);
-		planeNorth->SetModelScale(Vector3(1950.0f, 1950.0f, 1.0f));
-		//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
-		planeNorth->SetTransform(Matrix4::Rotation(180.0f, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(0.0f, 0.0f, 2000.0f)) /* Matrix4::Rotation(180.0f, Vector3(0, 1, 0))*/);
-		AddChild(planeNorth);
-
-		RenderObject* planeEast = new RenderObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), RenderType::TYPE_PLANET);
-		planeEast->SetModelScale(Vector3(1950.0f, 1950.0f, 1.0f));
-		//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
-		planeEast->SetTransform(Matrix4::Translation(Vector3(2000.0f, 0.0f, 0.0f)) * Matrix4::Rotation(90.0f, Vector3(0, 1, 0)));
-		AddChild(planeEast);
-
-		RenderObject* planeWest = new RenderObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), RenderType::TYPE_PLANET);
-		planeWest->SetModelScale(Vector3(1950.0f, 1950.0f, 1.0f));
-		//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
-		planeWest->SetTransform(Matrix4::Rotation(180.0f, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(2000.0f, 0.0f, 0.0f)) * Matrix4::Rotation(90.0f, Vector3(0, 1, 0)));
-		AddChild(planeWest);
-
-		RenderObject* planeUp = new RenderObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), RenderType::TYPE_PLANET);
-		planeUp->SetModelScale(Vector3(1950.0f, 1950.0f, 1.0f));
-		//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
-		planeUp->SetTransform(Matrix4::Translation(Vector3(0.0f, 2000.0f, 0.0f)) * Matrix4::Rotation(-90.0f, Vector3(1, 0, 0)));
-		AddChild(planeUp);
-
-		RenderObject* planeDown = new RenderObject(Mesh::GenerateQuad(), Vector4(0.0f, 0.0f, 1.0f, 1.0f), RenderType::TYPE_PLANET);
-		planeDown->SetModelScale(Vector3(1950.0f, 1950.0f, 1.0f));
-		//sun->SetModelScale(Vector3(10.0f, 10.0f, 10.0f));
-		planeDown->SetTransform(Matrix4::Rotation(180.0f, Vector3(0, 0, 1)) * Matrix4::Translation(Vector3(0.0f, 2000.0f, 0.0f)) * Matrix4::Rotation(-90.0f, Vector3(1, 0, 0)));
-		AddChild(planeDown);
+		sun->AddChild(o);
 	}
 }
 
@@ -165,31 +84,27 @@ void SolarSystem::Update(float msec)
 		}
 	}
 
-	//transform = transform * Matrix4::Rotation(msec / 10.0f, Vector3(0, 1, 0));
-	float sunRotate = 0.7f;
-	float earthOrbitSpeed = 0.2f;
-	float planet2OrbitSpeed = 0.3f;
-	float planet3OrbitSpeed = 0.4f;
-	float moonOrbitSpeed = 1.3f;
-
 	Vector3 sunDir = Vector3(0, 1, 0);
 
 	if (rotateObjects)
 	{
-		sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(sunRotate, sunDir));
-		//sun->SetTransform(sun->GetTransform() * Matrix4::Translation(Vector3(10.1f, 0, 0)));
+		sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(sunRotationSpeed, sunDir));
 
-		//planet->SetTransform(planet->GetTransform() * Matrix4::Translation(Vector3(-300.0f * scale, 0.0f, 0.0f)) *
-		//	Matrix4::Rotation(-sunRotate + earthOrbitSpeed, sunDir) * Matrix4::Translation(Vector3(300.0f * scale, 0.0f, 0.0f)));
+		//Rotate each planet around the sun
+		for (int i = 0; i < NUM_PLANETS; ++i)
+		{
+			RenderObject* planet = sun->GetChild(i);
+			planet->SetTransform(planet->GetTransform() * Matrix4::Translation(Vector3(-planets[i].orbitRadius * scale, 0.0f, 0.0f)) *
+				Matrix4::Rotation(-sunRotationSpeed + planets[i].orbitSpeed, sunDir) * Matrix4::Translation(Vector3(planets[i].orbitRadius * scale, 0.0f, 0.0f)));
 
-		//planet2->SetTransform(planet2->GetTransform() * Matrix4::Translation(Vector3(-900.0f * scale, 0.0f, 0.0f)) *
-		//	Matrix4::Rotation(-sunRotate + planet2OrbitSpeed, sunDir) * Matrix4::Translation(Vector3(900.0f * scale, 0.0f, 0.0f)));
-
-		//planet3->SetTransform(planet3->GetTransform() * Matrix4::Translation(Vector3(-600.0f * scale, 0.0f, 0.0f)) *
-		//	Matrix4::Rotation(-sunRotate + planet3OrbitSpeed, sunDir) * Matrix4::Translation(Vector3(600.0f * scale, 0.0f, 0.0f)));
-
-		//moon->SetTransform(moon->GetTransform() * Matrix4::Translation(Vector3(-70.0f, 0.0f, 0.0f)) *
-		//	Matrix4::Rotation(-earthOrbitSpeed + moonOrbitSpeed, Vector3(0, 1, 0)) * Matrix4::Translation(Vector3(70.0f, 0.0f, 0.0f)));
+			//Rotate each moon around its planet
+			for (int j = 0; j < planets[i].moons.size(); ++j)
+			{
+				moon = planet->GetChild(j);
+				moon->SetTransform(moon->GetTransform() * Matrix4::Translation(Vector3(-planets[i].moons[j].orbitRadius * scale, 0.0f, 0.0f)) *
+					Matrix4::Rotation(planets[i].moons[j].orbitSpeed, sunDir) * Matrix4::Translation(Vector3(planets[i].moons[j].orbitRadius * scale, 0.0f, 0.0f)));
+			}
+		}
 	}
 
 	RenderObject::Update(msec);
@@ -210,72 +125,125 @@ Mesh* SolarSystem::createSphereObj()
 
 void SolarSystem::initPlanets()
 {
-	planets[PlanetNames::LAVA].bodyRadius = 40.0f;
-	planets[PlanetNames::LAVA].orbitRadius = 600.0f;
-	planets[PlanetNames::LAVA].orbitSpeed = 0.2f;
-	planets[PlanetNames::LAVA].orbitSpeed = 30.0f;
-	planets[PlanetNames::LAVA].initialRotation = 30.0f;
-	planets[PlanetNames::LAVA].texture = TEXTUREDIR"earthTile2.jpg";
-	planets[PlanetNames::LAVA].moons = 0;
+	int currentPlanet = PlanetNames::LAVA;
+	planets[currentPlanet].bodyRadius = 40.0f;
+	planets[currentPlanet].orbitRadius = sunRadius + 600.0f;
+	planets[currentPlanet].orbitSpeed = 0.27f;
+	planets[currentPlanet].initialRotation = 0.0f;
+	planets[currentPlanet].texture = TEXTUREDIR"lavaPlanet2.jpg";
 
-	planets[PlanetNames::EARTH2].bodyRadius = 30.0f;
-	planets[PlanetNames::EARTH2].orbitRadius = 900.0f;
-	planets[PlanetNames::EARTH2].orbitSpeed = 30.0f;
-	planets[PlanetNames::EARTH2].orbitSpeed = 30.0f;
-	planets[PlanetNames::EARTH2].initialRotation = 30.0f;
-	planets[PlanetNames::EARTH2].texture = TEXTUREDIR"lavaPlanet2.jpg";
-	planets[PlanetNames::EARTH2].moons = 1;
+	currentPlanet = PlanetNames::EARTH2;
+	planets[currentPlanet].bodyRadius = 30.0f;
+	planets[currentPlanet].orbitRadius = sunRadius + 1000.0f;
+	planets[currentPlanet].orbitSpeed = 0.24f;
+	planets[currentPlanet].initialRotation = 40.0f;
+	planets[currentPlanet].texture = TEXTUREDIR"earthTile2.jpg";
 
-	planets[PlanetNames::SAND].bodyRadius = 50.0f;
-	planets[PlanetNames::SAND].orbitRadius = 1200.0f;
-	planets[PlanetNames::SAND].orbitSpeed = 30.0f;
-	planets[PlanetNames::SAND].orbitSpeed = 30.0f;
-	planets[PlanetNames::SAND].initialRotation = 30.0f;
-	planets[PlanetNames::SAND].texture = TEXTUREDIR"Barren Reds.jpg";
-	planets[PlanetNames::SAND].moons = 3;
+	Moon moon;
+	moon.bodyRadius = 10.0f;
+	moon.orbitRadius = planets[currentPlanet].bodyRadius + 70.0f;
+	moon.orbitSpeed = 0.2f;
+	moon.initialRotation = 10.0f;
+	moon.texture = TEXTUREDIR"Barren Reds.jpg";
+	planets[currentPlanet].moons.push_back(moon);
 
-	planets[PlanetNames::ROCK].bodyRadius = 35.0f;
-	planets[PlanetNames::ROCK].orbitRadius = 1700.0f;
-	planets[PlanetNames::ROCK].orbitSpeed = 30.0f;
-	planets[PlanetNames::ROCK].orbitSpeed = 30.0f;
-	planets[PlanetNames::ROCK].initialRotation = 30.0f;
-	planets[PlanetNames::ROCK].texture = TEXTUREDIR"brick.tga";
-	planets[PlanetNames::ROCK].moons = 1;
+	currentPlanet = PlanetNames::SAND;
+	planets[currentPlanet].bodyRadius = 50.0f;
+	planets[currentPlanet].orbitRadius = sunRadius + 1700.0f;
+	planets[currentPlanet].orbitSpeed = 0.29f;
+	planets[currentPlanet].initialRotation = 30.0f;
+	planets[currentPlanet].texture = TEXTUREDIR"TileSandStone.jpg";
 
-	planets[PlanetNames::ICE].bodyRadius = 70.0f;
-	planets[PlanetNames::ICE].orbitRadius = 2000.0f;
-	planets[PlanetNames::ICE].orbitSpeed = 30.0f;
-	planets[PlanetNames::ICE].orbitSpeed = 30.0f;
-	planets[PlanetNames::ICE].initialRotation = 30.0f;
-	planets[PlanetNames::ICE].texture = TEXTUREDIR"water05.jpg";
-	planets[PlanetNames::ICE].moons = 0;
+	moon.bodyRadius = 15.0f;
+	moon.orbitRadius = planets[currentPlanet].bodyRadius + 50.0f;
+	moon.orbitSpeed = 0.22f;
+	moon.initialRotation = 10.0f;
+	moon.texture = TEXTUREDIR"Barren Reds.jpg";
+	planets[currentPlanet].moons.push_back(moon);
 
-	planets[PlanetNames::GAS].bodyRadius = 100.0f;
-	planets[PlanetNames::GAS].orbitRadius = 2400.0f;
-	planets[PlanetNames::GAS].orbitSpeed = 30.0f;
-	planets[PlanetNames::GAS].colour.w = 0.5f;
-	planets[PlanetNames::GAS].orbitSpeed = 30.0f;
-	planets[PlanetNames::GAS].initialRotation = 30.0f;
-	planets[PlanetNames::GAS].texture = TEXTUREDIR"saturnmap.jpg";
-	planets[PlanetNames::GAS].moons = 2;
+	moon.bodyRadius = 10.0f;
+	moon.orbitRadius = planets[currentPlanet].bodyRadius + 90.0f;
+	moon.orbitSpeed = 0.27f;
+	moon.initialRotation = 130.0f;
+	moon.texture = TEXTUREDIR"Barren Reds.jpg";
+	planets[currentPlanet].moons.push_back(moon);
 
+	moon.bodyRadius = 25.0f;
+	moon.orbitRadius = planets[PlanetNames::SAND].bodyRadius + 150.0f;
+	moon.orbitSpeed = 0.34f;
+	moon.initialRotation = 190.0f;
+	moon.texture = TEXTUREDIR"Barren Reds.jpg";
+	planets[PlanetNames::SAND].moons.push_back(moon);
 
-	//Populate object information
-	//for (int i = 0; i < PlanetNames::NUM_PLANETS; ++i)
-	//{
-	//	RenderObjects[i] = new RenderObject(new Mesh(*sphereMesh), objectColours[i], types[i]);
-	//	RenderObjects[i]->SetModelScale(Vector3(modelScales[i], modelScales[i], modelScales[i]));
-	//	RenderObjects[i]->SetTransform(Matrix4::Translation(Vector3(orbitRadii[i], 0.0f, 0.0f)));
-	//}
+	currentPlanet = PlanetNames::RED;
+	planets[currentPlanet].bodyRadius = 45.0f;
+	planets[currentPlanet].orbitRadius = sunRadius + 2200.0f;
+	planets[currentPlanet].orbitSpeed = 0.22f;
+	planets[currentPlanet].initialRotation = 185.0f;
+	planets[currentPlanet].texture = TEXTUREDIR"RedPlanet.jpg";
 
-	//float modelScales[NUM_NAMES] = { 100.0f, 20.0f, 40.0f, 10.0f };
-	//float orbitRadii[NUM_NAMES] = { 0.0f, 300.0f, 600.0f, 70.0f };
-	//float orbitSpeeds[NUM_NAMES] = { 0.0f, 0.3f, 0.5f, 1.3f };
-	//float rotateSpeeds[NUM_NAMES] = { 1.0f, 0.5f, 0.7f, 0.3f };
-	//RenderType types[NUM_NAMES] = { RenderType::TYPE_SUN, RenderType::TYPE_PLANET, RenderType::TYPE_PLANET, RenderType::TYPE_MOON };
+	moon.bodyRadius = 18.0f;
+	moon.orbitRadius = planets[currentPlanet].bodyRadius + 130.0f;
+	moon.orbitSpeed = 0.28f;
+	moon.initialRotation = 140.0f;
+	moon.texture = TEXTUREDIR"Barren Reds.jpg";
+	planets[currentPlanet].moons.push_back(moon);
 
-	//Vector4 objectColours[NUM_NAMES] = { Vector4(0.9f, 0.7f, 0.3f, 1.0f),  Vector4(0.2f, 0.7f, 0.9f, 1.0f),
-	//	Vector4(0.2f, 0.9f, 0.7f, 1.0f), Vector4(0.4f, 0.4f, 0.4f, 1.0f) };
+	currentPlanet = PlanetNames::GREEN;
+	planets[currentPlanet].bodyRadius = 40.0f;
+	planets[currentPlanet].orbitRadius = sunRadius + 2700.0f;
+	planets[currentPlanet].orbitSpeed = 0.23f;
+	planets[currentPlanet].initialRotation = 220.0f;
+	planets[currentPlanet].texture = TEXTUREDIR"Emerald.jpg";
+
+	moon.bodyRadius = 10.0f;
+	moon.orbitRadius = planets[currentPlanet].bodyRadius + 60.0f;
+	moon.orbitSpeed = 0.22f;
+	moon.initialRotation = 180.0f;
+	moon.texture = TEXTUREDIR"Emerald.jpg";
+	planets[currentPlanet].moons.push_back(moon);
+
+	moon.bodyRadius = 25.0f;
+	moon.orbitRadius = planets[currentPlanet].bodyRadius + 140.0f;
+	moon.orbitSpeed = 0.31f;
+	moon.initialRotation = 310.0f;
+	moon.texture = TEXTUREDIR"Emerald.jpg";
+	planets[currentPlanet].moons.push_back(moon);
+
+	currentPlanet = PlanetNames::ICE;
+	planets[currentPlanet].bodyRadius = 70.0f;
+	planets[currentPlanet].orbitRadius = sunRadius + 3300.0f;
+	planets[currentPlanet].orbitSpeed = 0.25f;
+	planets[currentPlanet].initialRotation = 200.0f;
+	planets[currentPlanet].texture = TEXTUREDIR"water05.jpg";
+
+	currentPlanet = PlanetNames::BLUE;
+	planets[currentPlanet].bodyRadius = 100.0f;
+	planets[currentPlanet].orbitRadius = sunRadius + 4000.0f;
+	planets[currentPlanet].orbitSpeed = 0.19f;
+	planets[currentPlanet].initialRotation = 180.0f;
+	planets[currentPlanet].texture = TEXTUREDIR"BluePlanet.jpg";
+
+	moon.bodyRadius = 22.0f;
+	moon.orbitRadius = planets[currentPlanet].bodyRadius + 90.0f;
+	moon.orbitSpeed = 0.27f;
+	moon.initialRotation = 160.0f;
+	moon.texture = TEXTUREDIR"Barren Reds.jpg";
+	planets[currentPlanet].moons.push_back(moon);
+
+	moon.bodyRadius = 35.0f;
+	moon.orbitRadius = planets[currentPlanet].bodyRadius + 170.0f;
+	moon.orbitSpeed = 0.23f;
+	moon.initialRotation = 340.0f;
+	moon.texture = TEXTUREDIR"Barren Reds.jpg";
+	planets[currentPlanet].moons.push_back(moon);
+
+	moon.bodyRadius = 26.0f;
+	moon.orbitRadius = planets[currentPlanet].bodyRadius + 280.0f;
+	moon.orbitSpeed = 0.19f;
+	moon.initialRotation = 80.0f;
+	moon.texture = TEXTUREDIR"water05.jpg";
+	planets[currentPlanet].moons.push_back(moon);
 }
 
 void SolarSystem::SetTextureRepeating(GLuint target, bool repeating) 
