@@ -120,9 +120,15 @@ protected:
 
 	//-----------------------Volcano Scene-----------------------------
 
+	void DrawVolcanoMap();
+
+	HeightMap* volcanoHeightMap;
+	Shader* volcanoLightShader;
+
+	Light* volcanoLight;
 
 	//-----------------------Mountains Scene---------------------------
-	void DrawHeightMap();
+	void DrawMountainMap();
 	void DrawWater();
 
 	Shader* mountainsLightShader;

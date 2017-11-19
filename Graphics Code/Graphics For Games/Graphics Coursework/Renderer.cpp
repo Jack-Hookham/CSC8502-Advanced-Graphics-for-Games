@@ -28,14 +28,11 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	currentSkyMap = skyMaps[sceneID];
 
 	quad = Mesh::GenerateQuad();
-	mountainsHeightMap = new HeightMap(HEIGHTMAPSDIR"pompeii.data", 1080, 1080, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
-
-	mountainsLight = new Light(Vector3((mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
-		mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * -60.0f), Vector4(1.0f, 0.7f, 0.4f, 1),
-		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 100000.0f);
 
 	quad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	quad->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"waterBumpMap1.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+
+	mountainsHeightMap = new HeightMap(HEIGHTMAPSDIR"grandCanyon.data", 1080, 1080, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
 	mountainsHeightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	mountainsHeightMap->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
@@ -51,8 +48,30 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	SetTextureRepeating(mountainsHeightMap->GetTexture(), true);
 	SetTextureRepeating(mountainsHeightMap->GetBumpMap(), true);
 
+	mountainsLight = new Light(Vector3((mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
+		mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * -60.0f), Vector4(1.0f, 0.7f, 0.4f, 1),
+		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 100000.0f);
+
+	volcanoHeightMap = new HeightMap(HEIGHTMAPSDIR"pompeii.data", 1080, 1080, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
+	volcanoHeightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	volcanoHeightMap->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+
+	if (!volcanoHeightMap->GetTexture() ||
+		!volcanoHeightMap->GetBumpMap())
+	{
+		return;
+	}
+
+	SetTextureRepeating(volcanoHeightMap->GetTexture(), true);
+	SetTextureRepeating(volcanoHeightMap->GetBumpMap(), true);
+
+	volcanoLight = new Light(Vector3((mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
+		mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * -60.0f), Vector4(1.0f, 0.7f, 0.4f, 1),
+		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 100000.0f);
+
 	cameras[SceneID::SOLAR_SCENE] = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
-	cameras[SceneID::VOLCANO_SCENE] = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
+	cameras[SceneID::VOLCANO_SCENE] = new Camera(0.0f, 0.0f, Vector3(volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 2.0f, 5000.0f,
+		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 2.0f));
 	cameras[SceneID::MOUNTAIN_SCENE] = new Camera(0.0f, 0.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 5000.0f,
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f));
 
@@ -99,6 +118,7 @@ Renderer::~Renderer(void)
 		delete cameras[i];
 		delete scenes[i];
 	}
+
 	delete sunLight;
 	delete basicFont;
 
@@ -113,8 +133,11 @@ Renderer::~Renderer(void)
 	delete reflectShader;
 
 	delete mountainsLight;
-
 	delete mountainsHeightMap;
+
+	delete volcanoHeightMap;
+	delete volcanoLightShader;
+	delete volcanoLight;
 
 	delete quad;
 }
@@ -191,18 +214,53 @@ void Renderer::RenderScene()
 	}
 	else if (sceneID == SceneID::VOLCANO_SCENE)
 	{
-
+		DrawVolcanoMap();
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
 		DrawSkybox();
-		DrawHeightMap();
+		DrawMountainMap();
 		DrawWater();
 	}
 
 	//DrawInfo();
 
 	SwapBuffers();
+}
+
+void Renderer::compileShaders()
+{
+	textShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
+	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
+
+	//Satellite shader (planets and moons) generates light and shadows
+	satelliteShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
+	//Sun uses a different shader as it doesn't need lighting
+	sunShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl");
+	//textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
+	shadowShader = new Shader(SHADERDIR"CW/shadowVert.glsl", SHADERDIR"CW/shadowFrag.glsl");
+	blackHoleShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl",
+		SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
+
+	reflectShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/reflectFragment.glsl");
+	mountainsLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/bumpFragment.glsl");
+
+	volcanoLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/bumpFragment.glsl");
+
+	if (!textShader->LinkProgram() ||
+		!skyboxShader->LinkProgram() ||
+
+		!satelliteShader->LinkProgram() ||
+		!sunShader->LinkProgram() ||
+		!shadowShader->LinkProgram() ||
+		!blackHoleShader->LinkProgram() ||
+
+		!reflectShader->LinkProgram() ||
+		!mountainsLightShader->LinkProgram())
+	{
+		return;
+	}
+	SetCurrentShader(satelliteShader);
 }
 
 void Renderer::initShadowMap()
@@ -233,39 +291,6 @@ void Renderer::initShadowMap()
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTex, 0);
 	glDrawBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void Renderer::compileShaders()
-{
-	textShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
-	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
-
-	//Satellite shader (planets and moons) generates light and shadows
-	satelliteShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
-	//Sun uses a different shader as it doesn't need lighting
-	sunShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl");
-	//textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
-	shadowShader = new Shader(SHADERDIR"CW/shadowVert.glsl", SHADERDIR"CW/shadowFrag.glsl");	
-	blackHoleShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl",	
-		SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
-
-	reflectShader = new Shader(SHADERDIR"Tutorials/bumpVertex.glsl", SHADERDIR"Tutorials/reflectFragment.glsl");
-	mountainsLightShader = new Shader(SHADERDIR"Tutorials/bumpVertex.glsl", SHADERDIR"Tutorials/bumpFragment.glsl");
-
-	if (!textShader->LinkProgram() ||
-		!skyboxShader->LinkProgram() ||
-
-		!satelliteShader->LinkProgram() ||
-		!sunShader->LinkProgram() ||
-		!shadowShader->LinkProgram() ||
-		!blackHoleShader->LinkProgram() ||
-		
-		!reflectShader->LinkProgram() ||
-		!mountainsLightShader->LinkProgram())
-	{
-		return;
-	}
-	SetCurrentShader(satelliteShader);
 }
 
 void Renderer::changeScene()
@@ -411,7 +436,26 @@ void Renderer::DrawCombinedScene()
 	glUseProgram(0);
 }
 
-void Renderer::DrawHeightMap()
+void Renderer::DrawVolcanoMap()
+{
+	SetCurrentShader(mountainsLightShader);
+	SetShaderLight(*mountainsLight);
+
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
+	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&currentCamera->GetPosition());
+
+	modelMatrix.ToIdentity();
+	textureMatrix.ToIdentity();
+
+	UpdateShaderMatrices();
+
+	volcanoHeightMap->Draw();
+
+	glUseProgram(0);
+}
+
+void Renderer::DrawMountainMap()
 {
 	SetCurrentShader(mountainsLightShader);
 	SetShaderLight(*mountainsLight);
