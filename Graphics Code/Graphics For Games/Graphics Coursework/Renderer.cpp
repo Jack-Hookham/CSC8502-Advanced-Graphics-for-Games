@@ -5,57 +5,59 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
 	camera = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
 
-	quad = Mesh::GenerateQuad();
 	spaceMap = SOIL_load_OGL_cubemap(TEXTUREDIR"galaxy_west.bmp", TEXTUREDIR"galaxy_east.bmp", TEXTUREDIR"galaxy_up.bmp",
 		TEXTUREDIR"galaxy_down.bmp", TEXTUREDIR"galaxy_south.bmp", TEXTUREDIR"galaxy_north.bmp",
 		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
+
+	quad = Mesh::GenerateQuad();
+	mountainsHeightMap = new HeightMap(HEIGHTMAPSDIR"grandCanyon1080_02.data", 1080, 1080, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
+
+	mountainsLight = new Light(Vector3((mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
+		(mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * -60.0f)), Vector4(1.0f, 0.7f, 0.4f, 1),
+		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 100000.0f);
+
+	quad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	quad->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"waterBumpMap1.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	mountainsHeightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	mountainsHeightMap->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+
+	if (!spaceMap ||
+		!quad->GetTexture() ||
+		!mountainsHeightMap->GetTexture() ||
+		!mountainsHeightMap->GetBumpMap())
+	{
+		return;
+	}
+
+	SetTextureRepeating(quad->GetTexture(), true);
+	SetTextureRepeating(quad->GetBumpMap(), true);
+	SetTextureRepeating(mountainsHeightMap->GetTexture(), true);
+	SetTextureRepeating(mountainsHeightMap->GetBumpMap(), true);
+
+	camera->SetPosition(Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 2000.0f,
+		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX()));
+
+	waterRotate = 0.0f;
 
 	currentShader = NULL;
 	compileShaders();
 
 	//Set up the shadow cube map for the solar system scene
-	//initShadowMap();
-	glGenTextures(1, &shadowTex);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, shadowTex);
-	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 0, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 1, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 2, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 3, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 4, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 5, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-
-	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
-	glGenFramebuffers(1, &shadowFBO);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTex, 0);
-	glDrawBuffer(GL_NONE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	initShadowMap();
 
 	basicFont = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
 
-	defaultProjMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
+	defaultProjMatrix = Matrix4::Perspective(1.0f, 50000.0f, (float)width / (float)height, 45.0f);
 	shadowMatrix = Matrix4::Perspective(1.0f, 10000.0f, 1.0f, 90.0f);
 	projMatrix = defaultProjMatrix;
-
 
 	ss = new SolarSystem();
 	volcano = new Volcano();
 	mountains = new Mountains();
 
-	scenes[SceneID::SPACE] = ss;
-	scenes[SceneID::SCENE2] = new Volcano();
-	scenes[SceneID::SCENE3] = new Mountains();
+	scenes[SceneID::SOLAR_SCENE] = ss;
+	scenes[SceneID::VOLCANO_SCENE] = volcano;
+	scenes[SceneID::MOUTAIN_SCENE] = mountains;
 
 	currentScene = scenes[sceneID];
 
@@ -87,8 +89,6 @@ Renderer::~Renderer(void)
 	currentShader = NULL;
 
 	delete quad;
-
-	//SolarSystem::deleteSphereObj();
 }
 
 void Renderer::UpdateScene(float msec)
@@ -127,35 +127,15 @@ void Renderer::UpdateScene(float msec)
 
 	camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
-	currentScene->Update(msec);
-}
 
-void Renderer::compileShaders()
-{
-	//Satellite shader (planets and moons) generates light and shadows
-	satelliteShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
-	//Sun uses a different shader as it doesn't need lighting
-	sunShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl");
-	//textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
-	textShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
-	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
-	shadowShader = new Shader(SHADERDIR"CW/shadowVert.glsl", SHADERDIR"CW/shadowFrag.glsl");	
-	blackHoleShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl",	
-		SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
-
-	//blackHoleShader = new Shader(SHADERDIR"CW/tessVert.glsl", SHADERDIR"CW/basicFrag.glsl",
-	//	SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
-
-	if (!satelliteShader->LinkProgram() ||
-		!textShader->LinkProgram() ||
-		!sunShader->LinkProgram() ||
-		!skyboxShader->LinkProgram() ||
-		!shadowShader->LinkProgram() ||
-		!blackHoleShader->LinkProgram())
+	if (sceneID == SceneID::SOLAR_SCENE)
 	{
-		return;
+		currentScene->Update(msec);
+	}	
+	else if (sceneID == SceneID::MOUTAIN_SCENE)
+	{
+		waterRotate += msec / 1000.0f;
 	}
-	SetCurrentShader(satelliteShader);
 }
 
 void Renderer::RenderScene()
@@ -163,7 +143,7 @@ void Renderer::RenderScene()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	//glUseProgram(currentShader->GetProgram());
 
-	if (sceneID == SceneID::SPACE)
+	if (sceneID == SceneID::SOLAR_SCENE)
 	{
 		SetShaderLight(*sunLight);
 
@@ -178,10 +158,83 @@ void Renderer::RenderScene()
 		DrawShadowScene();
 		DrawCombinedScene();
 	}
+	else if (sceneID == SceneID::VOLCANO_SCENE)
+	{
 
-	DrawInfo();
+	}
+	else if (sceneID == SceneID::MOUTAIN_SCENE)
+	{
+		DrawSkybox();
+		DrawHeightMap();
+		DrawWater();
+	}
+
+	//DrawInfo();
 
 	SwapBuffers();
+}
+
+void Renderer::initShadowMap()
+{
+	glGenTextures(1, &shadowTex);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, shadowTex);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 0, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 1, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 2, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 3, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 4, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 5, 0, GL_DEPTH_COMPONENT32F, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+	glGenFramebuffers(1, &shadowFBO);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTex, 0);
+	glDrawBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::compileShaders()
+{
+	textShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
+	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
+
+	//Satellite shader (planets and moons) generates light and shadows
+	satelliteShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
+	//Sun uses a different shader as it doesn't need lighting
+	sunShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl");
+	//textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
+	shadowShader = new Shader(SHADERDIR"CW/shadowVert.glsl", SHADERDIR"CW/shadowFrag.glsl");	
+	blackHoleShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl",	
+		SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
+
+	reflectShader = new Shader(SHADERDIR"Tutorials/bumpVertex.glsl", SHADERDIR"Tutorials/reflectFragment.glsl");
+	mountainsLightShader = new Shader(SHADERDIR"Tutorials/bumpVertex.glsl", SHADERDIR"Tutorials/bumpFragment.glsl");
+
+	if (!textShader->LinkProgram() ||
+		!skyboxShader->LinkProgram() ||
+
+		!satelliteShader->LinkProgram() ||
+		!sunShader->LinkProgram() ||
+		!shadowShader->LinkProgram() ||
+		!blackHoleShader->LinkProgram() ||
+		
+		!reflectShader->LinkProgram() ||
+		!mountainsLightShader->LinkProgram())
+	{
+		return;
+	}
+	SetCurrentShader(satelliteShader);
 }
 
 void Renderer::DrawInfo()
@@ -317,6 +370,59 @@ void Renderer::DrawCombinedScene()
 	DrawNode(ss);
 
 	glEnable(GL_CULL_FACE);
+	glUseProgram(0);
+}
+
+void Renderer::DrawHeightMap()
+{
+	SetCurrentShader(mountainsLightShader);
+	SetShaderLight(*mountainsLight);
+
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
+	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
+
+	modelMatrix.ToIdentity();
+	textureMatrix.ToIdentity();
+
+	UpdateShaderMatrices();
+
+	mountainsHeightMap->Draw();
+
+	glUseProgram(0);
+}
+
+void Renderer::DrawWater()
+{
+	SetCurrentShader(reflectShader);
+	SetShaderLight(*mountainsLight);
+
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 2);
+	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mountainsHeightMap->GetBumpMap());
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, spaceMap);
+
+	float heightX = (mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f);
+	float heightY = 256 * mountainsHeightMap->getHeightMapY() / 5.0f;
+	float heightZ = (mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapZ() / 2.0f);
+
+	modelMatrix =
+		Matrix4::Translation(Vector3(heightX, heightY, heightZ)) *
+		Matrix4::Scale(Vector3(heightX, 1, heightZ)) *
+		Matrix4::Rotation(90, Vector3(1.0f, 0.0f, 0.0f));
+
+	textureMatrix = Matrix4::Scale(Vector3(10.0f, 10.0f, 10.0f)) *
+		Matrix4::Rotation(waterRotate, Vector3(0.0f, 0.0f, 1.0f));
+
+	UpdateShaderMatrices();
+	quad->Draw();
+
 	glUseProgram(0);
 }
 

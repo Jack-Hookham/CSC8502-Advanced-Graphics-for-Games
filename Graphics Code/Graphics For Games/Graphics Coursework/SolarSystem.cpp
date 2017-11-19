@@ -67,7 +67,7 @@ void SolarSystem::Update(float msec)
 	//Toggle rotation
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_T))
 	{
-		setRotateObjects(!getRotateObjects());
+		rotateObjects = !rotateObjects;
 	}
 
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E))
