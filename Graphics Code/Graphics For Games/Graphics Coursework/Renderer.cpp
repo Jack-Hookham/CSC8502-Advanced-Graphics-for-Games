@@ -86,7 +86,7 @@ Renderer::~Renderer(void)
 	delete textShader;
 	delete skyboxShader;
 	delete blackHoleShader;
-	currentShader = NULL;
+	currentShader = 0;
 
 	delete quad;
 }
@@ -128,9 +128,9 @@ void Renderer::UpdateScene(float msec)
 	camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
 
+	currentScene->Update(msec);
 	if (sceneID == SceneID::SOLAR_SCENE)
 	{
-		currentScene->Update(msec);
 	}	
 	else if (sceneID == SceneID::MOUTAIN_SCENE)
 	{
@@ -409,7 +409,7 @@ void Renderer::DrawWater()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, spaceMap);
 
 	float heightX = (mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f);
-	float heightY = 256 * mountainsHeightMap->getHeightMapY() / 5.0f;
+	float heightY = 256.0f * mountainsHeightMap->getHeightMapY() / 6.0f + sin(sceneTimer / 500.0f) * 20.0f;
 	float heightZ = (mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapZ() / 2.0f);
 
 	modelMatrix =
