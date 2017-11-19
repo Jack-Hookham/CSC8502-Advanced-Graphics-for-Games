@@ -5,16 +5,20 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
 
 	//Set up the sky map for each scene
-	skyMaps[SceneID::SOLAR_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"galaxy_west.bmp", TEXTUREDIR"galaxy_east.bmp", TEXTUREDIR"galaxy_up.bmp",
-		TEXTUREDIR"galaxy_down.bmp", TEXTUREDIR"galaxy_south.bmp", TEXTUREDIR"galaxy_north.bmp",
+	//skyMaps[SceneID::SOLAR_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"GalaxySkyBox/galaxy_west.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_east.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_up.bmp",
+	//	TEXTUREDIR"GalaxySkyBox/galaxy_down.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_south.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_north.bmp",
+	//	SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
+
+	skyMaps[SceneID::SOLAR_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"HellSkyBox/hell_rt.bmp", TEXTUREDIR"HellSkyBox/hell_lf.bmp", TEXTUREDIR"HellSkyBox/hell_up.bmp",
+		TEXTUREDIR"HellSkyBox/hell_dn.bmp", TEXTUREDIR"HellSkyBox/hell_bk.bmp", TEXTUREDIR"HellSkyBox/hell_ft.bmp",
 		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
-	skyMaps[SceneID::VOLCANO_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"galaxy_west.bmp", TEXTUREDIR"galaxy_east.bmp", TEXTUREDIR"galaxy_up.bmp",
-		TEXTUREDIR"galaxy_down.bmp", TEXTUREDIR"galaxy_south.bmp", TEXTUREDIR"galaxy_north.bmp",
+	skyMaps[SceneID::VOLCANO_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"HellSkyBox/hell_rt.bmp", TEXTUREDIR"HellSkyBox/hell_lf.bmp", TEXTUREDIR"HellSkyBox/hell_up.bmp",
+		TEXTUREDIR"HellSkyBox/hell_dn.bmp", TEXTUREDIR"HellSkyBox/hell_bk.bmp", TEXTUREDIR"HellSkyBox/hell_ft.bmp",
 		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
-	skyMaps[SceneID::MOUNTAIN_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"rusted_west.jpg", TEXTUREDIR"rusted_east.jpg", TEXTUREDIR"rusted_up.jpg",
-		TEXTUREDIR"rusted_down.jpg", TEXTUREDIR"rusted_south.jpg", TEXTUREDIR"rusted_north.jpg",
+	skyMaps[SceneID::MOUNTAIN_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"RustedSkyBox/rusted_west.jpg", TEXTUREDIR"RustedSkyBox/rusted_east.jpg", TEXTUREDIR"RustedSkyBox/rusted_up.jpg",
+		TEXTUREDIR"RustedSkyBox/rusted_down.jpg", TEXTUREDIR"RustedSkyBox/rusted_south.jpg", TEXTUREDIR"RustedSkyBox/rusted_north.jpg",
 		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
 	for (int i = 0; i < SceneID::NUM_SCENES; ++i)
