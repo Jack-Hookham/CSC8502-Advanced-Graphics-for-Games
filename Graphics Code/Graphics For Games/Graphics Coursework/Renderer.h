@@ -18,7 +18,7 @@ enum SceneID
 {
 	SOLAR_SCENE,
 	VOLCANO_SCENE,
-	MOUTAIN_SCENE,
+	MOUNTAIN_SCENE,
 	NUM_SCENES
 };
 
@@ -35,6 +35,8 @@ public:
 	{ 
 		sceneID = n;
 		currentScene = scenes[sceneID];
+		currentCamera = cameras[sceneID];
+		currentSkyMap = skyMaps[sceneID];
 	}
 
 	int getScene() { return sceneID; }
@@ -48,20 +50,34 @@ protected:
 	void DrawSkybox();
 
 	void compileShaders();
+	void changeScene();
 
 	void DrawNode(RenderObject* n);
 
 	int sceneID = SceneID::SOLAR_SCENE;
+
+	std::string currentSceneName;
+	std::string sceneNames[SceneID::NUM_SCENES] = 
+	{
+		"Space",
+		"Volcano",
+		"Mountains"
+	};
+
 	RenderObject* currentScene;
 	RenderObject* scenes[SceneID::NUM_SCENES];
+
+	Camera* currentCamera;
+	Camera* cameras[SceneID::NUM_SCENES];
+
+	GLuint currentSkyMap = 0;
+	GLuint skyMaps[SceneID::NUM_SCENES];
 
 	SolarSystem* ss;
 	Volcano* volcano;
 	Mountains* mountains;
 
 	Light* sunLight;
-
-	Camera* camera;
 
 	bool showInfo = true;
 	float fps = 0.0f;
@@ -75,6 +91,7 @@ protected:
 	Shader* textShader; 
 	Font*	basicFont;
 
+
 	//-----------------------Solar System Scene---------------------
 	void DrawShadowScene();
 	void DrawCombinedScene();
@@ -85,8 +102,6 @@ protected:
 
 	GLuint shadowTex;
 	GLuint shadowFBO;
-
-	GLuint spaceMap;
 
 	Shader* shadowShader;
 	Shader* satelliteShader;
@@ -104,6 +119,7 @@ protected:
 	};
 
 	//-----------------------Volcano Scene-----------------------------
+
 
 	//-----------------------Mountains Scene---------------------------
 	void DrawHeightMap();

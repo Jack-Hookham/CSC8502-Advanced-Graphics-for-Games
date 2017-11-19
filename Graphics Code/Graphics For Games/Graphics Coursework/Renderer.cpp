@@ -3,17 +3,35 @@
 Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 {
 	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
-	camera = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
 
-	spaceMap = SOIL_load_OGL_cubemap(TEXTUREDIR"galaxy_west.bmp", TEXTUREDIR"galaxy_east.bmp", TEXTUREDIR"galaxy_up.bmp",
+	//Set up the sky map for each scene
+	skyMaps[SceneID::SOLAR_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"galaxy_west.bmp", TEXTUREDIR"galaxy_east.bmp", TEXTUREDIR"galaxy_up.bmp",
 		TEXTUREDIR"galaxy_down.bmp", TEXTUREDIR"galaxy_south.bmp", TEXTUREDIR"galaxy_north.bmp",
 		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
+	skyMaps[SceneID::VOLCANO_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"galaxy_west.bmp", TEXTUREDIR"galaxy_east.bmp", TEXTUREDIR"galaxy_up.bmp",
+		TEXTUREDIR"galaxy_down.bmp", TEXTUREDIR"galaxy_south.bmp", TEXTUREDIR"galaxy_north.bmp",
+		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
+
+	skyMaps[SceneID::MOUNTAIN_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"rusted_west.jpg", TEXTUREDIR"rusted_east.jpg", TEXTUREDIR"rusted_up.jpg",
+		TEXTUREDIR"rusted_down.jpg", TEXTUREDIR"rusted_south.jpg", TEXTUREDIR"rusted_north.jpg",
+		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
+
+	for (int i = 0; i < SceneID::NUM_SCENES; ++i)
+	{
+		if (!skyMaps[i])
+		{
+			return;
+		}
+	}
+
+	currentSkyMap = skyMaps[sceneID];
+
 	quad = Mesh::GenerateQuad();
-	mountainsHeightMap = new HeightMap(HEIGHTMAPSDIR"grandCanyon1080_02.data", 1080, 1080, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
+	mountainsHeightMap = new HeightMap(HEIGHTMAPSDIR"pompeii.data", 1080, 1080, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
 
 	mountainsLight = new Light(Vector3((mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
-		(mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * -60.0f)), Vector4(1.0f, 0.7f, 0.4f, 1),
+		mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * -60.0f), Vector4(1.0f, 0.7f, 0.4f, 1),
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 100000.0f);
 
 	quad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
@@ -21,8 +39,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	mountainsHeightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	mountainsHeightMap->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-	if (!spaceMap ||
-		!quad->GetTexture() ||
+	if (!quad->GetTexture() ||
 		!mountainsHeightMap->GetTexture() ||
 		!mountainsHeightMap->GetBumpMap())
 	{
@@ -34,8 +51,12 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	SetTextureRepeating(mountainsHeightMap->GetTexture(), true);
 	SetTextureRepeating(mountainsHeightMap->GetBumpMap(), true);
 
-	camera->SetPosition(Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 2000.0f,
-		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX()));
+	cameras[SceneID::SOLAR_SCENE] = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
+	cameras[SceneID::VOLCANO_SCENE] = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
+	cameras[SceneID::MOUNTAIN_SCENE] = new Camera(0.0f, 0.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 5000.0f,
+		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f));
+
+	currentCamera = cameras[sceneID];
 
 	waterRotate = 0.0f;
 
@@ -57,7 +78,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 	scenes[SceneID::SOLAR_SCENE] = ss;
 	scenes[SceneID::VOLCANO_SCENE] = volcano;
-	scenes[SceneID::MOUTAIN_SCENE] = mountains;
+	scenes[SceneID::MOUNTAIN_SCENE] = mountains;
 
 	currentScene = scenes[sceneID];
 
@@ -72,12 +93,12 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 Renderer::~Renderer(void)
 {
 	currentScene = NULL;
+	currentCamera = NULL;
 	for (int i = 0; i < SceneID::NUM_SCENES; ++i)
 	{
+		delete cameras[i];
 		delete scenes[i];
 	}
-
-	delete camera;
 	delete sunLight;
 	delete basicFont;
 
@@ -87,6 +108,13 @@ Renderer::~Renderer(void)
 	delete skyboxShader;
 	delete blackHoleShader;
 	currentShader = 0;
+
+	delete mountainsLightShader;
+	delete reflectShader;
+
+	delete mountainsLight;
+
+	delete mountainsHeightMap;
 
 	delete quad;
 }
@@ -110,7 +138,8 @@ void Renderer::UpdateScene(float msec)
 		{
 			sceneID = 0;
 		}
-		currentScene = scenes[sceneID];
+
+		changeScene();
 	}
 
 	//Backward scene
@@ -122,17 +151,19 @@ void Renderer::UpdateScene(float msec)
 		{
 			sceneID = SceneID::NUM_SCENES - 1;
 		}
-		currentScene = scenes[sceneID];
+
+		changeScene();
+
 	}
 
-	camera->UpdateCamera(msec);
-	viewMatrix = camera->BuildViewMatrix();
+	currentCamera->UpdateCamera(msec);
+	viewMatrix = currentCamera->BuildViewMatrix();
 
 	currentScene->Update(msec);
 	if (sceneID == SceneID::SOLAR_SCENE)
 	{
 	}	
-	else if (sceneID == SceneID::MOUTAIN_SCENE)
+	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
 		waterRotate += msec / 1000.0f;
 	}
@@ -162,7 +193,7 @@ void Renderer::RenderScene()
 	{
 
 	}
-	else if (sceneID == SceneID::MOUTAIN_SCENE)
+	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
 		DrawSkybox();
 		DrawHeightMap();
@@ -237,6 +268,13 @@ void Renderer::compileShaders()
 	SetCurrentShader(satelliteShader);
 }
 
+void Renderer::changeScene()
+{
+	currentCamera = cameras[sceneID];
+	currentScene = scenes[sceneID];
+	currentSkyMap = skyMaps[sceneID];
+}
+
 void Renderer::DrawInfo()
 {
 	glEnable(GL_BLEND);
@@ -302,7 +340,7 @@ void Renderer::DrawSkybox()
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 3);
 
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, spaceMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, currentSkyMap);
 
 	UpdateShaderMatrices();
 	quad->Draw();
@@ -356,14 +394,14 @@ void Renderer::DrawCombinedScene()
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex"), 2);
-	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
+	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&currentCamera->GetPosition());
 
 	SetShaderLight(*sunLight);
 
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, shadowTex);
 
-	viewMatrix = camera->BuildViewMatrix();
+	viewMatrix = currentCamera->BuildViewMatrix();
 	UpdateShaderMatrices();
 
 	DrawSkybox();
@@ -380,7 +418,7 @@ void Renderer::DrawHeightMap()
 
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
-	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
+	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&currentCamera->GetPosition());
 
 	modelMatrix.ToIdentity();
 	textureMatrix.ToIdentity();
@@ -394,19 +432,20 @@ void Renderer::DrawHeightMap()
 
 void Renderer::DrawWater()
 {
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	SetCurrentShader(reflectShader);
 	SetShaderLight(*mountainsLight);
 
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 2);
-	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
+	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&currentCamera->GetPosition());
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, mountainsHeightMap->GetBumpMap());
 
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, spaceMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, currentSkyMap);
 
 	float heightX = (mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f);
 	float heightY = 256.0f * mountainsHeightMap->getHeightMapY() / 6.0f + sin(sceneTimer / 500.0f) * 20.0f;
@@ -424,6 +463,7 @@ void Renderer::DrawWater()
 	quad->Draw();
 
 	glUseProgram(0);
+	glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
 void Renderer::DrawText(const std::string &text, const Vector3 &position, const float size, const bool perspective) {
@@ -434,7 +474,7 @@ void Renderer::DrawText(const std::string &text, const Vector3 &position, const 
 	//orthographic mode, there's nothing here that's particularly tricky.
 	if (perspective) {
 		modelMatrix = Matrix4::Translation(position) * Matrix4::Scale(Vector3(size, size, 1));
-		viewMatrix = camera->BuildViewMatrix();
+		viewMatrix = currentCamera->BuildViewMatrix();
 		projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 	}
 	else {
