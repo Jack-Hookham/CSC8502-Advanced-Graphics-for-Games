@@ -11,15 +11,15 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 	skyMaps[SceneID::SOLAR_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"HellSkyBox/hell_rt.bmp", TEXTUREDIR"HellSkyBox/hell_lf.bmp", TEXTUREDIR"HellSkyBox/hell_up.bmp",
 		TEXTUREDIR"HellSkyBox/hell_dn.bmp", TEXTUREDIR"HellSkyBox/hell_bk.bmp", TEXTUREDIR"HellSkyBox/hell_ft.bmp",
-		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
+		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
 
 	skyMaps[SceneID::VOLCANO_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"HellSkyBox/hell_rt.bmp", TEXTUREDIR"HellSkyBox/hell_lf.bmp", TEXTUREDIR"HellSkyBox/hell_up.bmp",
 		TEXTUREDIR"HellSkyBox/hell_dn.bmp", TEXTUREDIR"HellSkyBox/hell_bk.bmp", TEXTUREDIR"HellSkyBox/hell_ft.bmp",
-		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
+		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
 
 	skyMaps[SceneID::MOUNTAIN_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"RustedSkyBox/rusted_west.jpg", TEXTUREDIR"RustedSkyBox/rusted_east.jpg", TEXTUREDIR"RustedSkyBox/rusted_up.jpg",
 		TEXTUREDIR"RustedSkyBox/rusted_down.jpg", TEXTUREDIR"RustedSkyBox/rusted_south.jpg", TEXTUREDIR"RustedSkyBox/rusted_north.jpg",
-		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
+		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
 
 	for (int i = 0; i < SceneID::NUM_SCENES; ++i)
 	{
@@ -31,45 +31,53 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 	currentSkyMap = skyMaps[sceneID];
 
-	quad = Mesh::GenerateQuad();
+	lavaQuad = Mesh::GenerateQuad();
+	lavaQuad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"lavaPlanet2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	lavaQuad->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"waterBumpMap1.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-	quad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	quad->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"waterBumpMap1.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	volcanoHeightMap = new HeightMap(HEIGHTMAPSDIR"pompeii.data", 1080, 1080, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
+	volcanoHeightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	volcanoHeightMap->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-	mountainsHeightMap = new HeightMap(HEIGHTMAPSDIR"grandCanyon.data", 1080, 1080, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
+	if (!lavaQuad->GetTexture() ||
+		!lavaQuad->GetBumpMap() ||
+		!volcanoHeightMap->GetTexture() ||
+		!volcanoHeightMap->GetBumpMap())
+	{
+		return;
+	}
+
+	SetTextureRepeating(lavaQuad->GetTexture(), true);
+	SetTextureRepeating(lavaQuad->GetBumpMap(), true);
+	SetTextureRepeating(volcanoHeightMap->GetTexture(), true);
+	SetTextureRepeating(volcanoHeightMap->GetBumpMap(), true);
+
+	volcanoLight = new Light(Vector3((volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
+		volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * -60.0f), Vector4(1.0f, 0.7f, 0.4f, 1),
+		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 100000.0f);
+
+	waterQuad = Mesh::GenerateQuad();
+	waterQuad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	waterQuad->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"waterBumpMap1.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+
+	mountainsHeightMap = new HeightMap(HEIGHTMAPSDIR"hawaiiHeightMap.data", 1080, 1080, 16.0f, 16.0f, 16.0f, 1.0f / 16.0f, 1.0f / 16.0f);
 	mountainsHeightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	mountainsHeightMap->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-	if (!quad->GetTexture() ||
+	if (!waterQuad->GetTexture() || 
+		!waterQuad->GetBumpMap() ||
 		!mountainsHeightMap->GetTexture() ||
 		!mountainsHeightMap->GetBumpMap())
 	{
 		return;
 	}
 
-	SetTextureRepeating(quad->GetTexture(), true);
-	SetTextureRepeating(quad->GetBumpMap(), true);
+	SetTextureRepeating(waterQuad->GetTexture(), true);
+	SetTextureRepeating(waterQuad->GetBumpMap(), true);
 	SetTextureRepeating(mountainsHeightMap->GetTexture(), true);
 	SetTextureRepeating(mountainsHeightMap->GetBumpMap(), true);
 
 	mountainsLight = new Light(Vector3((mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
-		mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * -60.0f), Vector4(1.0f, 0.7f, 0.4f, 1),
-		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 100000.0f);
-
-	volcanoHeightMap = new HeightMap(HEIGHTMAPSDIR"pompeii.data", 1080, 1080, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
-	volcanoHeightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	volcanoHeightMap->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-
-	if (!volcanoHeightMap->GetTexture() ||
-		!volcanoHeightMap->GetBumpMap())
-	{
-		return;
-	}
-
-	SetTextureRepeating(volcanoHeightMap->GetTexture(), true);
-	SetTextureRepeating(volcanoHeightMap->GetBumpMap(), true);
-
-	volcanoLight = new Light(Vector3((mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
 		mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * -60.0f), Vector4(1.0f, 0.7f, 0.4f, 1),
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 100000.0f);
 
@@ -143,7 +151,8 @@ Renderer::~Renderer(void)
 	delete volcanoLightShader;
 	delete volcanoLight;
 
-	delete quad;
+	delete waterQuad;
+	delete lavaQuad;
 }
 
 void Renderer::UpdateScene(float msec)
@@ -218,7 +227,10 @@ void Renderer::RenderScene()
 	}
 	else if (sceneID == SceneID::VOLCANO_SCENE)
 	{
+		DrawSkybox();
 		DrawVolcanoMap();
+		DrawVolcanoLava();
+		DrawFloorLava();
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
@@ -246,10 +258,11 @@ void Renderer::compileShaders()
 	blackHoleShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl",
 		SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
 
-	reflectShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/reflectFragment.glsl");
-	mountainsLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/bumpFragment.glsl");
+	lavaShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
+	volcanoLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/volcanoFragment.glsl");
 
-	volcanoLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/bumpFragment.glsl");
+	reflectShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/reflectFragment.glsl");
+	mountainsLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/mountainFragment.glsl");
 
 	if (!textShader->LinkProgram() ||
 		!skyboxShader->LinkProgram() ||
@@ -258,6 +271,9 @@ void Renderer::compileShaders()
 		!sunShader->LinkProgram() ||
 		!shadowShader->LinkProgram() ||
 		!blackHoleShader->LinkProgram() ||
+
+		!lavaShader->LinkProgram() ||
+		!volcanoLightShader->LinkProgram() ||
 
 		!reflectShader->LinkProgram() ||
 		!mountainsLightShader->LinkProgram())
@@ -372,7 +388,7 @@ void Renderer::DrawSkybox()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, currentSkyMap);
 
 	UpdateShaderMatrices();
-	quad->Draw();
+	waterQuad->Draw();
 
 	glUseProgram(0);
 	glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -442,8 +458,8 @@ void Renderer::DrawCombinedScene()
 
 void Renderer::DrawVolcanoMap()
 {
-	SetCurrentShader(mountainsLightShader);
-	SetShaderLight(*mountainsLight);
+	SetCurrentShader(volcanoLightShader);
+	SetShaderLight(*volcanoLight);
 
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
@@ -502,16 +518,84 @@ void Renderer::DrawWater()
 	modelMatrix =
 		Matrix4::Translation(Vector3(heightX, heightY, heightZ)) *
 		Matrix4::Scale(Vector3(heightX, 1, heightZ)) *
+		Matrix4::Rotation(90.0f, Vector3(1.0f, 0.0f, 0.0f));
+
+	textureMatrix = Matrix4::Scale(Vector3(10.0f, 10.0f, 10.0f)) *
+		Matrix4::Rotation(waterRotate, Vector3(0.0f, 0.0f, -1.0f));
+
+	UpdateShaderMatrices();
+	waterQuad->Draw();
+
+	glUseProgram(0);
+	glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+}
+
+void Renderer::DrawFloorLava()
+{
+	SetCurrentShader(lavaShader);
+	SetShaderLight(*volcanoLight);
+
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 2);
+	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&currentCamera->GetPosition());
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mountainsHeightMap->GetBumpMap());
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, currentSkyMap);
+
+	float heightX = (volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 2.0f);
+	float heightY = 256.0f * volcanoHeightMap->getHeightMapY() / 6.0f + sin(sceneTimer / 500.0f) * 20.0f;
+	float heightZ = (volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapZ() / 2.0f);
+
+	modelMatrix =
+		Matrix4::Translation(Vector3(heightX, heightY, heightZ)) *
+		Matrix4::Scale(Vector3(heightX, 1, heightZ)) *
 		Matrix4::Rotation(90, Vector3(1.0f, 0.0f, 0.0f));
 
 	textureMatrix = Matrix4::Scale(Vector3(10.0f, 10.0f, 10.0f)) *
 		Matrix4::Rotation(waterRotate, Vector3(0.0f, 0.0f, 1.0f));
 
 	UpdateShaderMatrices();
-	quad->Draw();
+	lavaQuad->Draw();
 
 	glUseProgram(0);
-	glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+}
+
+void Renderer::DrawVolcanoLava()
+{
+	SetCurrentShader(lavaShader);
+	SetShaderLight(*volcanoLight);
+
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 2);
+	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&currentCamera->GetPosition());
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mountainsHeightMap->GetBumpMap());
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, currentSkyMap);
+
+	float heightX = (volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 80.0f);
+	float heightY = 256.0f * volcanoHeightMap->getHeightMapY() * 0.85f + sin(sceneTimer / 800.0f) * 8.0f;
+	float heightZ = (volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapZ() / 80.0f);
+
+	modelMatrix =
+		Matrix4::Scale(Vector3(heightX, 1, heightZ)) *
+		Matrix4::Translation(Vector3(28.5f, heightY, 46.66f)) *
+		Matrix4::Rotation(90, Vector3(1.0f, 0.0f, 0.0f));
+
+	textureMatrix = Matrix4::Scale(Vector3(1.0f, 1.0f, 1.0f)) *
+		Matrix4::Rotation(waterRotate, Vector3(0.0f, 0.0f, 1.0f));
+
+	UpdateShaderMatrices();
+	lavaQuad->Draw();
+
+	glUseProgram(0);
 }
 
 void Renderer::DrawText(const std::string &text, const Vector3 &position, const float size, const bool perspective) {

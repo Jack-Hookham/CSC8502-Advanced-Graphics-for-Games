@@ -86,8 +86,6 @@ protected:
 
 	Matrix4 defaultProjMatrix;
 
-	Mesh* quad;
-
 	Shader* textShader; 
 	Font*	basicFont;
 
@@ -121,11 +119,16 @@ protected:
 	//-----------------------Volcano Scene-----------------------------
 
 	void DrawVolcanoMap();
+	void DrawFloorLava();
+	void DrawVolcanoLava();
 
 	HeightMap* volcanoHeightMap;
 	Shader* volcanoLightShader;
+	Shader* lavaShader;
 
 	Light* volcanoLight;
+
+	Mesh* lavaQuad;
 
 	//-----------------------Mountains Scene---------------------------
 	void DrawMountainMap();
@@ -139,4 +142,6 @@ protected:
 	HeightMap* mountainsHeightMap;
 
 	float waterRotate;
+
+	Mesh* waterQuad;
 };
