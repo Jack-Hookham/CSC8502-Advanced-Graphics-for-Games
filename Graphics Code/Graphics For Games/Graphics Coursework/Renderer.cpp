@@ -343,7 +343,7 @@ void Renderer::compileShaders()
 {
 	processShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/processFragment.glsl");
 	sceneShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
-	textShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
+	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
 
 	//Satellite shader (planets and moons) generates light and shadows
@@ -359,7 +359,7 @@ void Renderer::compileShaders()
 	volcanoLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/volcanoFragment.glsl");
 	particleShader = new Shader(SHADERDIR"CW/particleVertex.glsl", SHADERDIR"CW/particleFragment.glsl", SHADERDIR"CW/particleGeometry.glsl");
 
-	reflectShader = new Shader(SHADERDIR"Tutorials/bumpVertex.glsl", SHADERDIR"Tutorials/reflectFragment.glsl");
+	reflectShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/reflectFragment.glsl");
 	mountainsLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/mountainFragment.glsl");
 
 	if (!processShader->LinkProgram() ||
@@ -428,8 +428,6 @@ void Renderer::drawInfo()
 
 	UpdateShaderMatrices();
 
-	//glActiveTexture(GL_TEXTURE0 + 12);
-	//glBindTexture(GL_TEXTURE_2D, basicFont->texture);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 
 	float currentY = 0.0f;
@@ -454,6 +452,13 @@ void Renderer::drawInfo()
 	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
+	//Current position
+	oss.str("");
+	oss.clear();
+	oss << "Camera Position: " << std::fixed << std::setprecision(0) << currentCamera->GetPosition();
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
 	//Total time
 	oss.str("");
 	oss.clear();
@@ -468,14 +473,8 @@ void Renderer::drawInfo()
 	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
-	//Current position
-	oss.str("");
-	oss.clear();
-	oss << "World Position: " << std::fixed << std::setprecision(2) << currentCamera->GetPosition();
-	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
-	currentY += 20.0f;
-
 	glUseProgram(0);
+
 	glDisable(GL_BLEND);
 
 	glEnable(GL_DEPTH_TEST);
@@ -785,13 +784,13 @@ void Renderer::DrawVolcanoLava()
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, currentSkyMap);
 
-	float heightX = (volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 80.0f);
-	float heightY = 256.0f * volcanoHeightMap->getHeightMapY() * 0.85f + sin(sceneTimer / 800.0f) * 8.0f;
-	float heightZ = (volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapZ() / 80.0f);
+	float heightX = (volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 40.0f);
+	float heightY = 256.0f * volcanoHeightMap->getHeightMapY() * 0.73f + sin(sceneTimer / 800.0f) * 8.0f;
+	float heightZ = (volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapZ() / 40.0f);
 
 	modelMatrix =
 		Matrix4::Scale(Vector3(heightX, 1, heightZ)) *
-		Matrix4::Translation(Vector3(28.5f, heightY, 46.66f)) *
+		Matrix4::Translation(Vector3(21.5f, heightY, 20.2f)) *
 		Matrix4::Rotation(90, Vector3(1.0f, 0.0f, 0.0f));
 
 	textureMatrix = Matrix4::Scale(Vector3(1.0f, 1.0f, 1.0f));

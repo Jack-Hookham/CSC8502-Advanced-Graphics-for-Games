@@ -74,7 +74,7 @@ public:
 	}
 
 	inline friend std::ostream& operator<<(std::ostream& o, const Vector3& v) {
-		o << "Vector3(" << v.x << "," << v.y << "," << v.z <<")" << std::endl;
+		o << "V3(" << v.x << "," << v.y << "," << v.z <<")" << std::endl;
 		return o;
 	}
 

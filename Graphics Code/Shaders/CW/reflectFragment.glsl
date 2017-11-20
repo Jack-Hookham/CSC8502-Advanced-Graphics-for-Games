@@ -51,8 +51,7 @@ void main(void)
 	
 	//fragColour = mix(lightColour * atten * reflection, mix(bumpColour, vec4((lightColour.rgb + sFactor), 1.0), 0.5), 0.5);
 	fragColour = mix(lightColour * atten * reflection, bumpColour, 0.5);
-	fragColour.a = 0.1;
-	fragColour = vec4(1.0, 0.0, 0.0, 1.0);
+	fragColour.a = 0.7;
 
 	//	fragColour = diffuse;
 	//	fragColour.xy = IN.texCoord;
