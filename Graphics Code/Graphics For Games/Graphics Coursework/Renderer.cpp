@@ -812,7 +812,7 @@ void Renderer::DrawEmitters()
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 
 	SetShaderParticleSize(lavaEmitter->GetParticleSize());
-	lavaEmitter->SetParticleSize(8.0f);
+	lavaEmitter->SetParticleSize(1000.0f);
 	lavaEmitter->SetParticleVariance(1.0f);
 	lavaEmitter->SetLaunchParticles(16.0f);
 	lavaEmitter->SetParticleLifetime(2000.0f);
