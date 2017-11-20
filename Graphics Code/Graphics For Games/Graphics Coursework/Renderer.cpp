@@ -2,6 +2,46 @@
 
 Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 {
+	//Post processing setup
+	processQuad = Mesh::GenerateQuad();
+
+	//Generate scene depth texture
+	glGenTextures(1, &bufferDepthTex);
+	glBindTexture(GL_TEXTURE_2D, bufferDepthTex);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+
+	//Colour texture
+	for (int i = 0; i < 2; ++i)
+	{
+		glGenTextures(1, &bufferColourTex[i]);
+		glBindTexture(GL_TEXTURE_2D, bufferColourTex[i]);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	}
+
+	glGenFramebuffers(1, &bufferFBO);		//Render the scene into this
+	glGenFramebuffers(1, &processFBO);		//And do post processing in this
+
+	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, bufferDepthTex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, bufferDepthTex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bufferColourTex[0], 0);
+
+	//Check FBO attachment success
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE || !bufferDepthTex || !bufferColourTex[0])
+	{
+		return;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
 
 	//Set up the sky map for each scene
@@ -56,8 +96,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	SetTextureRepeating(volcanoHeightMap->GetTexture(), true);
 	SetTextureRepeating(volcanoHeightMap->GetBumpMap(), true);
 
-	lavaEmitter = new ParticleEmitter(Vector3(volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 2.0f, 5000.0f,
-		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 2.0f), ParticleType::LAVA_BUBBLE);
+	lavaEmitter = new ParticleEmitter();
 
 	volcanoLight = new Light(Vector3((volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
 		volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * -60.0f), Vector4(1.0f, 0.7f, 0.4f, 1),
@@ -89,14 +128,13 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 100000.0f);
 
 	cameras[SceneID::SOLAR_SCENE] = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
-	cameras[SceneID::VOLCANO_SCENE] = new Camera(0.0f, 0.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 5000.0f,
-		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f));
+	//cameras[SceneID::VOLCANO_SCENE] = new Camera(0.0f, 0.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 5000.0f,
+	//	mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f));
+	cameras[SceneID::VOLCANO_SCENE] = new Camera(0, 0, Vector3(0, 0, 250.0f));
 	cameras[SceneID::MOUNTAIN_SCENE] = new Camera(0.0f, 0.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 5000.0f,
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f));
 
 	currentCamera = cameras[sceneID];
-
-	waterRotate = 0.0f;
 
 	currentShader = NULL;
 	compileShaders();
@@ -130,6 +168,15 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 
 Renderer::~Renderer(void)
 {
+	delete processQuad;
+	delete processShader;
+	delete sceneShader;
+
+	glDeleteTextures(2, bufferColourTex);
+	glDeleteTextures(1, &bufferDepthTex);
+	glDeleteFramebuffers(1, &bufferFBO);
+	glDeleteFramebuffers(1, &processFBO);
+
 	currentScene = NULL;
 	currentCamera = NULL;
 	for (int i = 0; i < SceneID::NUM_SCENES; ++i)
@@ -233,7 +280,7 @@ void Renderer::UpdateScene(float msec)
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
-		waterRotate += msec / 1000.0f;
+
 	}
 }
 
@@ -270,6 +317,11 @@ void Renderer::RenderScene()
 		DrawWater();
 	}
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//DrawPostProcess();
+	//DrawFinalScene();
+
 	if (showInfo)
 	{
 		drawInfo();
@@ -289,6 +341,8 @@ void Renderer::setScene(int n)
 
 void Renderer::compileShaders()
 {
+	processShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/processFragment.glsl");
+	sceneShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
 	textShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
 	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
 
@@ -308,7 +362,9 @@ void Renderer::compileShaders()
 	reflectShader = new Shader(SHADERDIR"Tutorials/bumpVertex.glsl", SHADERDIR"Tutorials/reflectFragment.glsl");
 	mountainsLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/mountainFragment.glsl");
 
-	if (!textShader->LinkProgram() ||
+	if (!processShader->LinkProgram() ||
+		!sceneShader->LinkProgram() ||
+		!textShader->LinkProgram() ||
 		!skyboxShader->LinkProgram() ||
 
 		!satelliteShader->LinkProgram() ||
@@ -364,6 +420,7 @@ void Renderer::drawInfo()
 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	SetCurrentShader(textShader);
 
@@ -411,6 +468,12 @@ void Renderer::drawInfo()
 	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
+	//Current position
+	oss.str("");
+	oss.clear();
+	oss << "World Position: " << std::fixed << std::setprecision(2) << currentCamera->GetPosition();
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
 
 	glUseProgram(0);
 	glDisable(GL_BLEND);
@@ -454,6 +517,56 @@ void Renderer::DrawNode(RenderObject* n)
 	{
 		DrawNode(*i);
 	}
+}
+
+void Renderer::DrawPostProcess()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, processFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bufferColourTex[1], 0);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+	SetCurrentShader(processShader);
+
+	projMatrix = Matrix4::Orthographic(-1, 1, 1, -1, -1, 1);
+	viewMatrix.ToIdentity();
+	UpdateShaderMatrices();
+
+	glDisable(GL_DEPTH_TEST);
+
+	glUniform2f(glGetUniformLocation(currentShader->GetProgram(), "pixelSize"), 1.0f / width, 1.0f / height);
+
+	for (int i = 0; i < POST_PASSES; ++i)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bufferColourTex[1], 0);
+		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "isVertical"), 0);
+
+		processQuad->SetTexture(bufferColourTex[0]);
+		processQuad->Draw();
+
+		//Now swap the colour buffers and do the second blur pass
+		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "isVertical"), 1);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bufferColourTex[0], 0);
+
+		processQuad->SetTexture(bufferColourTex[1]);
+		processQuad->Draw();
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glUseProgram(0);
+
+	glEnable(GL_DEPTH_TEST);
+}
+void Renderer::DrawFinalScene()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	SetCurrentShader(sceneShader);
+	projMatrix = Matrix4::Orthographic(-1, 1, 1, -1, -1, 1);
+	viewMatrix.ToIdentity();
+	UpdateShaderMatrices();
+	processQuad->SetTexture(bufferColourTex[0]);
+	processQuad->Draw();
+	glUseProgram(0);
 }
 
 void Renderer::DrawSkybox()
@@ -582,6 +695,10 @@ void Renderer::DrawMountainMap()
 
 void Renderer::DrawWater()
 {
+	glEnable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	SetCurrentShader(reflectShader);
 	SetShaderLight(*mountainsLight);
@@ -607,13 +724,15 @@ void Renderer::DrawWater()
 		Matrix4::Rotation(90.0f, Vector3(1.0f, 0.0f, 0.0f));
 
 	textureMatrix = Matrix4::Scale(Vector3(10.0f, 10.0f, 10.0f))
-		* Matrix4::Translation(Vector3(0.0f, sin(sceneTimer / 500.0f) / -50.0f, 0.0f)); /*
-		Matrix4::Rotation(waterRotate, Vector3(0.0f, 0.0f, -1.0f));*/
+		* Matrix4::Translation(Vector3(0.0f, -sin(sceneTimer / 500.0f) / 100.0f, 0.0f));
 
 	UpdateShaderMatrices();
 	waterQuad->Draw();
 
 	glUseProgram(0);
+
+	glDisable(GL_BLEND);
+	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
@@ -642,8 +761,7 @@ void Renderer::DrawFloorLava()
 		Matrix4::Scale(Vector3(heightX * 3.0f, 1, heightZ * 3.0f)) *
 		Matrix4::Rotation(90, Vector3(1.0f, 0.0f, 0.0f));
 
-	textureMatrix = Matrix4::Scale(Vector3(10.0f, 10.0f, 10.0f)) *
-		Matrix4::Rotation(waterRotate, Vector3(0.0f, 0.0f, 1.0f));
+	textureMatrix = Matrix4::Scale(Vector3(10.0f, 10.0f, 10.0f));
 
 	UpdateShaderMatrices();
 	lavaQuad->Draw();
@@ -676,8 +794,7 @@ void Renderer::DrawVolcanoLava()
 		Matrix4::Translation(Vector3(28.5f, heightY, 46.66f)) *
 		Matrix4::Rotation(90, Vector3(1.0f, 0.0f, 0.0f));
 
-	textureMatrix = Matrix4::Scale(Vector3(1.0f, 1.0f, 1.0f)) *
-		Matrix4::Rotation(waterRotate, Vector3(0.0f, 0.0f, 1.0f));
+	textureMatrix = Matrix4::Scale(Vector3(1.0f, 1.0f, 1.0f));
 
 	UpdateShaderMatrices();
 	lavaQuad->Draw();
@@ -687,12 +804,16 @@ void Renderer::DrawVolcanoLava()
 
 void Renderer::DrawEmitters()
 {
+	//glClearColor(0, 0, 0, 1);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	SetCurrentShader(particleShader);
 	SetShaderLight(*volcanoLight);
 
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+
 	SetShaderParticleSize(lavaEmitter->GetParticleSize());
-	lavaEmitter->SetParticleSize(1000.0f);
+	lavaEmitter->SetParticleSize(8.0f);
 	lavaEmitter->SetParticleVariance(1.0f);
 	lavaEmitter->SetLaunchParticles(16.0f);
 	lavaEmitter->SetParticleLifetime(2000.0f);

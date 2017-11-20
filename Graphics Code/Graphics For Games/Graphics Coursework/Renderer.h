@@ -14,6 +14,7 @@
 #include "ParticleEmitter.h"
 
 #define SHADOWSIZE 2048
+#define POST_PASSES 10
 
 enum SceneID
 {
@@ -61,6 +62,18 @@ protected:
 
 	void DrawNode(RenderObject* n);
 
+	//Post processing
+	void DrawPostProcess();
+	void DrawFinalScene();
+
+	Mesh* processQuad;
+	Shader* processShader;
+	Shader* sceneShader;
+	GLuint bufferFBO;
+	GLuint processFBO;
+	GLuint bufferColourTex[2];
+	GLuint bufferDepthTex;
+
 	int sceneID = SceneID::SOLAR_SCENE;
 
 	std::string currentSceneName;
@@ -94,6 +107,7 @@ protected:
 	Font*	basicFont;
 
 	//-----------------------Solar System Scene---------------------
+
 	void DrawShadowScene();
 	void DrawCombinedScene();
 
@@ -127,7 +141,6 @@ protected:
 	void DrawEmitters();
 	void SetShaderParticleSize(const float f);
 
-
 	HeightMap* volcanoHeightMap;
 	Shader* volcanoLightShader;
 	Shader* lavaShader;
@@ -142,6 +155,7 @@ protected:
 	bool erupting = false;
 
 	//-----------------------Mountains Scene---------------------------
+
 	void DrawMountainMap();
 	void DrawWater();
 
@@ -151,8 +165,6 @@ protected:
 	Light* mountainsLight;
 
 	HeightMap* mountainsHeightMap;
-
-	float waterRotate;
 
 	Mesh* waterQuad;
 };

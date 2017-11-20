@@ -11,7 +11,7 @@
 /*
 Constructor, which sets everything to some 'sensible' defaults.
 */
-ParticleEmitter::ParticleEmitter(Vector3 pos, ParticleType type) {
+ParticleEmitter::ParticleEmitter(void) {
 	particleRate = 100.0f;
 	particleLifetime = 500.0f;
 	particleSize = 24.0f;
@@ -20,8 +20,6 @@ ParticleEmitter::ParticleEmitter(Vector3 pos, ParticleType type) {
 	particleSpeed = 0.2f;
 	numLaunchParticles = 10;
 	largestSize = 0;
-	position = pos;
-	particleType = type;
 
 	initialDirection = Vector3(0.0f, 1.0f, 0.0f);
 
@@ -95,15 +93,11 @@ void ParticleEmitter::Update(float msec) {
 			//position by multiplying its normalised direction by the
 			//particle speed, and adding the result to the position. Easy!
 
-			if (particleType == ParticleType::ERUPT)
+			if (p->direction.y > -1.0f)
 			{
 				p->direction.y -= 0.02f;
 			}
-			else if (particleType == ParticleType::LAVA_BUBBLE)
-			{
-				p->direction -= 0.05f;
-			}
-			p->position += p->direction * (msec * particleSpeed);
+			p->position += p->direction * (msec*particleSpeed);
 
 
 			++i;	//Only update our iterator value here.
@@ -124,7 +118,7 @@ This function gets a pointer to an unused particle - either from the freelist,
 or from a newly created particle on the heap.
 */
 Particle* ParticleEmitter::GetFreeParticle() {
-	Particle* p = NULL;
+	Particle * p = NULL;
 
 	//If we have a spare particle on the freelist, pop it off!
 	if (freeList.size() > 0) {
@@ -149,25 +143,6 @@ Particle* ParticleEmitter::GetFreeParticle() {
 	p->position.ToZero();
 
 	p->speed = particleSpeed;
-
-	//if (particleType == ParticleType::ERUPT)
-	//{
-	//	p->colour = Vector4(1.0f, 0.5f, 0.5f, 1.0f);
-	//	p->direction = initialDirection;
-	//	p->direction.x += ((RAND() - RAND()) * particleVariance);
-	//	p->direction.y += 1;
-	//	p->direction.z += ((RAND() - RAND()) * particleVariance);
-	//	p->direction.Normalise();	//Keep its direction normalised!
-	//	p->position = position + Vector3((rand() % 20001) - 10000, 0, (rand() % 20001) - 10000);
-	//}
-	//else if (particleType == ParticleType::LAVA_BUBBLE)
-	//{
-
-	//}
-	//else if (particleType == ParticleType::STEAM)
-	//{
-
-	//}
 
 	return p;	//return the new particle :-)
 }
@@ -252,6 +227,5 @@ void ParticleEmitter::Draw() {
 	glDrawArrays(GL_POINTS, 0, particles.size());	// draw ordered list of vertices
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	glDisable(GL_BLEND);
 	glBindVertexArray(0); //Remember to turn off our VAO ;)
 };

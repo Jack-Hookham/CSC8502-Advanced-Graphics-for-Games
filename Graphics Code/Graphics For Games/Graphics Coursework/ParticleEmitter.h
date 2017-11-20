@@ -54,19 +54,10 @@ struct Particle
 	float speed;
 };
 
-enum ParticleType
-{
-	ERUPT,
-	LAVA_BUBBLE,
-	STEAM
-};
-
 class ParticleEmitter : public Mesh {
 public:
-	ParticleEmitter(Vector3 pos, ParticleType type);
+	ParticleEmitter(void);
 	~ParticleEmitter(void);
-
-	inline void setPosition(Vector3 pos) { position = pos; }
 
 	/*
 	To update our particle positions, we must have an update
@@ -149,9 +140,5 @@ protected:
 
 	std::vector<Particle*>	particles;	//Active particles stay in here :)
 	std::vector<Particle*>	freeList;	//'Spare' particles stay in here...
-
-	ParticleType particleType;
-
-	Vector3 position;
 };
 
