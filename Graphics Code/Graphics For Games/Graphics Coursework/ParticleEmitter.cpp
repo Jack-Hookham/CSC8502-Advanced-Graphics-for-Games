@@ -133,7 +133,7 @@ Particle* ParticleEmitter::GetFreeParticle() {
 	//Now we have to reset its values - if it was popped off the
 	//free list, it'll still have the values of its 'previous life'
 
-	p->colour = Vector4(RAND(), RAND(), RAND(), 1.0);
+	p->colour = Vector4(0.6f + RAND() * 0.4f, RAND() * 0.5f, RAND() * 0.5f, 1.0);
 	p->direction = initialDirection;
 	p->direction.x += ((RAND() - RAND()) * particleVariance);
 	p->direction.y += ((RAND() - RAND()) * particleVariance);
@@ -141,6 +141,7 @@ Particle* ParticleEmitter::GetFreeParticle() {
 
 	p->direction.Normalise();	//Keep its direction normalised!
 	p->position.ToZero();
+	p->position = Vector3(2244.0f, 1450.0f, 2076.0f);
 
 	p->speed = particleSpeed;
 

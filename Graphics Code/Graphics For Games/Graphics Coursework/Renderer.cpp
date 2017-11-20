@@ -128,9 +128,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 100000.0f);
 
 	cameras[SceneID::SOLAR_SCENE] = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
-	//cameras[SceneID::VOLCANO_SCENE] = new Camera(0.0f, 0.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 5000.0f,
-	//	mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f));
-	cameras[SceneID::VOLCANO_SCENE] = new Camera(0, 0, Vector3(0, 0, 250.0f));
+	cameras[SceneID::VOLCANO_SCENE] = new Camera(20.0f, 160.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 0.9f, 500.0f,
+		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * -0.5f));
 	cameras[SceneID::MOUNTAIN_SCENE] = new Camera(0.0f, 0.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 5000.0f,
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f));
 
@@ -656,6 +655,7 @@ void Renderer::DrawCombinedScene()
 
 void Renderer::DrawVolcanoMap()
 {
+	glEnable(GL_CULL_FACE);
 	SetCurrentShader(volcanoLightShader);
 	SetShaderLight(*volcanoLight);
 
@@ -669,7 +669,6 @@ void Renderer::DrawVolcanoMap()
 	UpdateShaderMatrices();
 
 	volcanoHeightMap->Draw();
-
 	glUseProgram(0);
 }
 
@@ -806,21 +805,27 @@ void Renderer::DrawEmitters()
 	//glClearColor(0, 0, 0, 1);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	glDisable(GL_DEPTH_TEST);
+
+	modelMatrix.ToIdentity();
+	projMatrix = defaultProjMatrix;
+
 	SetCurrentShader(particleShader);
-	SetShaderLight(*volcanoLight);
+	//SetShaderLight(*volcanoLight);
 
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 
 	SetShaderParticleSize(lavaEmitter->GetParticleSize());
-	lavaEmitter->SetParticleSize(1000.0f);
+	lavaEmitter->SetParticleSize(80.0f);
 	lavaEmitter->SetParticleVariance(1.0f);
 	lavaEmitter->SetLaunchParticles(16.0f);
 	lavaEmitter->SetParticleLifetime(2000.0f);
-	lavaEmitter->SetParticleSpeed(0.1f);
+	lavaEmitter->SetParticleSpeed(1.0f);
 	UpdateShaderMatrices();
 
 	lavaEmitter->Draw();
 
+	glEnable(GL_DEPTH_TEST);
 	glUseProgram(0);
 }
 
