@@ -39,7 +39,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	lavaQuad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"lavaPlanet2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	lavaQuad->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"waterBumpMap1.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-	volcanoHeightMap = new HeightMap(HEIGHTMAPSDIR"pompeii.data", 1080, 1080, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
+	volcanoHeightMap = new HeightMap(HEIGHTMAPSDIR"pompeii257.data", 257, 257, 16.0f, 16.0f, 8.0f, 1.0f / 16.0f, 1.0f / 16.0f);
 	volcanoHeightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	volcanoHeightMap->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
@@ -67,7 +67,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	waterQuad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	waterQuad->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"waterBumpMap1.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-	mountainsHeightMap = new HeightMap(HEIGHTMAPSDIR"hawaiiHeightMap.data", 1080, 1080, 16.0f, 16.0f, 16.0f, 1.0f / 16.0f, 1.0f / 16.0f);
+	mountainsHeightMap = new HeightMap(HEIGHTMAPSDIR"mountainsTest2.data", 257, 257, 16.0f, 16.0f, 4.0f, 1.0f / 16.0f, 1.0f / 16.0f);
 	mountainsHeightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	mountainsHeightMap->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
@@ -106,7 +106,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 
 	basicFont = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
 
-	defaultProjMatrix = Matrix4::Perspective(1.0f, 50000.0f, (float)width / (float)height, 45.0f);
+	defaultProjMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 	shadowMatrix = Matrix4::Perspective(1.0f, 10000.0f, 1.0f, 90.0f);
 	projMatrix = defaultProjMatrix;
 
@@ -168,6 +168,18 @@ Renderer::~Renderer(void)
 void Renderer::UpdateScene(float msec)
 {
 	sceneTimer += msec;
+	totalTimer += msec;
+
+	//Calculate average fps every second
+	//if over 1 second has passed
+	fpsTimer += msec;
+	if (fpsTimer > 1000.0f)
+	{
+		fps = frameCount * 1000.0f / fpsTimer;
+		frameCount = 0;
+		fpsTimer = 0.0f;
+	}
+	frameCount++;
 
 	//Recompile shaders if R pressed
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_R))
@@ -178,7 +190,6 @@ void Renderer::UpdateScene(float msec)
 	//Forward scene
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_RIGHT))
 	{
-		sceneTimer = 0.0f;
 		sceneID++;
 		if (sceneID >= SceneID::NUM_SCENES)
 		{
@@ -186,13 +197,12 @@ void Renderer::UpdateScene(float msec)
 		}
 
 		//Change current scene information
-		changeScene();
+		setScene(sceneID);
 	}
 
 	//Backward scene
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_LEFT))
 	{
-		sceneTimer = 0.0f;
 		sceneID--;
 		if (sceneID < 0)
 		{
@@ -200,7 +210,13 @@ void Renderer::UpdateScene(float msec)
 		}
 
 		//Change current scene information
-		changeScene();
+		setScene(sceneID);
+	}
+
+	//Toggle info
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_I))
+	{
+		showInfo = !showInfo;
 	}
 
 	currentCamera->UpdateCamera(msec);
@@ -254,9 +270,21 @@ void Renderer::RenderScene()
 		DrawWater();
 	}
 
-	DrawInfo();
+	if (showInfo)
+	{
+		drawInfo();
+	}
 
 	SwapBuffers();
+}
+
+void Renderer::setScene(int n)
+{
+	sceneTimer = 0.0f;
+	sceneID = n;
+	currentScene = scenes[sceneID];
+	currentCamera = cameras[sceneID];
+	currentSkyMap = skyMaps[sceneID];
 }
 
 void Renderer::compileShaders()
@@ -330,14 +358,7 @@ void Renderer::initShadowMap()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::changeScene()
-{
-	currentCamera = cameras[sceneID];
-	currentScene = scenes[sceneID];
-	currentSkyMap = skyMaps[sceneID];
-}
-
-void Renderer::DrawInfo()
+void Renderer::drawInfo()
 {
 	glEnable(GL_BLEND);
 
@@ -350,16 +371,46 @@ void Renderer::DrawInfo()
 
 	UpdateShaderMatrices();
 
-	glActiveTexture(GL_TEXTURE0 + 12);
-	glBindTexture(GL_TEXTURE_2D, basicFont->texture);
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 12);
+	//glActiveTexture(GL_TEXTURE0 + 12);
+	//glBindTexture(GL_TEXTURE_2D, basicFont->texture);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 
-	DrawText("This is orthographic text!", Vector3(0, 0, 0), 16.0f);
-	DrawText("This is perspective text!!!!", Vector3(0, 0, -1000), 64.0f, true);
+	float currentY = 0.0f;
 
+	//Current scene
 	std::ostringstream oss;
-	oss << std::fixed << std::setprecision(2) << fps;
-	DrawText(oss.str(), Vector3(50.0f, 50.0f, 0), 16.0f);
+	oss << "Current Scene: " << std::fixed << std::setprecision(0) << sceneNames[sceneID];
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
+	//FPS
+	oss.str("");
+	oss.clear();
+	oss << "FPS: " << std::fixed << std::setprecision(2) << fps;
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
+	//Camera speed
+	oss.str("");
+	oss.clear();
+	oss << "Camera Speed: " << std::fixed << std::setprecision(1) << currentCamera->getSpeed();
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
+	//Total time
+	oss.str("");
+	oss.clear();
+	oss << "Total Time: " << std::fixed << std::setprecision(2) << totalTimer / 1000.0f;
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
+	//Scene time
+	oss.str("");
+	oss.clear();
+	oss << "Scene Time: " << std::fixed << std::setprecision(2) << sceneTimer / 1000.0f;
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
 
 	glUseProgram(0);
 	glDisable(GL_BLEND);
@@ -547,7 +598,7 @@ void Renderer::DrawWater()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, currentSkyMap);
 
 	float heightX = (mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f);
-	float heightY = 256.0f * mountainsHeightMap->getHeightMapY() / 6.0f + sin(sceneTimer / 500.0f) * 20.0f;
+	float heightY = 256.0f * mountainsHeightMap->getHeightMapY() / 3.0f + sin(sceneTimer / 500.0f) * 10.0f;
 	float heightZ = (mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapZ() / 2.0f);
 
 	modelMatrix =
@@ -555,8 +606,9 @@ void Renderer::DrawWater()
 		Matrix4::Scale(Vector3(heightX, 1, heightZ)) *
 		Matrix4::Rotation(90.0f, Vector3(1.0f, 0.0f, 0.0f));
 
-	textureMatrix = Matrix4::Scale(Vector3(10.0f, 10.0f, 10.0f)) *
-		Matrix4::Rotation(waterRotate, Vector3(0.0f, 0.0f, -1.0f));
+	textureMatrix = Matrix4::Scale(Vector3(10.0f, 10.0f, 10.0f))
+		* Matrix4::Translation(Vector3(0.0f, sin(sceneTimer / 500.0f) / -50.0f, 0.0f)); /*
+		Matrix4::Rotation(waterRotate, Vector3(0.0f, 0.0f, -1.0f));*/
 
 	UpdateShaderMatrices();
 	waterQuad->Draw();
@@ -657,7 +709,7 @@ void Renderer::SetShaderParticleSize(const float f)
 	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "particleSize"), f);
 }
 
-void Renderer::DrawText(const std::string &text, const Vector3 &position, const float size, const bool perspective) {
+void Renderer::drawText(const std::string &text, const Vector3 &position, const float size, const bool perspective) {
 	//Create a new temporary TextMesh, using our line of text and our font
 	TextMesh* mesh = new TextMesh(text, *basicFont);
 

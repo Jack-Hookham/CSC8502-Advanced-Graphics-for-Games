@@ -39,24 +39,27 @@ public:
 	Matrix4 BuildViewMatrix();
 
 	//Gets position in world space
-	Vector3 GetPosition() const { return position;}
+	inline Vector3 GetPosition() const { return position;}
 	//Sets position in world space
-	void	SetPosition(Vector3 val) { position = val;}
+	inline void	SetPosition(Vector3 val) { position = val;}
 
 	//Gets yaw, in degrees
-	float	GetYaw()   const { return yaw;}
+	inline float	GetYaw()   const { return yaw;}
 	//Sets yaw, in degrees
-	void	SetYaw(float y) {yaw = y;}
+	inline void	SetYaw(float y) {yaw = y;}
 
 	//Gets pitch, in degrees
-	float	GetPitch() const { return pitch;}
+	inline float	GetPitch() const { return pitch;}
 	//Sets pitch, in degrees
-	void	SetPitch(float p) {pitch = p;}
+	inline void	SetPitch(float p) {pitch = p;}
+
+	inline float getSpeed() const { return speed; }
+	inline void setSpeed(float s) { speed = s; }
 
 protected:
-	float	yaw = 0.0f;
-	float	pitch = 0.0f;
+	float yaw = 0.0f;
+	float pitch = 0.0f;
+	float speed = 2.0f;
 	Vector3 position;
 
-	bool goFaster = false;
 };

@@ -32,26 +32,32 @@ public:
 	virtual void UpdateScene(float msec);
 	virtual void RenderScene();
 
-	void setScene(int n) 
-	{ 
-		sceneID = n;
-		currentScene = scenes[sceneID];
-		currentCamera = cameras[sceneID];
-		currentSkyMap = skyMaps[sceneID];
-	}
+	void setScene(int scene);
 
 	int getScene() { return sceneID; }
 
-	void DrawText(const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
+	void drawText(const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
 
 protected:
+	//Total time since program started
+	float totalTimer = 0.0f;
+	//Total time of current scene
 	float sceneTimer = 0.0f;
 
-	void DrawInfo();
+	//fps timer used to calculate average fps over 1 second
+	//gets reset every second
+	float fpsTimer = 0.0f;
+	//frame count to count the number of frames that have passed in the last second
+	int frameCount = 0;
+	float fps = 0.0f;
+
+	bool showInfo = true;
+
+	void drawInfo();
+
 	void DrawSkybox();
 
 	void compileShaders();
-	void changeScene();
 
 	void DrawNode(RenderObject* n);
 
@@ -79,9 +85,6 @@ protected:
 	Mountains* mountains;
 
 	Light* sunLight;
-
-	bool showInfo = true;
-	float fps = 0.0f;
 
 	Shader* skyboxShader;
 
