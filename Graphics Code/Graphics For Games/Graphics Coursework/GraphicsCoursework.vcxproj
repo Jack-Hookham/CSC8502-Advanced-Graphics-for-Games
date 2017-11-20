@@ -72,6 +72,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mountains.cpp" />
+    <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SolarSystem.cpp" />
     <ClCompile Include="RenderObject.cpp" />
@@ -80,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mountains.h" />
+    <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SolarSystem.h" />
     <ClInclude Include="RenderObject.h" />

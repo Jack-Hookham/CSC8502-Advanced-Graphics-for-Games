@@ -11,6 +11,7 @@
 #include "Volcano.h"
 #include "Mountains.h"
 #include "TextMesh.h"
+#include "ParticleEmitter.h"
 
 #define SHADOWSIZE 2048
 
@@ -89,7 +90,6 @@ protected:
 	Shader* textShader; 
 	Font*	basicFont;
 
-
 	//-----------------------Solar System Scene---------------------
 	void DrawShadowScene();
 	void DrawCombinedScene();
@@ -121,6 +121,9 @@ protected:
 	void DrawVolcanoMap();
 	void DrawFloorLava();
 	void DrawVolcanoLava();
+	void DrawEmitters();
+	void SetShaderParticleSize(const float f);
+
 
 	HeightMap* volcanoHeightMap;
 	Shader* volcanoLightShader;
@@ -129,6 +132,11 @@ protected:
 	Light* volcanoLight;
 
 	Mesh* lavaQuad;
+
+	Shader* particleShader;
+	ParticleEmitter* lavaEmitter;
+
+	bool erupting = false;
 
 	//-----------------------Mountains Scene---------------------------
 	void DrawMountainMap();

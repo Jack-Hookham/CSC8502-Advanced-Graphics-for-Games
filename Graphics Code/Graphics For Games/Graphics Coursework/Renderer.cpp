@@ -1,21 +1,21 @@
 #include "Renderer.h"
 
-Renderer::Renderer(Window &parent) : OGLRenderer(parent)
+Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 {
 	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
 
 	//Set up the sky map for each scene
-	//skyMaps[SceneID::SOLAR_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"GalaxySkyBox/galaxy_west.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_east.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_up.bmp",
-	//	TEXTUREDIR"GalaxySkyBox/galaxy_down.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_south.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_north.bmp",
-	//	SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
+	skyMaps[SceneID::SOLAR_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"GalaxySkyBox/galaxy_west.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_east.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_up.bmp",
+		TEXTUREDIR"GalaxySkyBox/galaxy_down.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_south.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_north.bmp",
+		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
 	//skyMaps[SceneID::SOLAR_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"HellSkyBox/hell_rt.bmp", TEXTUREDIR"HellSkyBox/hell_lf.bmp", TEXTUREDIR"HellSkyBox/hell_up.bmp",
 	//	TEXTUREDIR"HellSkyBox/hell_dn.bmp", TEXTUREDIR"HellSkyBox/hell_bk.bmp", TEXTUREDIR"HellSkyBox/hell_ft.bmp",
 	//	SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
 
-	skyMaps[SceneID::SOLAR_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"MercurySkyBox/mercury_rt.bmp", TEXTUREDIR"MercurySkyBox/mercury_lf.bmp", TEXTUREDIR"MercurySkyBox/mercury_up.bmp",
-		TEXTUREDIR"MercurySkyBox/mercury_dn.bmp", TEXTUREDIR"MercurySkyBox/mercury_bk.bmp", TEXTUREDIR"MercurySkyBox/mercury_ft.bmp",
-		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
+	//skyMaps[SceneID::SOLAR_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"MercurySkyBox/mercury_rt.bmp", TEXTUREDIR"MercurySkyBox/mercury_lf.bmp", TEXTUREDIR"MercurySkyBox/mercury_up.bmp",
+	//	TEXTUREDIR"MercurySkyBox/mercury_dn.bmp", TEXTUREDIR"MercurySkyBox/mercury_bk.bmp", TEXTUREDIR"MercurySkyBox/mercury_ft.bmp",
+	//	SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
 
 	skyMaps[SceneID::VOLCANO_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"HellSkyBox/hell_rt.bmp", TEXTUREDIR"HellSkyBox/hell_lf.bmp", TEXTUREDIR"HellSkyBox/hell_up.bmp",
 		TEXTUREDIR"HellSkyBox/hell_dn.bmp", TEXTUREDIR"HellSkyBox/hell_bk.bmp", TEXTUREDIR"HellSkyBox/hell_ft.bmp",
@@ -56,6 +56,9 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	SetTextureRepeating(volcanoHeightMap->GetTexture(), true);
 	SetTextureRepeating(volcanoHeightMap->GetBumpMap(), true);
 
+	lavaEmitter = new ParticleEmitter(Vector3(volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 2.0f, 5000.0f,
+		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 2.0f), ParticleType::LAVA_BUBBLE);
+
 	volcanoLight = new Light(Vector3((volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
 		volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * -60.0f), Vector4(1.0f, 0.7f, 0.4f, 1),
 		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 100000.0f);
@@ -86,8 +89,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 100000.0f);
 
 	cameras[SceneID::SOLAR_SCENE] = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
-	cameras[SceneID::VOLCANO_SCENE] = new Camera(0.0f, 0.0f, Vector3(volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 2.0f, 5000.0f,
-		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 2.0f));
+	cameras[SceneID::VOLCANO_SCENE] = new Camera(0.0f, 0.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 5000.0f,
+		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f));
 	cameras[SceneID::MOUNTAIN_SCENE] = new Camera(0.0f, 0.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 5000.0f,
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f));
 
@@ -117,11 +120,11 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 	currentScene = scenes[sceneID];
 
-	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	//glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-	glEnable(GL_DEPTH_TEST);
 	init = true;
 }
 
@@ -154,9 +157,12 @@ Renderer::~Renderer(void)
 	delete volcanoHeightMap;
 	delete volcanoLightShader;
 	delete volcanoLight;
+	delete particleShader;
 
 	delete waterQuad;
 	delete lavaQuad;
+
+	delete lavaEmitter;
 }
 
 void Renderer::UpdateScene(float msec)
@@ -179,6 +185,7 @@ void Renderer::UpdateScene(float msec)
 			sceneID = 0;
 		}
 
+		//Change current scene information
 		changeScene();
 	}
 
@@ -192,8 +199,8 @@ void Renderer::UpdateScene(float msec)
 			sceneID = SceneID::NUM_SCENES - 1;
 		}
 
+		//Change current scene information
 		changeScene();
-
 	}
 
 	currentCamera->UpdateCamera(msec);
@@ -202,7 +209,12 @@ void Renderer::UpdateScene(float msec)
 	currentScene->Update(msec);
 	if (sceneID == SceneID::SOLAR_SCENE)
 	{
+
 	}	
+	else if (sceneID == SceneID::VOLCANO_SCENE)
+	{
+		lavaEmitter->Update(msec);
+	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
 		waterRotate += msec / 1000.0f;
@@ -217,8 +229,6 @@ void Renderer::RenderScene()
 	if (sceneID == SceneID::SOLAR_SCENE)
 	{
 		SetShaderLight(*sunLight);
-
-		//UpdateShaderMatrices();
 
 		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, (float*)&textureMatrix);
 		float mod = 0.0f;
@@ -235,6 +245,7 @@ void Renderer::RenderScene()
 		DrawVolcanoMap();
 		DrawVolcanoLava();
 		DrawFloorLava();
+		DrawEmitters();
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
@@ -243,7 +254,7 @@ void Renderer::RenderScene()
 		DrawWater();
 	}
 
-	//DrawInfo();
+	DrawInfo();
 
 	SwapBuffers();
 }
@@ -264,8 +275,9 @@ void Renderer::compileShaders()
 
 	lavaShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 	volcanoLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/volcanoFragment.glsl");
+	particleShader = new Shader(SHADERDIR"CW/particleVertex.glsl", SHADERDIR"CW/particleFragment.glsl", SHADERDIR"CW/particleGeometry.glsl");
 
-	reflectShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/reflectFragment.glsl");
+	reflectShader = new Shader(SHADERDIR"Tutorials/bumpVertex.glsl", SHADERDIR"Tutorials/reflectFragment.glsl");
 	mountainsLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/mountainFragment.glsl");
 
 	if (!textShader->LinkProgram() ||
@@ -278,6 +290,7 @@ void Renderer::compileShaders()
 
 		!lavaShader->LinkProgram() ||
 		!volcanoLightShader->LinkProgram() ||
+		!particleShader->LinkProgram() ||
 
 		!reflectShader->LinkProgram() ||
 		!mountainsLightShader->LinkProgram())
@@ -328,9 +341,18 @@ void Renderer::DrawInfo()
 {
 	glEnable(GL_BLEND);
 
-	//glUseProgram(textShader->GetProgram());
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+
 	SetCurrentShader(textShader);
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), basicFont->texture);
+
+	textureMatrix.ToIdentity();
+
+	UpdateShaderMatrices();
+
+	glActiveTexture(GL_TEXTURE0 + 12);
+	glBindTexture(GL_TEXTURE_2D, basicFont->texture);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 12);
 
 	DrawText("This is orthographic text!", Vector3(0, 0, 0), 16.0f);
 	DrawText("This is perspective text!!!!", Vector3(0, 0, -1000), 64.0f, true);
@@ -341,6 +363,9 @@ void Renderer::DrawInfo()
 
 	glUseProgram(0);
 	glDisable(GL_BLEND);
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 }
 
 void Renderer::DrawNode(RenderObject* n)
@@ -384,6 +409,9 @@ void Renderer::DrawSkybox()
 {
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glDepthMask(GL_FALSE);
+
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
 	SetCurrentShader(skyboxShader);
 
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 3);
@@ -397,6 +425,9 @@ void Renderer::DrawSkybox()
 	glUseProgram(0);
 	glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glDepthMask(GL_TRUE);
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 }
 
 void Renderer::DrawShadowScene()
@@ -556,7 +587,7 @@ void Renderer::DrawFloorLava()
 
 	modelMatrix =
 		Matrix4::Translation(Vector3(heightX, heightY, heightZ)) *
-		Matrix4::Scale(Vector3(heightX, 1, heightZ)) *
+		Matrix4::Scale(Vector3(heightX * 3.0f, 1, heightZ * 3.0f)) *
 		Matrix4::Rotation(90, Vector3(1.0f, 0.0f, 0.0f));
 
 	textureMatrix = Matrix4::Scale(Vector3(10.0f, 10.0f, 10.0f)) *
@@ -602,6 +633,30 @@ void Renderer::DrawVolcanoLava()
 	glUseProgram(0);
 }
 
+void Renderer::DrawEmitters()
+{
+	SetCurrentShader(particleShader);
+	SetShaderLight(*volcanoLight);
+
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	SetShaderParticleSize(lavaEmitter->GetParticleSize());
+	lavaEmitter->SetParticleSize(1000.0f);
+	lavaEmitter->SetParticleVariance(1.0f);
+	lavaEmitter->SetLaunchParticles(16.0f);
+	lavaEmitter->SetParticleLifetime(2000.0f);
+	lavaEmitter->SetParticleSpeed(0.1f);
+	UpdateShaderMatrices();
+
+	lavaEmitter->Draw();
+
+	glUseProgram(0);
+}
+
+void Renderer::SetShaderParticleSize(const float f)
+{
+	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "particleSize"), f);
+}
+
 void Renderer::DrawText(const std::string &text, const Vector3 &position, const float size, const bool perspective) {
 	//Create a new temporary TextMesh, using our line of text and our font
 	TextMesh* mesh = new TextMesh(text, *basicFont);
@@ -626,4 +681,6 @@ void Renderer::DrawText(const std::string &text, const Vector3 &position, const 
 	mesh->Draw();
 
 	delete mesh; //Once it's drawn, we don't need it anymore!
+
+	projMatrix = defaultProjMatrix;
 }
