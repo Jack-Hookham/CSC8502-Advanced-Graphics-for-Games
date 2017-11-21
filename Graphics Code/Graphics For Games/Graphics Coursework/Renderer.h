@@ -66,6 +66,8 @@ protected:
 	void DrawPostProcess();
 	void DrawFinalScene();
 
+	void shakeCamera(const float msec, Camera* camera);
+
 	Mesh* processQuad;
 	Shader* processShader;
 	Shader* sceneShader;

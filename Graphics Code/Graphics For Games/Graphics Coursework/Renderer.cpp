@@ -103,7 +103,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	lavaEmitter = new ParticleEmitter(ParticleType::LAVA_PARTICLE);
 	lavaEmitter->SetParticleSize(50.0f);
 	lavaEmitter->SetParticleVariance(1.0f);
-	lavaEmitter->SetLaunchParticles(100.0f);
+	lavaEmitter->SetLaunchParticles(16.0f);
 	lavaEmitter->SetParticleLifetime(3000.0f);
 	lavaEmitter->SetParticleSpeed(1.0f);
 
@@ -312,6 +312,11 @@ void Renderer::UpdateScene(float msec)
 		lavaEmitter->Update(msec, volcanoErupting);
 		emberEmitter->Update(msec);
 		//steamEmitter->Update(msec);
+
+		if (volcanoErupting)
+		{
+			shakeCamera(msec, currentCamera);
+		}
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
@@ -632,6 +637,15 @@ void Renderer::DrawFinalScene()
 	processQuad->SetTexture(bufferColourTex[0]);
 	processQuad->Draw();
 	glUseProgram(0);
+}
+
+void Renderer::shakeCamera(const float msec, Camera* camera)
+{
+	float min = 0.5f * msec;
+	//Camera shake
+	Vector3 oldPosition = currentCamera->GetPosition();
+	currentCamera->SetPosition(Vector3(oldPosition.x + (RAND() * min * 2.0f) - min, oldPosition.y + (RAND() * min * 2.0f) - min,
+		oldPosition.z + (RAND() * min * 2.0f) - min));
 }
 
 void Renderer::DrawSkybox()
