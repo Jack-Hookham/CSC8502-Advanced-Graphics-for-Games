@@ -373,11 +373,8 @@ void Renderer::RenderScene()
 		DrawEmitters();
 
 		glViewport(0, 0, width / 2, height / 2);
-		DrawSkybox();
-		DrawVolcanoMap();
-		DrawVolcanoLava();
-		DrawFloorLava();
-		DrawEmitters();
+		DrawShadowScene();
+		DrawCombinedScene();
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
@@ -546,11 +543,11 @@ void Renderer::drawInfo()
 	currentY += 20.0f;
 
 	//Mountains light position
-	oss.str("");
-	oss.clear();
-	oss << "Mountains Light Position: " << std::fixed << std::setprecision(0) << mountainsLight->GetPosition();
-	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
-	currentY += 20.0f;
+	//oss.str("");
+	//oss.clear();
+	//oss << "Mountains Light Position: " << std::fixed << std::setprecision(0) << mountainsLight->GetPosition();
+	//drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	//currentY += 20.0f;
 
 	glUseProgram(0);
 

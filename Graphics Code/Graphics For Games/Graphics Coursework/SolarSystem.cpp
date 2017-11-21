@@ -85,23 +85,25 @@ void SolarSystem::Update(float msec)
 
 	Vector3 sunDir = Vector3(0, 1, 0);
 
+	float update = msec / 10.0f;
+
 	if (rotateObjects)
 	{
-		sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(sunRotationSpeed, sunDir));
+		sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(sunRotationSpeed * update, sunDir));
 
 		//Rotate each planet around the sun
 		for (int i = 0; i < NUM_PLANETS; ++i)
 		{
 			RenderObject* planet = sun->GetChild(i);
 			planet->SetTransform(planet->GetTransform() * Matrix4::Translation(Vector3(-planets[i].orbitRadius * scale, 0.0f, 0.0f)) *
-				Matrix4::Rotation(-sunRotationSpeed + planets[i].orbitSpeed, sunDir) * Matrix4::Translation(Vector3(planets[i].orbitRadius * scale, 0.0f, 0.0f)));
+				Matrix4::Rotation((-sunRotationSpeed + planets[i].orbitSpeed) * update, sunDir) * Matrix4::Translation(Vector3(planets[i].orbitRadius * scale, 0.0f, 0.0f)));
 
 			//Rotate each moon around its planet
 			for (int j = 0; j < planets[i].moons.size(); ++j)
 			{
 				RenderObject* moon = planet->GetChild(j);
 				moon->SetTransform(moon->GetTransform() * Matrix4::Translation(Vector3(-planets[i].moons[j].orbitRadius * scale, 0.0f, 0.0f)) *
-					Matrix4::Rotation(planets[i].moons[j].orbitSpeed, sunDir) * Matrix4::Translation(Vector3(planets[i].moons[j].orbitRadius * scale, 0.0f, 0.0f)));
+					Matrix4::Rotation((planets[i].moons[j].orbitSpeed) * update, sunDir) * Matrix4::Translation(Vector3(planets[i].moons[j].orbitRadius * scale, 0.0f, 0.0f)));
 			}
 		}
 	}
