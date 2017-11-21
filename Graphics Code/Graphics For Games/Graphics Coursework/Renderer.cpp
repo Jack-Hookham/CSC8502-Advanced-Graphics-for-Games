@@ -101,9 +101,9 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	SetTextureRepeating(volcanoHeightMap->GetBumpMap(), true);
 
 	lavaEmitter = new ParticleEmitter(ParticleType::LAVA_PARTICLE);
-	lavaEmitter->SetParticleSize(50.0f);
+	lavaEmitter->SetParticleSize(20.0f);
 	lavaEmitter->SetParticleVariance(1.0f);
-	lavaEmitter->SetLaunchParticles(16.0f);
+	lavaEmitter->SetLaunchParticles(32.0f);
 	lavaEmitter->SetParticleLifetime(3000.0f);
 	lavaEmitter->SetParticleSpeed(1.0f);
 
@@ -121,9 +121,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	steamEmitter->SetParticleLifetime(3000.0f);
 	steamEmitter->SetParticleSpeed(0.1f);
 
-	volcanoLight = new Light(Vector3((volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
-		volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * -60.0f), Vector4(1.0f, 0.7f, 0.4f, 1),
-		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 100000.0f);
+	volcanoLight = new Light(Vector3((volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * 0.25f), 3000.0f,
+		volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * 0.75f), Vector4(1.0f, 1.0f, 1.0f, 1), 10000.0f);
 
 	waterQuad = Mesh::GenerateQuad();
 	waterQuad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
@@ -417,7 +416,7 @@ void Renderer::compileShaders()
 	blackHoleShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl",
 		SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
 
-	lavaShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
+	lavaShader = new Shader(SHADERDIR"CW/lavaVertex.glsl", SHADERDIR"CW/lavaFragment.glsl");
 	volcanoLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/volcanoFragment.glsl");
 	particleShader = new Shader(SHADERDIR"CW/particleVertex.glsl", SHADERDIR"CW/particleFragment.glsl", SHADERDIR"CW/particleGeometry.glsl");
 
@@ -534,13 +533,6 @@ void Renderer::drawInfo()
 	oss.str("");
 	oss.clear();
 	oss << "Scene Time: " << std::fixed << std::setprecision(2) << sceneTimer / 1000.0f;
-	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
-	currentY += 20.0f;
-
-	//Scene time
-	oss.str("");
-	oss.clear();
-	oss << "Mountain Light Position: " << std::fixed << std::setprecision(0) << mountainsLight->GetPosition();
 	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
@@ -825,6 +817,7 @@ void Renderer::DrawWater()
 
 void Renderer::DrawFloorLava()
 {
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	SetCurrentShader(lavaShader);
 	SetShaderLight(*volcanoLight);
 
@@ -854,10 +847,12 @@ void Renderer::DrawFloorLava()
 	lavaQuad->Draw();
 
 	glUseProgram(0);
+	glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
 void Renderer::DrawVolcanoLava()
 {
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	SetCurrentShader(lavaShader);
 	SetShaderLight(*volcanoLight);
 
@@ -887,6 +882,7 @@ void Renderer::DrawVolcanoLava()
 	lavaQuad->Draw();
 
 	glUseProgram(0);
+	glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
 void Renderer::DrawEmitters()
@@ -895,6 +891,8 @@ void Renderer::DrawEmitters()
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	modelMatrix.ToIdentity();
 	projMatrix = defaultProjMatrix;
