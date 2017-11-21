@@ -154,7 +154,7 @@ protected:
 	ParticleEmitter* emberEmitter;
 	ParticleEmitter* steamEmitter;
 
-	bool erupting = false;
+	bool volcanoErupting = false;
 
 	//-----------------------Mountains Scene---------------------------
 

@@ -101,20 +101,25 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	SetTextureRepeating(volcanoHeightMap->GetBumpMap(), true);
 
 	lavaEmitter = new ParticleEmitter(ParticleType::LAVA_PARTICLE);
-	lavaEmitter->SetParticleSize(80.0f);
+	lavaEmitter->SetParticleSize(50.0f);
 	lavaEmitter->SetParticleVariance(1.0f);
-	lavaEmitter->SetLaunchParticles(16.0f);
+	lavaEmitter->SetLaunchParticles(100.0f);
 	lavaEmitter->SetParticleLifetime(3000.0f);
 	lavaEmitter->SetParticleSpeed(1.0f);
 
 	emberEmitter = new ParticleEmitter(ParticleType::EMBER_PARTICLE);
-	lavaEmitter->SetParticleSize(10.0f);
-	lavaEmitter->SetParticleVariance(1.0f);
-	lavaEmitter->SetLaunchParticles(16.0f);
-	lavaEmitter->SetParticleLifetime(3000.0f);
-	lavaEmitter->SetParticleSpeed(1.0f);
+	emberEmitter->SetParticleSize(10.0f);
+	emberEmitter->SetParticleVariance(1.0f);
+	emberEmitter->SetLaunchParticles(16.0f);
+	emberEmitter->SetParticleLifetime(3000.0f);
+	emberEmitter->SetParticleSpeed(1.0f);
 
 	steamEmitter = new ParticleEmitter(ParticleType::STEAM_PARTICLE);
+	steamEmitter->SetParticleSize(10.0f);
+	steamEmitter->SetParticleVariance(1.0f);
+	steamEmitter->SetLaunchParticles(16.0f);
+	steamEmitter->SetParticleLifetime(3000.0f);
+	steamEmitter->SetParticleSpeed(0.1f);
 
 	volcanoLight = new Light(Vector3((volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
 		volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * -60.0f), Vector4(1.0f, 0.7f, 0.4f, 1),
@@ -300,8 +305,13 @@ void Renderer::UpdateScene(float msec)
 	}	
 	else if (sceneID == SceneID::VOLCANO_SCENE)
 	{
-		//lavaEmitter->Update(msec);
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E))
+		{
+			volcanoErupting = !volcanoErupting;
+		}
+		lavaEmitter->Update(msec, volcanoErupting);
 		emberEmitter->Update(msec);
+		//steamEmitter->Update(msec);
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
@@ -870,8 +880,7 @@ void Renderer::DrawEmitters()
 	//glClearColor(0, 0, 0, 1);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glDisable(GL_DEPTH_TEST);
-	//glDepthFunc()
+	//glDisable(GL_DEPTH_TEST);
 
 	modelMatrix.ToIdentity();
 	projMatrix = defaultProjMatrix;
@@ -883,8 +892,11 @@ void Renderer::DrawEmitters()
 
 	SetShaderParticleSize(lavaEmitter->GetParticleSize());
 	UpdateShaderMatrices();
-
 	lavaEmitter->Draw();
+
+	emberEmitter->SetParticleSize(10.0f + RAND() * 10.0f);
+	SetShaderParticleSize(emberEmitter->GetParticleSize());
+	UpdateShaderMatrices();
 	emberEmitter->Draw();
 
 	glEnable(GL_DEPTH_TEST);

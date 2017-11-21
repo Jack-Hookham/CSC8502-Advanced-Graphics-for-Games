@@ -71,7 +71,7 @@ public:
 	function - which has a msec float, just like the other
 	updating functions you've seen.
 	*/
-	void Update(float msec);
+	void Update(float msec, bool erupting = false);
 
 	virtual void Draw();
 

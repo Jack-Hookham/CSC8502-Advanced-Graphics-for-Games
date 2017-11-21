@@ -3,11 +3,6 @@
 #include <io.h>
 #include <stdio.h>
 
-
-//Cheap random number generator, will generate
-//numbers between 0.0 and 1.0 to 2 DP
-#define RAND() ((rand()%101)/100.0f)
-
 /*
 Constructor, which sets everything to some 'sensible' defaults.
 */
@@ -58,7 +53,7 @@ It goes through every particle of this emitter, and updates it. if it has no 'li
 it is removed from the particle list. If it's time to generate some new particles, we do
 that in here, too. Finally, this function resizes our VBOs if necessary.
 */
-void ParticleEmitter::Update(float msec) {
+void ParticleEmitter::Update(float msec, bool erupting) {
 	nextParticleTime -= msec;	//some time has passed!
 
 								/*
@@ -68,6 +63,10 @@ void ParticleEmitter::Update(float msec) {
 		nextParticleTime += particleRate;
 		//Add a number of particles to the vector, obtained from the free list.
 		for (int i = 0; i < numLaunchParticles; ++i) {
+			if (particleType == ParticleType::LAVA_PARTICLE && !erupting)
+			{
+				continue;
+			}
 			particles.push_back(GetFreeParticle());
 		}
 	}
@@ -158,7 +157,7 @@ Particle* ParticleEmitter::GetFreeParticle() {
 		p->direction.Normalise();	//Keep its direction normalised!
 		p->position = Vector3(-4000.0f + RAND() * 12000.0f, 350.0f, -4000.0f + RAND() * 12000.0f);
 
-		p->speed = particleSpeed + particleSpeed * RAND();
+		p->speed = particleSpeed * 0.5f + particleSpeed * RAND();
 	}
 	else if (particleType == ParticleType::STEAM_PARTICLE)
 	{
