@@ -63,13 +63,13 @@ protected:
 	void DrawNode(RenderObject* n);
 
 	//Post processing
-	void DrawPostProcess();
+	void DrawBlur();
 	void DrawFinalScene();
 
 	void shakeCamera(const float msec, Camera* camera);
 
 	Mesh* processQuad;
-	Shader* processShader;
+	Shader* blurShader;
 	Shader* sceneShader;
 	GLuint bufferFBO;
 	GLuint processFBO;
@@ -107,6 +107,12 @@ protected:
 
 	Shader* textShader; 
 	Font*	basicFont;
+
+	//Post processing
+	float blurFactor = 0.0f;
+
+	bool switchingLeft = false;
+	bool switchingRight = false;
 
 	//-----------------------Solar System Scene---------------------
 

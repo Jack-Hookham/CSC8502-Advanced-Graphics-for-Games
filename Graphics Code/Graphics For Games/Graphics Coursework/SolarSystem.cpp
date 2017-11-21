@@ -85,7 +85,7 @@ void SolarSystem::Update(float msec)
 
 	Vector3 sunDir = Vector3(0, 1, 0);
 
-	float update = msec / 10.0f;
+	float update = msec / 50.0f;
 
 	if (rotateObjects)
 	{

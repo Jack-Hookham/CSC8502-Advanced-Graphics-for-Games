@@ -195,7 +195,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 Renderer::~Renderer(void)
 {
 	delete processQuad;
-	delete processShader;
+	delete blurShader;
 	delete sceneShader;
 
 	glDeleteTextures(2, bufferColourTex);
@@ -264,29 +264,61 @@ void Renderer::UpdateScene(float msec)
 	}
 
 	//Forward scene
-	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_RIGHT))
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_RIGHT) && !switchingLeft && !switchingRight)
 	{
-		sceneID++;
-		if (sceneID >= SceneID::NUM_SCENES)
-		{
-			sceneID = 0;
-		}
-
-		//Change current scene information
-		setScene(sceneID);
+		switchingRight = true;
 	}
 
 	//Backward scene
-	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_LEFT))
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_LEFT) && !switchingLeft && !switchingRight)
 	{
-		sceneID--;
-		if (sceneID < 0)
-		{
-			sceneID = SceneID::NUM_SCENES - 1;
-		}
+		switchingLeft = true;
+	}
 
-		//Change current scene information
-		setScene(sceneID);
+	if (switchingRight)
+	{
+		//Blur out
+		if (blurFactor < 1.0f)
+		{
+			blurFactor += msec * 0.0003f;
+		}
+		//if blurring finished switch scene
+		else
+		{
+			sceneID--;
+			if (sceneID < 0)
+			{
+				sceneID = SceneID::NUM_SCENES - 1;
+			}
+
+			//Change current scene information
+			setScene(sceneID);
+			switchingRight = false;
+			blurFactor = 0.0f;
+		}
+	}
+
+	if (switchingLeft)
+	{
+		//Blur out
+		if (blurFactor < 1.0f)
+		{
+			blurFactor += msec * 0.0003f;
+		}
+		//if blurring finished switch scene
+		else
+		{
+			sceneID++;
+			if (sceneID >= SceneID::NUM_SCENES)
+			{
+				sceneID = 0;
+			}
+
+			//Change current scene information
+			setScene(sceneID);
+			switchingLeft = false;
+			blurFactor = 0.0f;
+		}
 	}
 
 	//Toggle info
@@ -390,7 +422,7 @@ void Renderer::RenderScene()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	DrawPostProcess();
+	DrawBlur();
 	DrawFinalScene();
 
 	if (showInfo)
@@ -413,8 +445,8 @@ void Renderer::setScene(int n)
 
 void Renderer::compileShaders()
 {
-	processShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/processFragment.glsl");
-	sceneShader = new Shader(SHADERDIR"Tutorials/texturedVertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
+	blurShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/blurFragment.glsl");
+	sceneShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
 
@@ -435,7 +467,7 @@ void Renderer::compileShaders()
 	mountainsLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/mountainFragment.glsl");
 	mountainSkyboxShader = new Shader(SHADERDIR"CW/cycleSkyboxVertex.glsl", SHADERDIR"CW/cycleSkyboxFragment.glsl");
 
-	if (!processShader->LinkProgram() ||
+	if (!blurShader->LinkProgram() ||
 		!sceneShader->LinkProgram() ||
 		!textShader->LinkProgram() ||
 		!skyboxShader->LinkProgram() ||
@@ -545,6 +577,13 @@ void Renderer::drawInfo()
 	oss.clear();
 	oss << "Scene Time: " << std::fixed << std::setprecision(2) << sceneTimer / 1000.0f;
 	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;	
+	
+	//Blur
+	oss.str("");
+	oss.clear();
+	oss << "Blur factor: " << std::fixed << std::setprecision(3) << blurFactor;
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
 	//Mountains light position
@@ -599,13 +638,13 @@ void Renderer::DrawNode(RenderObject* n)
 	}
 }
 
-void Renderer::DrawPostProcess()
+void Renderer::DrawBlur()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, processFBO);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bufferColourTex[1], 0);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-	SetCurrentShader(processShader);
+	SetCurrentShader(blurShader);
 
 	projMatrix = Matrix4::Orthographic(-1, 1, 1, -1, -1, 1);
 	viewMatrix.ToIdentity();
@@ -616,6 +655,7 @@ void Renderer::DrawPostProcess()
 	glDisable(GL_DEPTH_TEST);
 
 	glUniform2f(glGetUniformLocation(currentShader->GetProgram(), "pixelSize"), 1.0f / width, 1.0f / height);
+	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "blurFactor"), blurFactor);
 
 	for (int i = 0; i < POST_PASSES; ++i)
 	{
