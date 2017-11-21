@@ -45,6 +45,12 @@ void main(void)	{
 	}
 
 	fragColour = mix(texture2D(diffuseTex, IN.texCoord.xy), fragColour, blurFactor);
-	//fragColour = vec4(blurFactor, blurFactor, blurFactor, 1.0);
-	//fragColour = mix(texture2D(diffuseTex, IN.texCoord.xy), fragColour, 1.0);
+
+	//Fade to white towards the end of the transition
+	float whiteMod = (pow(blurFactor + 0.01, 10)) * 0.1;
+	fragColour += vec4(whiteMod, whiteMod, whiteMod, 1.0);
+
+	//Fade to black towards the end of the transition
+	// float blackMod = 1.0 - pow(blurFactor + 0.01, 10);
+	// fragColour *= vec4(blackMod, blackMod, blackMod, 1.0);
 }

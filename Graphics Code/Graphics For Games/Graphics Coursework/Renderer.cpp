@@ -264,13 +264,15 @@ void Renderer::UpdateScene(float msec)
 	}
 
 	//Forward scene
-	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_RIGHT) && !switchingLeft && !switchingRight)
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_RIGHT) && 
+		!switchingLeft && !switchingRight && switchedLeft && switchedRight)
 	{
 		switchingRight = true;
 	}
 
 	//Backward scene
-	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_LEFT) && !switchingLeft && !switchingRight)
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_LEFT) && 
+		!switchingLeft && !switchingRight && switchedLeft && switchedRight)
 	{
 		switchingLeft = true;
 	}
@@ -280,7 +282,7 @@ void Renderer::UpdateScene(float msec)
 		//Blur out
 		if (blurFactor < 1.0f)
 		{
-			blurFactor += msec * 0.0003f;
+			blurFactor += msec * blurIncrement;
 		}
 		//if blurring finished switch scene
 		else
@@ -294,7 +296,7 @@ void Renderer::UpdateScene(float msec)
 			//Change current scene information
 			setScene(sceneID);
 			switchingRight = false;
-			blurFactor = 0.0f;
+			switchedRight = false;
 		}
 	}
 
@@ -303,7 +305,7 @@ void Renderer::UpdateScene(float msec)
 		//Blur out
 		if (blurFactor < 1.0f)
 		{
-			blurFactor += msec * 0.0003f;
+			blurFactor += msec * blurIncrement;
 		}
 		//if blurring finished switch scene
 		else
@@ -317,7 +319,31 @@ void Renderer::UpdateScene(float msec)
 			//Change current scene information
 			setScene(sceneID);
 			switchingLeft = false;
-			blurFactor = 0.0f;
+			switchedRight = false;
+		}
+	}
+
+	if (!switchedRight)
+	{
+		if (blurFactor > blurIncrement)
+		{
+			blurFactor -= msec * blurIncrement;
+		}
+		else
+		{
+			switchedRight = true;
+		}
+	}
+
+	if (!switchedLeft)
+	{
+		if (blurFactor > 0.0f)
+		{
+			blurFactor -= msec * blurIncrement;
+		}
+		else
+		{
+			switchedLeft = true;
 		}
 	}
 
@@ -583,6 +609,30 @@ void Renderer::drawInfo()
 	oss.str("");
 	oss.clear();
 	oss << "Blur factor: " << std::fixed << std::setprecision(3) << blurFactor;
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
+	oss.str("");
+	oss.clear();
+	oss << "Switching Right: " << switchingRight;
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
+	oss.str("");
+	oss.clear();
+	oss << "Switching Left: " << switchingLeft;
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
+	oss.str("");
+	oss.clear();
+	oss << "Switched Right: " << switchedRight;
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
+	oss.str("");
+	oss.clear();
+	oss << "Switched Left: " << switchedLeft;
 	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 

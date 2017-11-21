@@ -62,10 +62,6 @@ protected:
 
 	void DrawNode(RenderObject* n);
 
-	//Post processing
-	void DrawBlur();
-	void DrawFinalScene();
-
 	void shakeCamera(const float msec, Camera* camera);
 
 	Mesh* processQuad;
@@ -109,10 +105,17 @@ protected:
 	Font*	basicFont;
 
 	//Post processing
+	void DrawBlur();
+	void DrawFinalScene();
+
 	float blurFactor = 0.0f;
 
 	bool switchingLeft = false;
 	bool switchingRight = false;
+	bool switchedLeft = true;
+	bool switchedRight = true;
+
+	const float blurIncrement = 0.001f;
 
 	//-----------------------Solar System Scene---------------------
 
