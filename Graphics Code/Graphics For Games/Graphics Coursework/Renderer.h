@@ -66,6 +66,7 @@ protected:
 
 	Mesh* processQuad;
 	Shader* blurShader;
+	Shader* sobelShader;
 	Shader* sceneShader;
 	GLuint bufferFBO;
 	GLuint processFBO;
@@ -106,14 +107,14 @@ protected:
 
 	//Post processing
 	void DrawBlur();
-	void DrawFinalScene();
+	void DrawSobel();
+	void DrawProcessedScene();
 
 	float blurFactor = 0.0f;
 
 	bool switchingLeft = false;
 	bool switchingRight = false;
-	bool switchedLeft = true;
-	bool switchedRight = true;
+	bool switched = true;
 
 	const float blurIncrement = 0.001f;
 
@@ -168,6 +169,7 @@ protected:
 	Camera* volcanoCamera2;
 
 	bool volcanoErupting = false;
+	float lavaHeight = 1.0f;
 
 	//-----------------------Mountains Scene---------------------------
 

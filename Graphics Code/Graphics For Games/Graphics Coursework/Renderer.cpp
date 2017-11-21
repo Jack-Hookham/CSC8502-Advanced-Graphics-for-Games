@@ -265,14 +265,14 @@ void Renderer::UpdateScene(float msec)
 
 	//Forward scene
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_RIGHT) && 
-		!switchingLeft && !switchingRight && switchedLeft && switchedRight)
+		!switchingLeft && !switchingRight && switched)
 	{
 		switchingRight = true;
 	}
 
 	//Backward scene
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_LEFT) && 
-		!switchingLeft && !switchingRight && switchedLeft && switchedRight)
+		!switchingLeft && !switchingRight && switched)
 	{
 		switchingLeft = true;
 	}
@@ -296,7 +296,7 @@ void Renderer::UpdateScene(float msec)
 			//Change current scene information
 			setScene(sceneID);
 			switchingRight = false;
-			switchedRight = false;
+			switched = false;
 		}
 	}
 
@@ -319,11 +319,11 @@ void Renderer::UpdateScene(float msec)
 			//Change current scene information
 			setScene(sceneID);
 			switchingLeft = false;
-			switchedRight = false;
+			switched = false;
 		}
 	}
 
-	if (!switchedRight)
+	if (!switched)
 	{
 		if (blurFactor > blurIncrement)
 		{
@@ -331,19 +331,7 @@ void Renderer::UpdateScene(float msec)
 		}
 		else
 		{
-			switchedRight = true;
-		}
-	}
-
-	if (!switchedLeft)
-	{
-		if (blurFactor > 0.0f)
-		{
-			blurFactor -= msec * blurIncrement;
-		}
-		else
-		{
-			switchedLeft = true;
+			switched = true;
 		}
 	}
 
@@ -374,6 +362,8 @@ void Renderer::UpdateScene(float msec)
 		if (volcanoErupting)
 		{
 			shakeCamera(msec, currentCamera);
+			if (lavaHeight < 1000.0f);
+			lavaHeight += msec * 0.0001f;
 		}
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
@@ -448,8 +438,9 @@ void Renderer::RenderScene()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	DrawSobel();
 	DrawBlur();
-	DrawFinalScene();
+	DrawProcessedScene();
 
 	if (showInfo)
 	{
@@ -472,6 +463,7 @@ void Renderer::setScene(int n)
 void Renderer::compileShaders()
 {
 	blurShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/blurFragment.glsl");
+	sobelShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/sobelFragment.glsl");
 	sceneShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
@@ -494,6 +486,7 @@ void Renderer::compileShaders()
 	mountainSkyboxShader = new Shader(SHADERDIR"CW/cycleSkyboxVertex.glsl", SHADERDIR"CW/cycleSkyboxFragment.glsl");
 
 	if (!blurShader->LinkProgram() ||
+		!sobelShader->LinkProgram() ||
 		!sceneShader->LinkProgram() ||
 		!textShader->LinkProgram() ||
 		!skyboxShader->LinkProgram() ||
@@ -626,13 +619,7 @@ void Renderer::drawInfo()
 
 	oss.str("");
 	oss.clear();
-	oss << "Switched Right: " << switchedRight;
-	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
-	currentY += 20.0f;
-
-	oss.str("");
-	oss.clear();
-	oss << "Switched Left: " << switchedLeft;
+	oss << "Switched: " << switched;
 	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
@@ -728,7 +715,48 @@ void Renderer::DrawBlur()
 
 	glEnable(GL_DEPTH_TEST);
 }
-void Renderer::DrawFinalScene()
+
+void Renderer::DrawSobel()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, processFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bufferColourTex[1], 0);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+	SetCurrentShader(sobelShader);
+
+	projMatrix = Matrix4::Orthographic(-1, 1, 1, -1, -1, 1);
+	viewMatrix.ToIdentity();
+	textureMatrix.ToIdentity();
+	modelMatrix.ToIdentity();
+	UpdateShaderMatrices();
+
+	glDisable(GL_DEPTH_TEST);
+
+	glUniform2f(glGetUniformLocation(currentShader->GetProgram(), "pixelSize"), 1.0f / width, 1.0f / height);
+
+	for (int i = 0; i < POST_PASSES; ++i)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bufferColourTex[1], 0);
+		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "isVertical"), 0);
+
+		processQuad->SetTexture(bufferColourTex[0]);
+		processQuad->Draw();
+
+		//Now swap the colour buffers and do the second blur pass
+		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "isVertical"), 1);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bufferColourTex[0], 0);
+
+		processQuad->SetTexture(bufferColourTex[1]);
+		processQuad->Draw();
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glUseProgram(0);
+
+	glEnable(GL_DEPTH_TEST);
+}
+
+void Renderer::DrawProcessedScene()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -942,7 +970,7 @@ void Renderer::DrawFloorLava()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, currentSkyMap);
 
 	float heightX = (volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 2.0f);
-	float heightY = 256.0f * volcanoHeightMap->getHeightMapY() / 6.0f + sin(sceneTimer / 500.0f) * 20.0f;
+	float heightY = 40.0f * volcanoHeightMap->getHeightMapY() * lavaHeight + sin(sceneTimer / 500.0f) * 10.0f;
 	float heightZ = (volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapZ() / 2.0f);
 
 	modelMatrix =
