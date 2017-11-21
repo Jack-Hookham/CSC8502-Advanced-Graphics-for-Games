@@ -20,7 +20,7 @@ int main()
 	w.LockMouseToWindow(true);
 	w.ShowOSPointer(false);
 
-	renderer.setScene(SceneID::MOUNTAIN_SCENE);
+	renderer.setScene(SceneID::VOLCANO_SCENE);
 
 	while (w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE))
 	{

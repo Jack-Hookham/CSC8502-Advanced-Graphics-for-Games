@@ -151,6 +151,8 @@ protected:
 
 	Shader* particleShader;
 	ParticleEmitter* lavaEmitter;
+	ParticleEmitter* emberEmitter;
+	ParticleEmitter* steamEmitter;
 
 	bool erupting = false;
 

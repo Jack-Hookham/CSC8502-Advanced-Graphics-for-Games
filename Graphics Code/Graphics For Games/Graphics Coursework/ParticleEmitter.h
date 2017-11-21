@@ -54,9 +54,16 @@ struct Particle
 	float speed;
 };
 
+enum ParticleType
+{
+	LAVA_PARTICLE,
+	EMBER_PARTICLE,
+	STEAM_PARTICLE
+};
+
 class ParticleEmitter : public Mesh {
 public:
-	ParticleEmitter(void);
+	ParticleEmitter(ParticleType type);
 	~ParticleEmitter(void);
 
 	/*
@@ -140,5 +147,7 @@ protected:
 
 	std::vector<Particle*>	particles;	//Active particles stay in here :)
 	std::vector<Particle*>	freeList;	//'Spare' particles stay in here...
+
+	ParticleType particleType;
 };
 

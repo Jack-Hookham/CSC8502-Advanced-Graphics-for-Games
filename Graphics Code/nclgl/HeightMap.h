@@ -31,6 +31,8 @@ public:
 	inline const int getHeightMapTexX() const { return mHeightMapTexX; }
 	inline const int getHeightMapTexZ() const { return mHeightMapTexZ; }
 
+	inline void setHeightMapY(float value) { mHeightMapY = value; }
+
 private:
 	int mRawWidth;
 	int mRawHeight;

@@ -11,15 +11,16 @@
 /*
 Constructor, which sets everything to some 'sensible' defaults.
 */
-ParticleEmitter::ParticleEmitter(void) {
+ParticleEmitter::ParticleEmitter(ParticleType type) {
 	particleRate = 100.0f;
-	particleLifetime = 500.0f;
+	particleLifetime = 2000.0f;
 	particleSize = 24.0f;
 	particleVariance = 0.2f;
 	nextParticleTime = 0.0f;
 	particleSpeed = 0.2f;
 	numLaunchParticles = 10;
 	largestSize = 0;
+	particleType = type;
 
 	initialDirection = Vector3(0.0f, 1.0f, 0.0f);
 
@@ -97,7 +98,7 @@ void ParticleEmitter::Update(float msec) {
 			{
 				p->direction.y -= 0.02f;
 			}
-			p->position += p->direction * (msec*particleSpeed);
+			p->position += p->direction * (msec * p->speed);
 
 
 			++i;	//Only update our iterator value here.
@@ -133,17 +134,46 @@ Particle* ParticleEmitter::GetFreeParticle() {
 	//Now we have to reset its values - if it was popped off the
 	//free list, it'll still have the values of its 'previous life'
 
-	p->colour = Vector4(0.6f + RAND() * 0.4f, RAND() * 0.5f, RAND() * 0.5f, 1.0);
-	p->direction = initialDirection;
-	p->direction.x += ((RAND() - RAND()) * particleVariance);
-	p->direction.y += ((RAND() - RAND()) * particleVariance);
-	p->direction.z += ((RAND() - RAND()) * particleVariance);
+	if (particleType == ParticleType::LAVA_PARTICLE)
+	{
+		p->colour = Vector4(0.7f + RAND() * 0.3f, RAND() * 0.4f, RAND() * 0.1f, 1.0f);
+		p->direction = initialDirection;
+		p->direction.x += ((RAND() - RAND()) * particleVariance);
+		p->direction.y += (RAND() * particleVariance);
+		p->direction.z += ((RAND() - RAND()) * particleVariance);
 
-	p->direction.Normalise();	//Keep its direction normalised!
-	p->position.ToZero();
-	p->position = Vector3(2244.0f, 1450.0f, 2076.0f);
+		p->direction.Normalise();	//Keep its direction normalised!
+		p->position = Vector3(2244.0f, 1450.0f, 2076.0f);		//Top of the volcano
 
-	p->speed = particleSpeed;
+		p->speed = particleSpeed + particleSpeed * RAND();
+	}
+	else if (particleType == ParticleType::EMBER_PARTICLE)
+	{
+		p->colour = Vector4(0.7f + RAND() * 0.3f, RAND() * 0.4f, RAND() * 0.1f, 1.0f);
+		p->direction = initialDirection;
+		p->direction.x += ((RAND() - RAND()) * particleVariance);
+		p->direction.y += 1.0f;
+		p->direction.z += ((RAND() - RAND()) * particleVariance);
+
+		p->direction.Normalise();	//Keep its direction normalised!
+		p->position = Vector3(-4000.0f + RAND() * 12000.0f, 350.0f, -4000.0f + RAND() * 12000.0f);
+
+		p->speed = particleSpeed + particleSpeed * RAND();
+	}
+	else if (particleType == ParticleType::STEAM_PARTICLE)
+	{
+		float greyFloat = 0.5f + RAND() * 0.5f;
+		p->colour = Vector4(greyFloat, greyFloat, greyFloat, 1.0f);
+		p->direction = initialDirection;
+		p->direction.x += ((RAND() - RAND()) * particleVariance);
+		p->direction.y += (RAND() * particleVariance);
+		p->direction.z += ((RAND() - RAND()) * particleVariance);
+
+		p->direction.Normalise();	//Keep its direction normalised!
+		p->position = Vector3(2244.0f, 1450.0f, 2076.0f);		//Top of the volcano
+
+		p->speed = particleSpeed + particleSpeed * RAND();
+	}
 
 	return p;	//return the new particle :-)
 }

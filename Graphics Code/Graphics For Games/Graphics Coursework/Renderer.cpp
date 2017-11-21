@@ -100,7 +100,21 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	SetTextureRepeating(volcanoHeightMap->GetTexture(), true);
 	SetTextureRepeating(volcanoHeightMap->GetBumpMap(), true);
 
-	lavaEmitter = new ParticleEmitter();
+	lavaEmitter = new ParticleEmitter(ParticleType::LAVA_PARTICLE);
+	lavaEmitter->SetParticleSize(80.0f);
+	lavaEmitter->SetParticleVariance(1.0f);
+	lavaEmitter->SetLaunchParticles(16.0f);
+	lavaEmitter->SetParticleLifetime(3000.0f);
+	lavaEmitter->SetParticleSpeed(1.0f);
+
+	emberEmitter = new ParticleEmitter(ParticleType::EMBER_PARTICLE);
+	lavaEmitter->SetParticleSize(10.0f);
+	lavaEmitter->SetParticleVariance(1.0f);
+	lavaEmitter->SetLaunchParticles(16.0f);
+	lavaEmitter->SetParticleLifetime(3000.0f);
+	lavaEmitter->SetParticleSpeed(1.0f);
+
+	steamEmitter = new ParticleEmitter(ParticleType::STEAM_PARTICLE);
 
 	volcanoLight = new Light(Vector3((volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
 		volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * -60.0f), Vector4(1.0f, 0.7f, 0.4f, 1),
@@ -136,7 +150,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 		10000.0f);
 
 	cameras[SceneID::SOLAR_SCENE] = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
-	cameras[SceneID::VOLCANO_SCENE] = new Camera(20.0f, 160.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 0.9f, 500.0f,
+	cameras[SceneID::VOLCANO_SCENE] = new Camera(15.0f, 160.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 0.9f, 800.0f,
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * -0.5f));
 	cameras[SceneID::MOUNTAIN_SCENE] = new Camera(0.0f, 0.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 1000.0f,
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f));
@@ -218,6 +232,8 @@ Renderer::~Renderer(void)
 	delete lavaQuad;
 
 	delete lavaEmitter;
+	delete emberEmitter;
+	delete steamEmitter;
 }
 
 void Renderer::UpdateScene(float msec)
@@ -284,7 +300,8 @@ void Renderer::UpdateScene(float msec)
 	}	
 	else if (sceneID == SceneID::VOLCANO_SCENE)
 	{
-		lavaEmitter->Update(msec);
+		//lavaEmitter->Update(msec);
+		emberEmitter->Update(msec);
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
@@ -309,6 +326,7 @@ void Renderer::UpdateScene(float msec)
 		}
 
 		//3400 is roughly the hightest the sun gets
+		//sunStrength is a multiplier for the skybox colour
 		sunStrength = mountainsLight->GetPosition().y / 3400.0f;
 	}
 }
@@ -852,7 +870,7 @@ void Renderer::DrawEmitters()
 	//glClearColor(0, 0, 0, 1);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//glDisable(GL_DEPTH_TEST);
+	glDisable(GL_DEPTH_TEST);
 	//glDepthFunc()
 
 	modelMatrix.ToIdentity();
@@ -864,14 +882,10 @@ void Renderer::DrawEmitters()
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 
 	SetShaderParticleSize(lavaEmitter->GetParticleSize());
-	lavaEmitter->SetParticleSize(80.0f);
-	lavaEmitter->SetParticleVariance(1.0f);
-	lavaEmitter->SetLaunchParticles(16.0f);
-	lavaEmitter->SetParticleLifetime(2000.0f);
-	lavaEmitter->SetParticleSpeed(1.0f);
 	UpdateShaderMatrices();
 
 	lavaEmitter->Draw();
+	emberEmitter->Draw();
 
 	glEnable(GL_DEPTH_TEST);
 	glUseProgram(0);
