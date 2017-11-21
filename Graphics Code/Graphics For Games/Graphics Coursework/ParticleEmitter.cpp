@@ -95,7 +95,7 @@ void ParticleEmitter::Update(float msec, bool erupting) {
 
 			if (p->direction.y > -1.0f)
 			{
-				p->direction.y -= 0.02f;
+				p->direction.y -= msec * 0.001f;
 			}
 			p->position += p->direction * (msec * p->speed);
 

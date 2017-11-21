@@ -348,6 +348,8 @@ void Renderer::UpdateScene(float msec)
 
 void Renderer::RenderScene()
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
+
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	//glUseProgram(currentShader->GetProgram());
 
@@ -365,16 +367,19 @@ void Renderer::RenderScene()
 	}
 	else if (sceneID == SceneID::VOLCANO_SCENE)
 	{
-		glViewport(width / 2, height / 2, width / 2, height / 2);
+		//glViewport(width / 2, height / 2, width / 2, height / 2);
 		DrawSkybox();
 		DrawVolcanoMap();
 		DrawVolcanoLava();
 		DrawFloorLava();
 		DrawEmitters();
 
-		glViewport(0, 0, width / 2, height / 2);
-		DrawShadowScene();
-		DrawCombinedScene();
+		//glViewport(0, 0, width / 2, height / 2);
+		//DrawSkybox();
+		//DrawVolcanoMap();
+		//DrawVolcanoLava();
+		//DrawFloorLava();
+		//DrawEmitters();
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
@@ -385,12 +390,12 @@ void Renderer::RenderScene()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	//DrawPostProcess();
-	//DrawFinalScene();
+	DrawPostProcess();
+	DrawFinalScene();
 
 	if (showInfo)
 	{
-		glViewport(0, 0, width, height);
+		//glViewport(0, 0, width, height);
 		drawInfo();
 	}
 
@@ -604,6 +609,8 @@ void Renderer::DrawPostProcess()
 
 	projMatrix = Matrix4::Orthographic(-1, 1, 1, -1, -1, 1);
 	viewMatrix.ToIdentity();
+	textureMatrix.ToIdentity();
+	modelMatrix.ToIdentity();
 	UpdateShaderMatrices();
 
 	glDisable(GL_DEPTH_TEST);
@@ -646,7 +653,7 @@ void Renderer::DrawFinalScene()
 
 void Renderer::shakeCamera(const float msec, Camera* camera)
 {
-	float min = 0.5f * msec;
+	float min = 0.8f * msec;
 	//Camera shake
 	Vector3 oldPosition = currentCamera->GetPosition();
 	currentCamera->SetPosition(Vector3(oldPosition.x + (RAND() * min * 2.0f) - min, oldPosition.y + (RAND() * min * 2.0f) - min,
@@ -719,7 +726,7 @@ void Renderer::DrawShadowScene()
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glViewport(0, 0, width, height);
 	glDisable(GL_CULL_FACE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
 	projMatrix = defaultProjMatrix;
 }
 
@@ -902,7 +909,6 @@ void Renderer::DrawEmitters()
 	//glClearColor(0, 0, 0, 1);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -922,6 +928,8 @@ void Renderer::DrawEmitters()
 	SetShaderParticleSize(emberEmitter->GetParticleSize());
 	UpdateShaderMatrices();
 	emberEmitter->Draw();
+
+	glDisable(GL_BLEND);
 
 	glUseProgram(0);
 }
