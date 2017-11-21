@@ -463,7 +463,7 @@ void Renderer::setScene(int n)
 void Renderer::compileShaders()
 {
 	blurShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/blurFragment.glsl");
-	sobelShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/sobelFragment.glsl");
+	sobelShader = new Shader(SHADERDIR"CW/sobelVertex.glsl", SHADERDIR"CW/sobelFragment.glsl");
 	sceneShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 	textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 	skyboxShader = new Shader(SHADERDIR"CW/skyboxVertex.glsl", SHADERDIR"CW/skyboxFragment.glsl");
