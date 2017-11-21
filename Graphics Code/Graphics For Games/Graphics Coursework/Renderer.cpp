@@ -61,8 +61,12 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 		TEXTUREDIR"HellSkyBox/hell_dn.bmp", TEXTUREDIR"HellSkyBox/hell_bk.bmp", TEXTUREDIR"HellSkyBox/hell_ft.bmp",
 		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
 
-	skyMaps[SceneID::MOUNTAIN_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"RustedSkyBox/rusted_west.jpg", TEXTUREDIR"RustedSkyBox/rusted_east.jpg", TEXTUREDIR"RustedSkyBox/rusted_up.jpg",
-		TEXTUREDIR"RustedSkyBox/rusted_down.jpg", TEXTUREDIR"RustedSkyBox/rusted_south.jpg", TEXTUREDIR"RustedSkyBox/rusted_north.jpg",
+	//skyMaps[SceneID::MOUNTAIN_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"RustedSkyBox/rusted_west.jpg", TEXTUREDIR"RustedSkyBox/rusted_east.jpg", TEXTUREDIR"RustedSkyBox/rusted_up.jpg",
+	//	TEXTUREDIR"RustedSkyBox/rusted_down.jpg", TEXTUREDIR"RustedSkyBox/rusted_south.jpg", TEXTUREDIR"RustedSkyBox/rusted_north.jpg",
+	//	SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
+
+	skyMaps[SceneID::MOUNTAIN_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"sb_frozen/frozen_rt.bmp", TEXTUREDIR"sb_frozen/frozen_lf.bmp", TEXTUREDIR"sb_frozen/frozen_up.bmp",
+		TEXTUREDIR"sb_frozen/frozen_dn.bmp", TEXTUREDIR"sb_frozen/frozen_bk.bmp", TEXTUREDIR"sb_frozen/frozen_ft.bmp",
 		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
 
 	for (int i = 0; i < SceneID::NUM_SCENES; ++i)
@@ -123,14 +127,15 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	SetTextureRepeating(mountainsHeightMap->GetTexture(), true);
 	SetTextureRepeating(mountainsHeightMap->GetBumpMap(), true);
 
-	mountainsLight = new Light(Vector3((mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * 100.0f), 1000000.0f,
-		mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() * -60.0f), Vector4(1.0f, 0.7f, 0.4f, 1),
-		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 100000.0f);
+	mountainsLightStart = Vector3(-15000.0f + mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f,
+		-1000.0f, mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f);
+	mountainsLight = new Light(mountainsLightStart, Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+		10000.0f);
 
 	cameras[SceneID::SOLAR_SCENE] = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
 	cameras[SceneID::VOLCANO_SCENE] = new Camera(20.0f, 160.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 0.9f, 500.0f,
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * -0.5f));
-	cameras[SceneID::MOUNTAIN_SCENE] = new Camera(0.0f, 0.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 5000.0f,
+	cameras[SceneID::MOUNTAIN_SCENE] = new Camera(0.0f, 0.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 1000.0f,
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f));
 
 	currentCamera = cameras[sceneID];
@@ -279,7 +284,25 @@ void Renderer::UpdateScene(float msec)
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
+		int yDir;		//Determine whether the sun is going up or down and store it here
+		//Rise until over centre
+		float middleX = mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f;
+		if (mountainsLight->GetPosition().x < middleX)
+		{
+			yDir = 1;
+		}
+		else
+		{
+			yDir = -1;
+		}
+		//Move sun light to simulate day/night cycle
+		mountainsLight->SetPosition(mountainsLight->GetPosition() + Vector3(1.0f * msec, 0.3f * msec * yDir, 0.0f));
 
+		float maxX = 10000.0f + mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX();
+		if (mountainsLight->GetPosition().x > maxX)
+		{
+			mountainsLight->SetPosition(mountainsLightStart);
+		}
 	}
 }
 
@@ -469,6 +492,13 @@ void Renderer::drawInfo()
 	oss.str("");
 	oss.clear();
 	oss << "Scene Time: " << std::fixed << std::setprecision(2) << sceneTimer / 1000.0f;
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
+	//Scene time
+	oss.str("");
+	oss.clear();
+	oss << "Mountain Light Position: " << std::fixed << std::setprecision(0) << mountainsLight->GetPosition();
 	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
@@ -805,7 +835,8 @@ void Renderer::DrawEmitters()
 	//glClearColor(0, 0, 0, 1);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
+	//glDepthFunc()
 
 	modelMatrix.ToIdentity();
 	projMatrix = defaultProjMatrix;

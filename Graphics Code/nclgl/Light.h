@@ -15,22 +15,19 @@ public:
 
 	~Light(void) {};
 
-	Vector3 GetPosition() const { return position; }
-	void SetPosition(Vector3 val) { position = val; }
+	inline Vector3 GetPosition() const { return position; }
+	inline void SetPosition(Vector3 val) { position = val; }
 
-	float GetRadius() const { return radius; }
-	void SetRadius(float val) { radius = val; }
+	inline float GetRadius() const { return radius; }
+	inline void SetRadius(float val) { radius = val; }
 
-	Vector4 GetColour() const { return colour; }
-	void SetColour(Vector4 val) { colour = val; }
+	inline Vector4 GetColour() const { return colour; }
+	inline void SetColour(Vector4 val) { colour = val; }
 
-	void SetR(float val) { colour.x = val; }
-	void SetG(float val) { colour.y = val; }
-	void SetB(float val) { colour.z = val; }
-	void SetA(float val) { colour.w = val; }
-
-	//Vector4 GetSpecularColour() const { return colour; }
-	//void SetSpecularColour(Vector4 val) { colour = val; }
+	inline void SetR(float val) { colour.x = val; }
+	inline void SetG(float val) { colour.y = val; }
+	inline void SetB(float val) { colour.z = val; }
+	inline void SetA(float val) { colour.w = val; }
 
 protected:
 	Vector3 position;

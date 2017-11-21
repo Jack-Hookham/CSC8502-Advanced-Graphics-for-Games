@@ -162,6 +162,7 @@ protected:
 	Shader* mountainsLightShader;
 	Shader* reflectShader;
 
+	Vector3 mountainsLightStart;
 	Light* mountainsLight;
 
 	HeightMap* mountainsHeightMap;
