@@ -121,7 +121,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	steamEmitter->SetParticleLifetime(3000.0f);
 	steamEmitter->SetParticleSpeed(0.1f);
 
-	volcanoLight = new Light(Vector3((volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * 0.25f), 3000.0f,
+	volcanoLight = new Light(Vector3((volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * 0.75f), 3000.0f,
 		volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * 0.75f), Vector4(1.0f, 1.0f, 1.0f, 1), 10000.0f);
 
 	waterQuad = Mesh::GenerateQuad();
@@ -147,11 +147,12 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 
 	minSunX = -15000.0f + mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f;
 	maxSunX = 15000.0f + mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX();
-	mountainsLightStart = Vector3(minSunX, -1000.0f,
+	mountainsLightReset = Vector3(minSunX, -1000.0f,
 		mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f);
 
-	mountainsLight = new Light(mountainsLightStart, Vector4(1.0f, 1.0f, 1.0f, 1.0f),
-		10000.0f);
+	mountainsLight = new Light(Vector3(-2300.0f, 2500.0f, 
+		mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f), 
+		Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
 
 	cameras[SceneID::SOLAR_SCENE] = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
 	cameras[SceneID::VOLCANO_SCENE] = new Camera(15.0f, 160.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 0.9f, 800.0f,
@@ -336,7 +337,7 @@ void Renderer::UpdateScene(float msec)
 
 		if (mountainsLight->GetPosition().x > maxSunX)
 		{
-			mountainsLight->SetPosition(mountainsLightStart);
+			mountainsLight->SetPosition(mountainsLightReset);
 		}
 
 		//3400 is roughly the hightest the sun gets
@@ -358,13 +359,20 @@ void Renderer::RenderScene()
 		float mod = 0.0f;
 		glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "mod"), mod);
 
-		//glActiveTexture(GL_TEXTURE0);
-
+		DrawSkybox();
 		DrawShadowScene();
 		DrawCombinedScene();
 	}
 	else if (sceneID == SceneID::VOLCANO_SCENE)
 	{
+		glViewport(width / 2, height / 2, width / 2, height / 2);
+		DrawSkybox();
+		DrawVolcanoMap();
+		DrawVolcanoLava();
+		DrawFloorLava();
+		DrawEmitters();
+
+		glViewport(0, 0, width / 2, height / 2);
 		DrawSkybox();
 		DrawVolcanoMap();
 		DrawVolcanoLava();
@@ -385,6 +393,7 @@ void Renderer::RenderScene()
 
 	if (showInfo)
 	{
+		glViewport(0, 0, width, height);
 		drawInfo();
 	}
 
@@ -533,6 +542,13 @@ void Renderer::drawInfo()
 	oss.str("");
 	oss.clear();
 	oss << "Scene Time: " << std::fixed << std::setprecision(2) << sceneTimer / 1000.0f;
+	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
+	//Mountains light position
+	oss.str("");
+	oss.clear();
+	oss << "Mountains Light Position: " << std::fixed << std::setprecision(0) << mountainsLight->GetPosition();
 	drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
@@ -727,7 +743,6 @@ void Renderer::DrawCombinedScene()
 	viewMatrix = currentCamera->BuildViewMatrix();
 	UpdateShaderMatrices();
 
-	DrawSkybox();
 	DrawNode(ss);
 
 	glEnable(GL_CULL_FACE);
@@ -911,7 +926,6 @@ void Renderer::DrawEmitters()
 	UpdateShaderMatrices();
 	emberEmitter->Draw();
 
-	glEnable(GL_DEPTH_TEST);
 	glUseProgram(0);
 }
 

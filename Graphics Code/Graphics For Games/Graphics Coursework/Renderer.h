@@ -156,6 +156,8 @@ protected:
 	ParticleEmitter* emberEmitter;
 	ParticleEmitter* steamEmitter;
 
+	Camera* volcanoCamera2;
+
 	bool volcanoErupting = false;
 
 	//-----------------------Mountains Scene---------------------------
@@ -170,7 +172,7 @@ protected:
 	float minSunX; 
 	float maxSunX;
 
-	Vector3 mountainsLightStart;
+	Vector3 mountainsLightReset;
 	Light* mountainsLight;
 
 	HeightMap* mountainsHeightMap;
