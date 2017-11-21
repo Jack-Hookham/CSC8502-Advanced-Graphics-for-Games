@@ -127,8 +127,11 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	SetTextureRepeating(mountainsHeightMap->GetTexture(), true);
 	SetTextureRepeating(mountainsHeightMap->GetBumpMap(), true);
 
-	mountainsLightStart = Vector3(-15000.0f + mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f,
-		-1000.0f, mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f);
+	minSunX = -15000.0f + mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f;
+	maxSunX = 15000.0f + mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX();
+	mountainsLightStart = Vector3(minSunX, -1000.0f,
+		mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f);
+
 	mountainsLight = new Light(mountainsLightStart, Vector4(1.0f, 1.0f, 1.0f, 1.0f),
 		10000.0f);
 
@@ -204,6 +207,7 @@ Renderer::~Renderer(void)
 
 	delete mountainsLight;
 	delete mountainsHeightMap;
+	delete mountainSkyboxShader;
 
 	delete volcanoHeightMap;
 	delete volcanoLightShader;
@@ -284,6 +288,7 @@ void Renderer::UpdateScene(float msec)
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
+		//Move sun light to simulate day/night cycle
 		int yDir;		//Determine whether the sun is going up or down and store it here
 		//Rise until over centre
 		float middleX = mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f;
@@ -295,14 +300,16 @@ void Renderer::UpdateScene(float msec)
 		{
 			yDir = -1;
 		}
-		//Move sun light to simulate day/night cycle
+
 		mountainsLight->SetPosition(mountainsLight->GetPosition() + Vector3(1.0f * msec, 0.3f * msec * yDir, 0.0f));
 
-		float maxX = 10000.0f + mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX();
-		if (mountainsLight->GetPosition().x > maxX)
+		if (mountainsLight->GetPosition().x > maxSunX)
 		{
 			mountainsLight->SetPosition(mountainsLightStart);
 		}
+
+		//3400 is roughly the hightest the sun gets
+		sunStrength = mountainsLight->GetPosition().y / 3400.0f;
 	}
 }
 
@@ -383,6 +390,7 @@ void Renderer::compileShaders()
 
 	reflectShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/reflectFragment.glsl");
 	mountainsLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/mountainFragment.glsl");
+	mountainSkyboxShader = new Shader(SHADERDIR"CW/cycleSkyboxVertex.glsl", SHADERDIR"CW/cycleSkyboxFragment.glsl");
 
 	if (!processShader->LinkProgram() ||
 		!sceneShader->LinkProgram() ||
@@ -399,7 +407,8 @@ void Renderer::compileShaders()
 		!particleShader->LinkProgram() ||
 
 		!reflectShader->LinkProgram() ||
-		!mountainsLightShader->LinkProgram())
+		!mountainsLightShader->LinkProgram() ||
+		!mountainSkyboxShader->LinkProgram())
 	{
 		return;
 	}
@@ -604,7 +613,15 @@ void Renderer::DrawSkybox()
 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
-	SetCurrentShader(skyboxShader);
+	if (sceneID == SceneID::MOUNTAIN_SCENE)
+	{
+		SetCurrentShader(mountainSkyboxShader);
+		glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "sunStrength"), sunStrength);
+	}
+	else
+	{
+		SetCurrentShader(skyboxShader);
+	}
 
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 3);
 

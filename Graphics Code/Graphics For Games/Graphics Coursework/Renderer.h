@@ -161,6 +161,10 @@ protected:
 
 	Shader* mountainsLightShader;
 	Shader* reflectShader;
+	Shader* mountainSkyboxShader;
+	float sunStrength = 0.0f;		//Passed into the mountain skybox shader to adjust its alpha based on day/night
+	float minSunX; 
+	float maxSunX;
 
 	Vector3 mountainsLightStart;
 	Light* mountainsLight;
