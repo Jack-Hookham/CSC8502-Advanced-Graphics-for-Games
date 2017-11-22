@@ -3,6 +3,7 @@
 uniform sampler2D diffuseTex;
 uniform samplerCube cubeTex;
 uniform sampler2D bumpTex;
+uniform float time;
 
 uniform vec4 lightColour;
 uniform vec3 lightPos;
@@ -51,8 +52,14 @@ void main(void)
 	
 	//fragColour = mix(lightColour * atten * reflection, mix(bumpColour, vec4((lightColour.rgb + sFactor), 1.0), 0.5), 0.5);
 	fragColour = mix(lightColour * atten * reflection, bumpColour, 0.5);
-	fragColour.a = 0.7;
 
-	//	fragColour = diffuse;
-	//	fragColour.xy = IN.texCoord;
+	// vec2 tc = IN.texCoord.xy;
+	// vec2 p = -1.0 + 2.0 * tc;
+	// float len = length(p);
+	// vec2 uv = tc + (p/len) * cos(len*12.0-time/1000*4.0)*0.03;
+	// vec3 col = texture2D(diffuseTex, uv).xyz;
+	// //fragColour += vec4(col,1.0);  
+	// fragColour = mix(fragColour, vec4(col, 1.0), 0.5);
+
+	fragColour.a = 0.7;
 }

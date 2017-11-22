@@ -72,4 +72,5 @@ void main(void)
 
 	fragColour = vec4(colour * atten * lambert, diffuse.a);
 	fragColour.rgb += (diffuse.rgb * lightColour.rgb) * 0.1;
+	//fragColour = vec4(1.0, 1.0, 1.0, 1.0);
 }

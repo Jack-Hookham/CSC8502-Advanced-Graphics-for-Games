@@ -906,6 +906,13 @@ void Renderer::drawInfo()
 		oss.clear();
 		oss << "Day/Night: T";
 		drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
+		currentY += 20.0f;	
+		
+		//Mountains light position
+		oss.str("");
+		oss.clear();
+		oss << "Light Position: " << std::fixed << std::setprecision(0) << mountainsLight->GetPosition();
+		drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
 		currentY += 20.0f;
 	}
 
@@ -913,13 +920,6 @@ void Renderer::drawInfo()
 	//oss.str("");
 	//oss.clear();
 	//oss << "Lava Height: " << std::fixed << std::setprecision(2) << lavaHeight;
-	//drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
-	//currentY += 20.0f;
-
-	//Mountains light position
-	//oss.str("");
-	//oss.clear();
-	//oss << "Mountains Light Position: " << std::fixed << std::setprecision(0) << mountainsLight->GetPosition();
 	//drawText(oss.str(), Vector3(0.0f, currentY, 0.0f), 16.0f);
 	//currentY += 20.0f;
 
@@ -1353,6 +1353,7 @@ void Renderer::DrawWater()
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 2);
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&currentCamera->GetPosition());
+	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "time"), totalTimer);
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, mountainsHeightMap->GetBumpMap());

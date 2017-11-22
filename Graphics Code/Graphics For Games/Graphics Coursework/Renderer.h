@@ -133,7 +133,7 @@ protected:
 	const float blurIncrement = 0.001f;
 
 	void wrapSceneID();
-	bool showAllScenes = true;
+	bool showAllScenes = false;
 
 	bool freeCam = false;
 	float freeCamTime = 0.0f;
