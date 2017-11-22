@@ -40,6 +40,7 @@ public:
 
 	virtual void Update(float msec);
 	virtual void Draw();
+	virtual void DrawPatches();
 
 	std::vector<RenderObject*>::const_iterator GetChildIteratorStart()
 	{

@@ -10,7 +10,7 @@ SolarSystem::SolarSystem()
 	//Populate object information
 	sun = new RenderObject(createSphereObj(), Vector4(0.9f, 0.7f, 0.3f, 1.0f), RenderType::TYPE_SUN);
 	sun->SetModelScale(Vector3(sunRadius * scale));
-	sun->SetTransform(Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)));
+	sun->SetTransform(Matrix4::Rotation(270.0f, Vector3(0.0f, 1.0f, 0.0f)) * Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)));
 	sun->SetBoundingRadius(sunRadius * scale);
 	sun->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"TileFire.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
@@ -142,7 +142,7 @@ void SolarSystem::initPlanets()
 	Moon moon;
 	moon.bodyRadius = 10.0f;
 	moon.orbitRadius = planets[currentPlanet].bodyRadius + 70.0f;
-	moon.orbitSpeed = 0.2f;
+	moon.orbitSpeed = 0.4f;
 	moon.initialRotation = 10.0f;
 	moon.texture = TEXTUREDIR"Barren Reds.jpg";
 	planets[currentPlanet].moons.push_back(moon);
@@ -156,21 +156,21 @@ void SolarSystem::initPlanets()
 
 	moon.bodyRadius = 15.0f;
 	moon.orbitRadius = planets[currentPlanet].bodyRadius + 50.0f;
-	moon.orbitSpeed = 0.22f;
+	moon.orbitSpeed = 0.42f;
 	moon.initialRotation = 10.0f;
 	moon.texture = TEXTUREDIR"Barren Reds.jpg";
 	planets[currentPlanet].moons.push_back(moon);
 
 	moon.bodyRadius = 10.0f;
 	moon.orbitRadius = planets[currentPlanet].bodyRadius + 90.0f;
-	moon.orbitSpeed = 0.27f;
+	moon.orbitSpeed = 0.47f;
 	moon.initialRotation = 130.0f;
 	moon.texture = TEXTUREDIR"Barren Reds.jpg";
 	planets[currentPlanet].moons.push_back(moon);
 
 	moon.bodyRadius = 25.0f;
 	moon.orbitRadius = planets[PlanetNames::SAND].bodyRadius + 150.0f;
-	moon.orbitSpeed = 0.34f;
+	moon.orbitSpeed = 0.44f;
 	moon.initialRotation = 190.0f;
 	moon.texture = TEXTUREDIR"Barren Reds.jpg";
 	planets[PlanetNames::SAND].moons.push_back(moon);
@@ -179,12 +179,12 @@ void SolarSystem::initPlanets()
 	planets[currentPlanet].bodyRadius = 45.0f;
 	planets[currentPlanet].orbitRadius = sunRadius + 2200.0f;
 	planets[currentPlanet].orbitSpeed = 0.22f;
-	planets[currentPlanet].initialRotation = 185.0f;
+	planets[currentPlanet].initialRotation = 35.0f;
 	planets[currentPlanet].texture = TEXTUREDIR"RedPlanet.jpg";
 
 	moon.bodyRadius = 18.0f;
 	moon.orbitRadius = planets[currentPlanet].bodyRadius + 130.0f;
-	moon.orbitSpeed = 0.28f;
+	moon.orbitSpeed = 0.48f;
 	moon.initialRotation = 140.0f;
 	moon.texture = TEXTUREDIR"Barren Reds.jpg";
 	planets[currentPlanet].moons.push_back(moon);
@@ -193,19 +193,19 @@ void SolarSystem::initPlanets()
 	planets[currentPlanet].bodyRadius = 40.0f;
 	planets[currentPlanet].orbitRadius = sunRadius + 2700.0f;
 	planets[currentPlanet].orbitSpeed = 0.23f;
-	planets[currentPlanet].initialRotation = 220.0f;
+	planets[currentPlanet].initialRotation = 22.0f;
 	planets[currentPlanet].texture = TEXTUREDIR"Emerald.jpg";
 
 	moon.bodyRadius = 10.0f;
 	moon.orbitRadius = planets[currentPlanet].bodyRadius + 60.0f;
-	moon.orbitSpeed = 0.22f;
+	moon.orbitSpeed = 0.42f;
 	moon.initialRotation = 180.0f;
 	moon.texture = TEXTUREDIR"Emerald.jpg";
 	planets[currentPlanet].moons.push_back(moon);
 
 	moon.bodyRadius = 25.0f;
 	moon.orbitRadius = planets[currentPlanet].bodyRadius + 140.0f;
-	moon.orbitSpeed = 0.31f;
+	moon.orbitSpeed = 0.51f;
 	moon.initialRotation = 310.0f;
 	moon.texture = TEXTUREDIR"Emerald.jpg";
 	planets[currentPlanet].moons.push_back(moon);
@@ -214,33 +214,33 @@ void SolarSystem::initPlanets()
 	planets[currentPlanet].bodyRadius = 70.0f;
 	planets[currentPlanet].orbitRadius = sunRadius + 3300.0f;
 	planets[currentPlanet].orbitSpeed = 0.25f;
-	planets[currentPlanet].initialRotation = 200.0f;
+	planets[currentPlanet].initialRotation = 50.0f;
 	planets[currentPlanet].texture = TEXTUREDIR"water05.jpg";
 
 	currentPlanet = PlanetNames::BLUE;
 	planets[currentPlanet].bodyRadius = 100.0f;
 	planets[currentPlanet].orbitRadius = sunRadius + 4000.0f;
 	planets[currentPlanet].orbitSpeed = 0.19f;
-	planets[currentPlanet].initialRotation = 180.0f;
+	planets[currentPlanet].initialRotation = 45.0f;
 	planets[currentPlanet].texture = TEXTUREDIR"BluePlanet.jpg";
 
 	moon.bodyRadius = 22.0f;
 	moon.orbitRadius = planets[currentPlanet].bodyRadius + 90.0f;
-	moon.orbitSpeed = 0.27f;
+	moon.orbitSpeed = 0.47f;
 	moon.initialRotation = 160.0f;
 	moon.texture = TEXTUREDIR"Barren Reds.jpg";
 	planets[currentPlanet].moons.push_back(moon);
 
 	moon.bodyRadius = 35.0f;
 	moon.orbitRadius = planets[currentPlanet].bodyRadius + 170.0f;
-	moon.orbitSpeed = 0.23f;
+	moon.orbitSpeed = 0.43f;
 	moon.initialRotation = 340.0f;
 	moon.texture = TEXTUREDIR"Barren Reds.jpg";
 	planets[currentPlanet].moons.push_back(moon);
 
 	moon.bodyRadius = 26.0f;
 	moon.orbitRadius = planets[currentPlanet].bodyRadius + 280.0f;
-	moon.orbitSpeed = 0.19f;
+	moon.orbitSpeed = 0.39f;
 	moon.initialRotation = 80.0f;
 	moon.texture = TEXTUREDIR"water05.jpg";
 	planets[currentPlanet].moons.push_back(moon);

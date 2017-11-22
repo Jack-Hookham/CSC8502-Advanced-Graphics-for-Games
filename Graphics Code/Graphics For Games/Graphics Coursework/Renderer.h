@@ -55,6 +55,7 @@ protected:
 	bool showInfo = true;
 
 	void drawInfo();
+	void drawPaused();
 
 	void DrawSkybox();
 
@@ -64,6 +65,7 @@ protected:
 
 	void shakeCamera(const float msec, Camera* camera);
 
+	//Post processing
 	Mesh* processQuad;
 	Shader* blurShader;
 	Shader* sobelShader;
@@ -72,6 +74,20 @@ protected:
 	GLuint processFBO;
 	GLuint bufferColourTex[2];
 	GLuint bufferDepthTex;
+
+	//Post processing functions
+	void DrawBlur();
+	void DrawSobel();
+	void DrawProcessedScene();
+
+	float blurFactor = 0.0f;
+
+	Mesh* sceneQuads[SceneID::NUM_SCENES];
+	GLuint sceneFBOs[SceneID::NUM_SCENES];
+	GLuint sceneColourTex[SceneID::NUM_SCENES][2];
+	GLuint sceneDepthTex[SceneID::NUM_SCENES];
+
+	void DrawSceneQuads();
 
 	int sceneID = SceneID::SPACE_SCENE;
 
@@ -105,12 +121,7 @@ protected:
 	Shader* textShader; 
 	Font*	basicFont;
 
-	//Post processing
-	void DrawBlur();
-	void DrawSobel();
-	void DrawProcessedScene();
-
-	float blurFactor = 0.0f;
+	void DrawCurrentScene();
 
 	//Check whether the scene is switching
 	void checkSceneSwitch(const float msec);
@@ -121,7 +132,15 @@ protected:
 
 	const float blurIncrement = 0.001f;
 
+	void wrapSceneID();
 	bool showAllScenes = true;
+
+	bool freeCam = false;
+	float freeCamTime = 0.0f;
+
+	bool paused = false;
+
+	float sobelFactor = false;
 
 	//-----------------------Space Scene-------------------------------
 
@@ -173,10 +192,8 @@ protected:
 	ParticleEmitter* emberEmitter;
 	ParticleEmitter* steamEmitter;
 
-	Camera* volcanoCamera2;
-
 	bool volcanoErupting = false;
-	float lavaHeight = 1.0f;
+	float lavaHeight = 40.0f;
 
 	//-----------------------Mountains Scene---------------------------
 
@@ -193,6 +210,7 @@ protected:
 
 	Vector3 mountainsLightReset;
 	Light* mountainsLight;
+	bool dayNight = true;
 
 	HeightMap* mountainsHeightMap;
 
