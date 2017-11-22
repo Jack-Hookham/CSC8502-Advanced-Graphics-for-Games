@@ -270,12 +270,11 @@ Renderer::~Renderer(void)
 
 void Renderer::UpdateScene(float msec)
 {
-	if (paused)
+	if (!paused)
 	{
-		msec = 0.0f;
+		sceneTimer += msec;
 	}
 
-	sceneTimer += msec;
 	totalTimer += msec;
 
 	//Calculate average fps every second
@@ -361,7 +360,7 @@ void Renderer::UpdateScene(float msec)
 
 	if (sceneID == SceneID::VOLCANO_SCENE)
 	{
-		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E) && !paused)
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E))
 		{
 			volcanoErupting = !volcanoErupting;
 		}
@@ -396,7 +395,7 @@ void Renderer::UpdateScene(float msec)
 			}
 
 			mountainsLight->SetPosition(mountainsLight->GetPosition() + Vector3(1.0f * msec, 0.3f * msec * yDir, 0.0f));
-
+			
 			if (mountainsLight->GetPosition().x > maxSunX)
 			{
 				mountainsLight->SetPosition(mountainsLightReset);
@@ -408,10 +407,16 @@ void Renderer::UpdateScene(float msec)
 		}
 
 		//Toggle day night cycle
-		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_T) && !paused)
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_T))
 		{
 			dayNight = !dayNight;
 		}
+	}
+
+	//If the scene has been going for x seconds go to the next scene
+	if (sceneTimer > 25000.0f)
+	{
+		switchingRight = true;
 	}
 }
 
@@ -1190,7 +1195,7 @@ void Renderer::DrawWater()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, currentSkyMap);
 
 	float heightX = (mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f);
-	float heightY = 256.0f * mountainsHeightMap->getHeightMapY() / 3.0f + sin(sceneTimer / 500.0f) * 10.0f;
+	float heightY = 256.0f * mountainsHeightMap->getHeightMapY() / 3.0f + sin(totalTimer / 500.0f) * 10.0f;
 	float heightZ = (mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapZ() / 2.0f);
 
 	modelMatrix =
@@ -1199,7 +1204,7 @@ void Renderer::DrawWater()
 		Matrix4::Rotation(90.0f, Vector3(1.0f, 0.0f, 0.0f));
 
 	textureMatrix = Matrix4::Scale(Vector3(10.0f, 10.0f, 10.0f))
-		* Matrix4::Translation(Vector3(0.0f, -sin(sceneTimer / 500.0f) / 100.0f, 0.0f));
+		* Matrix4::Translation(Vector3(0.0f, -sin(totalTimer / 500.0f) / 100.0f, 0.0f));
 
 	UpdateShaderMatrices();
 	waterQuad->Draw();
@@ -1231,7 +1236,7 @@ void Renderer::DrawFloorLava()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, currentSkyMap);
 
 	float heightX = (volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 2.0f);
-	float heightY = volcanoHeightMap->getHeightMapY() * lavaHeight + sin(sceneTimer / 500.0f) * 10.0f;
+	float heightY = volcanoHeightMap->getHeightMapY() * lavaHeight + sin(totalTimer / 500.0f) * 10.0f;
 	float heightZ = (volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapZ() / 2.0f);
 
 	modelMatrix =
@@ -1268,7 +1273,7 @@ void Renderer::DrawVolcanoLava()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, currentSkyMap);
 
 	float heightX = (volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() / 40.0f);
-	float heightY = 256.0f * volcanoHeightMap->getHeightMapY() * 0.73f + sin(sceneTimer / 800.0f) * 8.0f;
+	float heightY = 256.0f * volcanoHeightMap->getHeightMapY() * 0.73f + sin(totalTimer / 800.0f) * 8.0f;
 	float heightZ = (volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapZ() / 40.0f);
 
 	modelMatrix =
