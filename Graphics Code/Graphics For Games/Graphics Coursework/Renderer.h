@@ -195,6 +195,11 @@ protected:
 	bool volcanoErupting = false;
 	float lavaHeight = 40.0f;
 
+	Camera* volcanoCameras[4];
+	int currentVolcanoCamera = 0;
+
+	bool volcanoMultiCam = true;
+
 	//-----------------------Mountains Scene---------------------------
 
 	void DrawMountainsScene();

@@ -186,6 +186,14 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	cameras[SceneID::MOUNTAIN_SCENE] = new Camera(-10.0f, 290.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 0.1f, 700.0f,
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 0.75f));
 
+	volcanoCameras[0] = cameras[SceneID::VOLCANO_SCENE];
+	volcanoCameras[1] = new Camera(10.0f, 150.0f, Vector3(volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 0.2f, 800.0f,
+		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * -0.8f));
+	volcanoCameras[2] = new Camera(10.0f, 150.0f, Vector3(volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 1.2f, 800.0f,
+		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 0.2f));
+	volcanoCameras[3] = new Camera(10.0f, 150.0f, Vector3(volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 0.2f, 800.0f,
+		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 0.2f));
+
 	currentCamera = cameras[sceneID];
 
 	currentShader = NULL;
@@ -233,9 +241,10 @@ Renderer::~Renderer(void)
 	currentCamera = NULL;
 	for (int i = 0; i < SceneID::NUM_SCENES; ++i)
 	{
-		delete sceneQuads[i];
 		delete cameras[i];
 		delete scenes[i];
+		glDeleteFramebuffers(1, &sceneFBOs[i]);
+		delete sceneQuads[i];
 	}
 
 	delete sunLight;
@@ -259,6 +268,11 @@ Renderer::~Renderer(void)
 	delete volcanoLightShader;
 	delete volcanoLight;
 	delete particleShader;
+
+	for (int i = 1; i < 4; ++i)
+	{
+		delete volcanoCameras[i];
+	}
 
 	delete waterQuad;
 	delete lavaQuad;
@@ -308,7 +322,7 @@ void Renderer::UpdateScene(float msec)
 		showAllScenes = !showAllScenes;
 	}	
 	
-	//Toggle sobel
+	//Sobel factor
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_U))
 	{
 		sobelFactor += 0.1f;
@@ -359,11 +373,39 @@ void Renderer::UpdateScene(float msec)
 	}
 
 	if (sceneID == SceneID::VOLCANO_SCENE)
-	{
+	{	
+		//Volcano multi cam
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_O))
+		{
+			volcanoMultiCam = !volcanoMultiCam;
+		}
+
+		if (volcanoMultiCam)
+		{
+			if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_1))
+			{
+				currentVolcanoCamera = 0;
+			}
+			if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_2))
+			{
+				currentVolcanoCamera = 1;
+			}
+			if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_3))
+			{
+				currentVolcanoCamera = 2;
+			}
+			if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_4))
+			{
+				currentVolcanoCamera = 3;
+			}
+			currentCamera = volcanoCameras[currentVolcanoCamera];
+		}
+
 		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E))
 		{
 			volcanoErupting = !volcanoErupting;
 		}
+
 		lavaEmitter->Update(msec, volcanoErupting);
 		emberEmitter->Update(msec);
 		//steamEmitter->Update(msec);
@@ -438,7 +480,7 @@ void Renderer::RenderScene()
 		currentCamera = cameras[sceneID];
 		viewMatrix = currentCamera->BuildViewMatrix();
 		glViewport(0, 0, width * 0.4f, height * 0.4f);
-		//DrawCurrentScene();
+		DrawCurrentScene();
 		DrawSceneQuad(sceneID);
 
 		//Draw the next scene bottom right
@@ -448,7 +490,7 @@ void Renderer::RenderScene()
 		currentCamera = cameras[sceneID];
 		viewMatrix = currentCamera->BuildViewMatrix();
 		glViewport(width * 0.6f, 0, width * 0.4f, height * 0.4f);
-		//DrawCurrentScene();
+		DrawCurrentScene();
 		DrawSceneQuad(sceneID);
 
 		//Draw the current scene centre
@@ -458,7 +500,7 @@ void Renderer::RenderScene()
 		currentCamera = cameras[sceneID];
 		viewMatrix = currentCamera->BuildViewMatrix();
 		glViewport(width * 0.15f, height * 0.3f, width * 0.7f, height * 0.7f);
-		//DrawCurrentScene();
+		DrawCurrentScene();
 		DrawSceneQuad(sceneID);
 	}
 	else
@@ -518,19 +560,65 @@ void Renderer::DrawSpaceScene()
 
 void Renderer::DrawVolcanoScene()
 {
-	//glViewport(width / 2, height / 2, width / 2, height / 2);
-	DrawSkybox();
-	DrawVolcanoMap();
-	DrawVolcanoLava();
-	DrawFloorLava();
-	DrawEmitters();
+	if (volcanoMultiCam)
+	{
+		Camera* tempCamera = currentCamera;
+		currentCamera = volcanoCameras[0];
+		viewMatrix = currentCamera->BuildViewMatrix();
+		UpdateShaderMatrices();
 
-	//glViewport(0, 0, width / 2, height / 2);
-	//DrawSkybox();
-	//DrawVolcanoMap();
-	//DrawVolcanoLava();
-	//DrawFloorLava();
-	//DrawEmitters();
+		glViewport(0, height / 2, width / 2, height / 2);
+		DrawSkybox();
+		DrawVolcanoMap();
+		DrawVolcanoLava();
+		DrawFloorLava();
+		DrawEmitters();
+
+		currentCamera = volcanoCameras[1];
+		viewMatrix = currentCamera->BuildViewMatrix();
+		UpdateShaderMatrices();
+
+		glViewport(width / 2, height / 2, width / 2, height / 2);
+		DrawSkybox();
+		DrawVolcanoMap();
+		DrawVolcanoLava();
+		DrawFloorLava();
+		DrawEmitters();
+
+		currentCamera = volcanoCameras[2];
+		viewMatrix = currentCamera->BuildViewMatrix();
+		UpdateShaderMatrices();
+
+		glViewport(0, 0, width / 2, height / 2);
+		DrawSkybox();
+		DrawVolcanoMap();
+		DrawVolcanoLava();
+		DrawFloorLava();
+		DrawEmitters();
+
+		currentCamera = volcanoCameras[3];
+		viewMatrix = currentCamera->BuildViewMatrix();
+		UpdateShaderMatrices();
+
+		glViewport(width / 2, 0, width / 2, height / 2);
+		DrawSkybox();
+		DrawVolcanoMap();
+		DrawVolcanoLava();
+		DrawFloorLava();
+		DrawEmitters();
+
+		currentCamera = tempCamera;
+		viewMatrix = currentCamera->BuildViewMatrix();
+		UpdateShaderMatrices();
+	}
+	else
+	{
+		DrawSkybox();
+		DrawVolcanoMap();
+		DrawVolcanoLava();
+		DrawFloorLava();
+		DrawEmitters();
+	}
 }
 
 void Renderer::DrawMountainsScene()
