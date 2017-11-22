@@ -66,7 +66,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 		}
 
-		glGenFramebuffers(1, &sceneFBOs[i]);		//Render the scene into this=-
+		glGenFramebuffers(1, &sceneFBOs[i]);		//Render the scene into this
 
 		glBindFramebuffer(GL_FRAMEBUFFER, sceneFBOs[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, sceneDepthTex[i], 0);
@@ -180,7 +180,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 
 	mountainsLight = new Light(mountainsLightReset, Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
 
-	cameras[SceneID::SPACE_SCENE] = new Camera(0.0f, -15.0f, Vector3(310.0f, -150.0f, 160.0f));
+	cameras[SceneID::SPACE_SCENE] = new Camera(-20.0f, -15.0f, Vector3(310.0f, 250.0f, 160.0f));
 	cameras[SceneID::VOLCANO_SCENE] = new Camera(10.0f, 150.0f, Vector3(volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 1.2f, 800.0f,
 		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * -0.8f));
 	cameras[SceneID::MOUNTAIN_SCENE] = new Camera(-10.0f, 290.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 0.1f, 700.0f,
@@ -345,10 +345,10 @@ void Renderer::UpdateScene(float msec)
 		if (volcanoErupting)
 		{
 			shakeCamera(msec, cameras[SceneID::VOLCANO_SCENE]);
-			if (lavaHeight < 75.0f)
-			{
-				lavaHeight += msec * 0.004f;
-			}
+			//if (lavaHeight < 75.0f)
+			//{
+			//	lavaHeight += msec * 0.004f;
+			//}
 		}
 
 		scenes[SceneID::SPACE_SCENE]->Update(msec);
@@ -371,10 +371,10 @@ void Renderer::UpdateScene(float msec)
 		if (volcanoErupting)
 		{
 			shakeCamera(msec, currentCamera);
-			if (lavaHeight < 75.0f)
-			{
-				lavaHeight += msec * 0.004f;
-			}
+			//if (lavaHeight < 75.0f)
+			//{
+			//	lavaHeight += msec * 0.004f;
+			//}
 		}
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
@@ -438,7 +438,8 @@ void Renderer::RenderScene()
 		currentCamera = cameras[sceneID];
 		viewMatrix = currentCamera->BuildViewMatrix();
 		glViewport(0, 0, width * 0.4f, height * 0.4f);
-		DrawCurrentScene();
+		//DrawCurrentScene();
+		DrawSceneQuad(sceneID);
 
 		//Draw the next scene bottom right
 		sceneID = mainSceneID + 1;
@@ -447,7 +448,8 @@ void Renderer::RenderScene()
 		currentCamera = cameras[sceneID];
 		viewMatrix = currentCamera->BuildViewMatrix();
 		glViewport(width * 0.6f, 0, width * 0.4f, height * 0.4f);
-		DrawCurrentScene();
+		//DrawCurrentScene();
+		DrawSceneQuad(sceneID);
 
 		//Draw the current scene centre
 		sceneID = mainSceneID;
@@ -456,7 +458,8 @@ void Renderer::RenderScene()
 		currentCamera = cameras[sceneID];
 		viewMatrix = currentCamera->BuildViewMatrix();
 		glViewport(width * 0.15f, height * 0.3f, width * 0.7f, height * 0.7f);
-		DrawCurrentScene();
+		//DrawCurrentScene();
+		DrawSceneQuad(sceneID);
 	}
 	else
 	{
@@ -466,12 +469,12 @@ void Renderer::RenderScene()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		
+	glViewport(0, 0, width, height);
 	DrawSobel();
 	DrawBlur();
 	DrawProcessedScene();
 
-	glViewport(0, 0, width, height);
+	//glViewport(0, 0, width, height);
 
 	if (showInfo)
 	{
@@ -930,7 +933,6 @@ void Renderer::DrawSobel()
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bufferColourTex[1], 0);
 
-
 	processQuad->SetTexture(bufferColourTex[0]);
 	processQuad->Draw();
 
@@ -958,9 +960,38 @@ void Renderer::DrawProcessedScene()
 	glUseProgram(0);
 }
 
-void Renderer::DrawSceneQuads()
+void Renderer::DrawSceneQuad(const int scene)
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, sceneFBOs[scene]);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneColourTex[scene][1], 0);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
+	SetCurrentShader(sceneShader);
+
+	projMatrix = Matrix4::Orthographic(-1, 1, 1, -1, -1, 1);
+	viewMatrix.ToIdentity();
+	textureMatrix.ToIdentity();
+	modelMatrix.ToIdentity();
+	UpdateShaderMatrices();
+
+	glDisable(GL_DEPTH_TEST);
+
+	glUniform2f(glGetUniformLocation(currentShader->GetProgram(), "pixelSize"), 1.0f / width, 1.0f / height);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneColourTex[scene][1], 0);
+
+	sceneQuads[scene]->SetTexture(sceneColourTex[scene][0]);
+	sceneQuads[scene]->Draw();
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneColourTex[scene][0], 0);
+
+	sceneQuads[scene]->SetTexture(sceneColourTex[scene][1]);
+	sceneQuads[scene]->Draw();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glUseProgram(0);
+
+	glEnable(GL_DEPTH_TEST);
 }
 
 void Renderer::checkSceneSwitch(const float msec)

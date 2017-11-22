@@ -87,7 +87,7 @@ protected:
 	GLuint sceneColourTex[SceneID::NUM_SCENES][2];
 	GLuint sceneDepthTex[SceneID::NUM_SCENES];
 
-	void DrawSceneQuads();
+	void DrawSceneQuad(const int scene);
 
 	int sceneID = SceneID::SPACE_SCENE;
 

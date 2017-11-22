@@ -10,7 +10,7 @@ SolarSystem::SolarSystem()
 	//Populate object information
 	sun = new RenderObject(createSphereObj(), Vector4(0.9f, 0.7f, 0.3f, 1.0f), RenderType::TYPE_SUN);
 	sun->SetModelScale(Vector3(sunRadius * scale));
-	sun->SetTransform(Matrix4::Rotation(270.0f, Vector3(0.0f, 1.0f, 0.0f)) * Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)));
+	sun->SetTransform(Matrix4::Rotation(300.0f, Vector3(0.0f, 1.0f, 0.0f)) * Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)));
 	sun->SetBoundingRadius(sunRadius * scale);
 	sun->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"TileFire.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
@@ -114,10 +114,6 @@ void SolarSystem::Update(float msec)
 Mesh* SolarSystem::createSphereObj()
 {
 	OBJMesh* m = new OBJMesh();
-	//m->LoadOBJMesh(MESHDIR"sphere2.obj");
-	//m->LoadOBJMesh(MESHDIR"mySphere.obj");
-	//m->LoadOBJMesh(MESHDIR"sphereDLed.obj");
-	//m->LoadOBJMesh(MESHDIR"sphere.obj");
 	m->LoadOBJMesh(MESHDIR"smoothSphere.obj");
 
 	return m;
