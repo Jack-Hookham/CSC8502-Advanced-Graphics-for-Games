@@ -231,6 +231,7 @@ Renderer::~Renderer(void)
 	delete processQuad;
 	delete blurShader;
 	delete sceneShader;
+	delete sobelShader;
 
 	glDeleteTextures(2, bufferColourTex);
 	glDeleteTextures(1, &bufferDepthTex);
@@ -254,7 +255,6 @@ Renderer::~Renderer(void)
 	delete sunShader;
 	delete textShader;
 	delete skyboxShader;
-	delete blackHoleShader;
 	currentShader = 0;
 
 	delete mountainsLightShader;
@@ -359,10 +359,6 @@ void Renderer::UpdateScene(float msec)
 		if (volcanoErupting)
 		{
 			shakeCamera(msec, cameras[SceneID::VOLCANO_SCENE]);
-			//if (lavaHeight < 75.0f)
-			//{
-			//	lavaHeight += msec * 0.004f;
-			//}
 		}
 
 		scenes[SceneID::SPACE_SCENE]->Update(msec);
@@ -375,7 +371,7 @@ void Renderer::UpdateScene(float msec)
 	if (sceneID == SceneID::VOLCANO_SCENE)
 	{	
 		//Volcano multi cam
-		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_O))
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_M))
 		{
 			volcanoMultiCam = !volcanoMultiCam;
 		}
@@ -562,6 +558,7 @@ void Renderer::DrawVolcanoScene()
 {
 	if (volcanoMultiCam)
 	{
+		//Draw all 4 volcano camera perspectives
 		Camera* tempCamera = currentCamera;
 		currentCamera = volcanoCameras[0];
 		viewMatrix = currentCamera->BuildViewMatrix();
@@ -649,10 +646,9 @@ void Renderer::compileShaders()
 	satelliteShader = new Shader(SHADERDIR"CW/solarVertex.glsl", SHADERDIR"CW/solarFragment.glsl");
 	//Sun uses a different shader as it doesn't need lighting
 	sunShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl");
-	//textShader = new Shader(SHADERDIR"CW/texturedVertex.glsl", SHADERDIR"CW/texturedFragment.glsl");
 	shadowShader = new Shader(SHADERDIR"CW/shadowVert.glsl", SHADERDIR"CW/shadowFrag.glsl");
-	blackHoleShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl",
-		SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
+	//blackHoleShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl",
+	//	SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
 
 	lavaShader = new Shader(SHADERDIR"CW/lavaVertex.glsl", SHADERDIR"CW/lavaFragment.glsl");
 	volcanoLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/volcanoFragment.glsl");
@@ -671,7 +667,6 @@ void Renderer::compileShaders()
 		!satelliteShader->LinkProgram() ||
 		!sunShader->LinkProgram() ||
 		!shadowShader->LinkProgram() ||
-		!blackHoleShader->LinkProgram() ||
 
 		!lavaShader->LinkProgram() ||
 		!volcanoLightShader->LinkProgram() ||
@@ -848,6 +843,72 @@ void Renderer::drawInfo()
 	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
+	if (sceneID == SceneID::SPACE_SCENE)
+	{
+		oss.str("");
+		oss.clear();
+		oss << "Planet Movement: T";
+		drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
+		currentY += 20.0f;
+	}
+	else if (sceneID == SceneID::VOLCANO_SCENE)
+	{
+		oss.str("");
+		oss.clear();
+		oss << "Erupt: E";
+		drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
+		currentY += 20.0f;
+
+		oss.str("");
+		oss.clear();
+		oss << "Multi Cam: M";
+		drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
+		currentY += 20.0f;
+
+		if (volcanoMultiCam)
+		{
+			float textSize = 24.0f;
+
+			oss.str("");
+			oss.clear();
+			oss << "Choose Cam: 1-4";
+			drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
+			currentY += 20.0f;
+
+			oss.str("");
+			oss.clear();
+			oss << "1";
+			if (currentVolcanoCamera == 0) textSize = 36.0f; else textSize = 16.0f;
+			drawText(oss.str(), Vector3(width / 2 - 40.0f, height / 2 - 40.0f, 0.0f), textSize);
+
+			oss.str("");
+			oss.clear();
+			oss << "2";
+			if (currentVolcanoCamera == 1) textSize = 36.0f; else textSize = 16.0f;
+			drawText(oss.str(), Vector3(width - 40.0f, height / 2 - 40.0f, 0.0f), textSize);
+
+			oss.str("");
+			oss.clear();
+			oss << "3";
+			if (currentVolcanoCamera == 2) textSize = 36.0f; else textSize = 16.0f;
+			drawText(oss.str(), Vector3(width / 2 - 40.0f, height - 40.0f, 0.0f), textSize);
+
+			oss.str("");
+			oss.clear();
+			oss << "4";
+			if (currentVolcanoCamera == 3) textSize = 36.0f; else textSize = 16.0f;
+			drawText(oss.str(), Vector3(width - 40.0f, height - 40.0f, 0.0f), textSize);
+		}
+	}
+	else if (sceneID == SceneID::MOUNTAIN_SCENE)
+	{
+		oss.str("");
+		oss.clear();
+		oss << "Day/Night: T";
+		drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
+		currentY += 20.0f;
+	}
+
 
 	//oss.str("");
 	//oss.clear();
@@ -903,14 +964,7 @@ void Renderer::DrawNode(RenderObject* n)
 {
 	if (n->getType() == RenderType::TYPE_SUN)
 	{
-		if (ss->getExploding())
-		{
-			SetCurrentShader(blackHoleShader);
-		}
-		else
-		{
-			SetCurrentShader(sunShader);
-		}
+		SetCurrentShader(sunShader);
 	}
 	else if (n->getType() == RenderType::TYPE_SATELLITE)
 	{
@@ -926,15 +980,8 @@ void Renderer::DrawNode(RenderObject* n)
 		glUniform4fv(glGetUniformLocation(currentShader->GetProgram(), "nodeColour"), 1, (float*)&n->GetColour());
 		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "useTexture"), (int)n->GetMesh()->GetTexture());
 		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
-
-		if (n->getType() == RenderType::TYPE_SUN && ss->getExploding())
-		{
-			n->DrawPatches();
-		}
-		else
-		{
-			n->Draw();
-		}
+		
+		n->Draw();
 	}
 
 	for (vector<RenderObject*>::const_iterator i = n->GetChildIteratorStart(); i != n->GetChildIteratorEnd(); ++i)

@@ -86,32 +86,6 @@ void Mesh::Draw()
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Mesh::DrawPatches()
-{
-	type = GL_PATCHES;
-	glPatchParameteri(GL_PATCH_VERTICES, 3);
-
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, bumpTexture);
-
-	glBindVertexArray(arrayObject);
-	if (bufferObject[INDEX_BUFFER])
-	{
-		glDrawElements(type, numIndices, GL_UNSIGNED_INT, 0);
-	}
-	else
-	{
-		glDrawArrays(type, 0, numVertices);
-	}
-	glBindVertexArray(0);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-}
-
 Mesh* Mesh::GenerateTriangle()
 {
 	Mesh* m = new Mesh();

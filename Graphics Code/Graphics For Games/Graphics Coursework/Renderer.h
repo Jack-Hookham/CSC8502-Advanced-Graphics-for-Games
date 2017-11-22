@@ -158,7 +158,6 @@ protected:
 	Shader* shadowShader;
 	Shader* satelliteShader;
 	Shader* sunShader;
-	Shader* blackHoleShader;
 
 	Matrix4 shadowMapRotations[6] =
 	{

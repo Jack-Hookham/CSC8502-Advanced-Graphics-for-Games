@@ -21,7 +21,6 @@ public:
 	~Mesh(void);
 
 	virtual void Draw();
-	virtual void DrawPatches();
 	static Mesh* GenerateTriangle();
 	static Mesh* GenerateQuad();
 	void SetTexture(GLuint tex) { texture = tex; }

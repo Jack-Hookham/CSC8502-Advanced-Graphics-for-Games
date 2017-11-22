@@ -54,11 +54,3 @@ void RenderObject::Draw()
 		mesh->Draw();
 	}
 }
-
-void RenderObject::DrawPatches()
-{
-	if (mesh)
-	{
-		mesh->DrawPatches();
-	}
-}
