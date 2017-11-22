@@ -45,15 +45,15 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
 
 	//Set up the sky map for each scene
-	skyMaps[SceneID::SOLAR_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"GalaxySkyBox/galaxy_west.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_east.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_up.bmp",
+	skyMaps[SceneID::SPACE_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"GalaxySkyBox/galaxy_west.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_east.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_up.bmp",
 		TEXTUREDIR"GalaxySkyBox/galaxy_down.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_south.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_north.bmp",
 		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
-	//skyMaps[SceneID::SOLAR_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"HellSkyBox/hell_rt.bmp", TEXTUREDIR"HellSkyBox/hell_lf.bmp", TEXTUREDIR"HellSkyBox/hell_up.bmp",
+	//skyMaps[SceneID::SPACE_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"HellSkyBox/hell_rt.bmp", TEXTUREDIR"HellSkyBox/hell_lf.bmp", TEXTUREDIR"HellSkyBox/hell_up.bmp",
 	//	TEXTUREDIR"HellSkyBox/hell_dn.bmp", TEXTUREDIR"HellSkyBox/hell_bk.bmp", TEXTUREDIR"HellSkyBox/hell_ft.bmp",
 	//	SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
 
-	//skyMaps[SceneID::SOLAR_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"MercurySkyBox/mercury_rt.bmp", TEXTUREDIR"MercurySkyBox/mercury_lf.bmp", TEXTUREDIR"MercurySkyBox/mercury_up.bmp",
+	//skyMaps[SceneID::SPACE_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"MercurySkyBox/mercury_rt.bmp", TEXTUREDIR"MercurySkyBox/mercury_lf.bmp", TEXTUREDIR"MercurySkyBox/mercury_up.bmp",
 	//	TEXTUREDIR"MercurySkyBox/mercury_dn.bmp", TEXTUREDIR"MercurySkyBox/mercury_bk.bmp", TEXTUREDIR"MercurySkyBox/mercury_ft.bmp",
 	//	SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
 
@@ -154,7 +154,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 		mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f), 
 		Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
 
-	cameras[SceneID::SOLAR_SCENE] = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
+	cameras[SceneID::SPACE_SCENE] = new Camera(-30.0f, 0.0f, Vector3(0, 1500.0f, 2500.0f));
 	cameras[SceneID::VOLCANO_SCENE] = new Camera(15.0f, 160.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 0.9f, 800.0f,
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * -0.5f));
 	cameras[SceneID::MOUNTAIN_SCENE] = new Camera(0.0f, 0.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() / 2.0f, 1000.0f,
@@ -178,7 +178,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	volcano = new Volcano();
 	mountains = new Mountains();
 
-	scenes[SceneID::SOLAR_SCENE] = ss;
+	scenes[SceneID::SPACE_SCENE] = ss;
 	scenes[SceneID::VOLCANO_SCENE] = volcano;
 	scenes[SceneID::MOUNTAIN_SCENE] = mountains;
 
@@ -263,77 +263,7 @@ void Renderer::UpdateScene(float msec)
 		compileShaders();
 	}
 
-	//Forward scene
-	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_RIGHT) && 
-		!switchingLeft && !switchingRight && switched)
-	{
-		switchingRight = true;
-	}
-
-	//Backward scene
-	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_LEFT) && 
-		!switchingLeft && !switchingRight && switched)
-	{
-		switchingLeft = true;
-	}
-
-	if (switchingRight)
-	{
-		//Blur out
-		if (blurFactor < 1.0f)
-		{
-			blurFactor += msec * blurIncrement;
-		}
-		//if blurring finished switch scene
-		else
-		{
-			sceneID--;
-			if (sceneID < 0)
-			{
-				sceneID = SceneID::NUM_SCENES - 1;
-			}
-
-			//Change current scene information
-			setScene(sceneID);
-			switchingRight = false;
-			switched = false;
-		}
-	}
-
-	if (switchingLeft)
-	{
-		//Blur out
-		if (blurFactor < 1.0f)
-		{
-			blurFactor += msec * blurIncrement;
-		}
-		//if blurring finished switch scene
-		else
-		{
-			sceneID++;
-			if (sceneID >= SceneID::NUM_SCENES)
-			{
-				sceneID = 0;
-			}
-
-			//Change current scene information
-			setScene(sceneID);
-			switchingLeft = false;
-			switched = false;
-		}
-	}
-
-	if (!switched)
-	{
-		if (blurFactor > blurIncrement)
-		{
-			blurFactor -= msec * blurIncrement;
-		}
-		else
-		{
-			switched = true;
-		}
-	}
+	checkSceneSwitch(msec);
 
 	//Toggle info
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_I))
@@ -341,36 +271,38 @@ void Renderer::UpdateScene(float msec)
 		showInfo = !showInfo;
 	}
 
+	//Toggle show all scenes
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_Y))
+	{
+		showAllScenes = !showAllScenes;
+	}
+
 	currentCamera->UpdateCamera(msec);
 	viewMatrix = currentCamera->BuildViewMatrix();
 
-	currentScene->Update(msec);
-	if (sceneID == SceneID::SOLAR_SCENE)
+	if (showAllScenes)
 	{
-
-	}	
-	else if (sceneID == SceneID::VOLCANO_SCENE)
-	{
-		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E))
-		{
-			volcanoErupting = !volcanoErupting;
-		}
 		lavaEmitter->Update(msec, volcanoErupting);
 		emberEmitter->Update(msec);
-		//steamEmitter->Update(msec);
-
 		if (volcanoErupting)
 		{
-			shakeCamera(msec, currentCamera);
+			shakeCamera(msec, cameras[SceneID::VOLCANO_SCENE]);
 			if (lavaHeight < 1000.0f);
 			lavaHeight += msec * 0.0001f;
 		}
-	}
-	else if (sceneID == SceneID::MOUNTAIN_SCENE)
-	{
+		scenes[SceneID::SPACE_SCENE]->Update(msec);
+		if (sceneID == SceneID::VOLCANO_SCENE)
+		{
+			if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E))
+			{
+				volcanoErupting = !volcanoErupting;
+			}
+			//steamEmitter->Update(msec);
+		}
+
 		//Move sun light to simulate day/night cycle
 		int yDir;		//Determine whether the sun is going up or down and store it here
-		//Rise until over centre
+						//Rise until over centre
 		float middleX = mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f;
 		if (mountainsLight->GetPosition().x < middleX)
 		{
@@ -392,6 +324,57 @@ void Renderer::UpdateScene(float msec)
 		//sunStrength is a multiplier for the skybox colour
 		sunStrength = mountainsLight->GetPosition().y / 3400.0f;
 	}
+	else
+	{
+		currentScene->Update(msec);
+		if (sceneID == SceneID::SPACE_SCENE)
+		{
+
+		}
+		else if (sceneID == SceneID::VOLCANO_SCENE)
+		{
+			if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E))
+			{
+				volcanoErupting = !volcanoErupting;
+			}
+			lavaEmitter->Update(msec, volcanoErupting);
+			emberEmitter->Update(msec);
+			//steamEmitter->Update(msec);
+
+			if (volcanoErupting)
+			{
+				shakeCamera(msec, currentCamera);
+				if (lavaHeight < 1000.0f);
+				lavaHeight += msec * 0.0001f;
+			}
+		}
+		else if (sceneID == SceneID::MOUNTAIN_SCENE)
+		{
+			//Move sun light to simulate day/night cycle
+			int yDir;		//Determine whether the sun is going up or down and store it here
+							//Rise until over centre
+			float middleX = mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f;
+			if (mountainsLight->GetPosition().x < middleX)
+			{
+				yDir = 1;
+			}
+			else
+			{
+				yDir = -1;
+			}
+
+			mountainsLight->SetPosition(mountainsLight->GetPosition() + Vector3(1.0f * msec, 0.3f * msec * yDir, 0.0f));
+
+			if (mountainsLight->GetPosition().x > maxSunX)
+			{
+				mountainsLight->SetPosition(mountainsLightReset);
+			}
+
+			//3400 is roughly the hightest the sun gets
+			//sunStrength is a multiplier for the skybox colour
+			sunStrength = mountainsLight->GetPosition().y / 3400.0f;
+		}
+	}
 }
 
 void Renderer::RenderScene()
@@ -401,54 +384,144 @@ void Renderer::RenderScene()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	//glUseProgram(currentShader->GetProgram());
 
-	if (sceneID == SceneID::SOLAR_SCENE)
+	if (showAllScenes)
 	{
-		SetShaderLight(*sunLight);
+		if (sceneID == SceneID::SPACE_SCENE)
+		{
+			sceneID = SceneID::MOUNTAIN_SCENE;
+			currentSkyMap = skyMaps[sceneID];
+			currentCamera = cameras[sceneID];
+			viewMatrix = currentCamera->BuildViewMatrix();
+			glViewport(0, 0, width * 0.4f, height * 0.4f);
+			DrawMountainsScene();
 
-		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, (float*)&textureMatrix);
-		float mod = 0.0f;
-		glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "mod"), mod);
+			sceneID = SceneID::VOLCANO_SCENE;
+			currentSkyMap = skyMaps[sceneID];
+			currentCamera = cameras[sceneID];
+			viewMatrix = currentCamera->BuildViewMatrix();
+			glViewport(width * 0.6f, 0, width * 0.4f, height * 0.4f);
+			DrawVolcanoScene();
 
-		DrawSkybox();
-		DrawShadowScene();
-		DrawCombinedScene();
+			sceneID = SceneID::SPACE_SCENE;
+			currentSkyMap = skyMaps[sceneID];
+			currentCamera = cameras[sceneID];
+			viewMatrix = currentCamera->BuildViewMatrix();
+			glViewport(width * 0.15f, height * 0.3f, width * 0.7f, height * 0.7f);
+			DrawSpaceScene();
+		}
+		else if (sceneID == SceneID::VOLCANO_SCENE)
+		{
+			sceneID = SceneID::SPACE_SCENE;
+			currentSkyMap = skyMaps[sceneID];
+			currentCamera = cameras[sceneID];
+			viewMatrix = currentCamera->BuildViewMatrix();
+			glViewport(0, 0, width * 0.4f, height * 0.4f);
+			DrawSpaceScene();
+
+			sceneID = SceneID::MOUNTAIN_SCENE;
+			currentSkyMap = skyMaps[sceneID];
+			currentCamera = cameras[sceneID];
+			viewMatrix = currentCamera->BuildViewMatrix();
+			glViewport(width * 0.6f, 0, width * 0.4f, height * 0.4f);
+			DrawMountainsScene();
+
+			sceneID = SceneID::VOLCANO_SCENE;
+			currentSkyMap = skyMaps[sceneID];
+			currentCamera = cameras[sceneID];
+			viewMatrix = currentCamera->BuildViewMatrix();
+			glViewport(width * 0.15f, height * 0.3f, width * 0.7f, height * 0.7f);
+			DrawVolcanoScene();
+		}
+		else if (sceneID == SceneID::MOUNTAIN_SCENE)
+		{
+			sceneID = SceneID::VOLCANO_SCENE;
+			currentSkyMap = skyMaps[sceneID];
+			currentCamera = cameras[sceneID];
+			viewMatrix = currentCamera->BuildViewMatrix();
+			glViewport(0, 0, width * 0.4f, height * 0.4f);
+			DrawVolcanoScene();
+
+			sceneID = SceneID::SPACE_SCENE;
+			currentSkyMap = skyMaps[sceneID];
+			currentCamera = cameras[sceneID];
+			viewMatrix = currentCamera->BuildViewMatrix();
+			glViewport(width * 0.6f, 0, width * 0.4f, height * 0.4f);
+			DrawSpaceScene();
+
+			sceneID = SceneID::MOUNTAIN_SCENE;
+			currentSkyMap = skyMaps[sceneID];
+			currentCamera = cameras[sceneID];
+			viewMatrix = currentCamera->BuildViewMatrix();
+			glViewport(width * 0.15f, height * 0.3f, width * 0.7f, height * 0.7f);
+			DrawMountainsScene();
+		}
 	}
-	else if (sceneID == SceneID::VOLCANO_SCENE)
+	else
 	{
-		//glViewport(width / 2, height / 2, width / 2, height / 2);
-		DrawSkybox();
-		DrawVolcanoMap();
-		DrawVolcanoLava();
-		DrawFloorLava();
-		DrawEmitters();
-
-		//glViewport(0, 0, width / 2, height / 2);
-		//DrawSkybox();
-		//DrawVolcanoMap();
-		//DrawVolcanoLava();
-		//DrawFloorLava();
-		//DrawEmitters();
-	}
-	else if (sceneID == SceneID::MOUNTAIN_SCENE)
-	{
-		DrawSkybox();
-		DrawMountainMap();
-		DrawWater();
+		if (sceneID == SceneID::SPACE_SCENE)
+		{
+			DrawSpaceScene();
+		}
+		else if (sceneID == SceneID::VOLCANO_SCENE)
+		{
+			DrawVolcanoScene();
+		}
+		else if (sceneID == SceneID::MOUNTAIN_SCENE)
+		{
+			DrawMountainsScene();
+		}
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	DrawSobel();
+	//DrawSobel();
 	DrawBlur();
 	DrawProcessedScene();
 
 	if (showInfo)
 	{
-		//glViewport(0, 0, width, height);
+		glViewport(0, 0, width, height);
 		drawInfo();
 	}
 
 	SwapBuffers();
+}
+
+void Renderer::DrawSpaceScene()
+{
+	SetShaderLight(*sunLight);
+
+	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, (float*)&textureMatrix);
+	float mod = 0.0f;
+	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "mod"), mod);
+
+	DrawSkybox();
+	DrawShadowScene();
+	DrawCombinedScene();
+}
+
+void Renderer::DrawVolcanoScene()
+{
+	//glViewport(width / 2, height / 2, width / 2, height / 2);
+	DrawSkybox();
+	DrawVolcanoMap();
+	DrawVolcanoLava();
+	DrawFloorLava();
+	DrawEmitters();
+
+	//glViewport(0, 0, width / 2, height / 2);
+	//DrawSkybox();
+	//DrawVolcanoMap();
+	//DrawVolcanoLava();
+	//DrawFloorLava();
+	//DrawEmitters();
+}
+
+void Renderer::DrawMountainsScene()
+{
+	DrawSkybox();
+	DrawMountainMap();
+	DrawWater();
 }
 
 void Renderer::setScene(int n)
@@ -767,6 +840,80 @@ void Renderer::DrawProcessedScene()
 	processQuad->SetTexture(bufferColourTex[0]);
 	processQuad->Draw();
 	glUseProgram(0);
+}
+
+void Renderer::checkSceneSwitch(const float msec)
+{
+	//Forward scene
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_RIGHT) &&
+		!switchingLeft && !switchingRight && switched)
+	{
+		switchingRight = true;
+	}
+
+	//Backward scene
+	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_LEFT) &&
+		!switchingLeft && !switchingRight && switched)
+	{
+		switchingLeft = true;
+	}
+	if (switchingRight)
+	{
+		//Blur out
+		if (blurFactor < 1.0f)
+		{
+			blurFactor += msec * blurIncrement;
+		}
+		//if blurring finished switch scene
+		else
+		{
+			sceneID--;
+			if (sceneID < 0)
+			{
+				sceneID = SceneID::NUM_SCENES - 1;
+			}
+
+			//Change current scene information
+			setScene(sceneID);
+			switchingRight = false;
+			switched = false;
+		}
+	}
+
+	if (switchingLeft)
+	{
+		//Blur out
+		if (blurFactor < 1.0f)
+		{
+			blurFactor += msec * blurIncrement;
+		}
+		//if blurring finished switch scene
+		else
+		{
+			sceneID++;
+			if (sceneID >= SceneID::NUM_SCENES)
+			{
+				sceneID = 0;
+			}
+
+			//Change current scene information
+			setScene(sceneID);
+			switchingLeft = false;
+			switched = false;
+		}
+	}
+
+	if (!switched)
+	{
+		if (blurFactor > blurIncrement)
+		{
+			blurFactor -= msec * blurIncrement;
+		}
+		else
+		{
+			switched = true;
+		}
+	}
 }
 
 void Renderer::shakeCamera(const float msec, Camera* camera)

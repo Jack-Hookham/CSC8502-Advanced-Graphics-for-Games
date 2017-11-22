@@ -18,7 +18,7 @@
 
 enum SceneID
 {
-	SOLAR_SCENE,
+	SPACE_SCENE,
 	VOLCANO_SCENE,
 	MOUNTAIN_SCENE,
 	NUM_SCENES
@@ -73,7 +73,7 @@ protected:
 	GLuint bufferColourTex[2];
 	GLuint bufferDepthTex;
 
-	int sceneID = SceneID::SOLAR_SCENE;
+	int sceneID = SceneID::SPACE_SCENE;
 
 	std::string currentSceneName;
 	std::string sceneNames[SceneID::NUM_SCENES] = 
@@ -112,14 +112,20 @@ protected:
 
 	float blurFactor = 0.0f;
 
+	//Check whether the scene is switching
+	void checkSceneSwitch(const float msec);
+
 	bool switchingLeft = false;
 	bool switchingRight = false;
 	bool switched = true;
 
 	const float blurIncrement = 0.001f;
 
-	//-----------------------Solar System Scene---------------------
+	bool showAllScenes = true;
 
+	//-----------------------Space Scene-------------------------------
+
+	void DrawSpaceScene();
 	void DrawShadowScene();
 	void DrawCombinedScene();
 
@@ -147,6 +153,7 @@ protected:
 
 	//-----------------------Volcano Scene-----------------------------
 
+	void DrawVolcanoScene();
 	void DrawVolcanoMap();
 	void DrawFloorLava();
 	void DrawVolcanoLava();
@@ -173,6 +180,7 @@ protected:
 
 	//-----------------------Mountains Scene---------------------------
 
+	void DrawMountainsScene();
 	void DrawMountainMap();
 	void DrawWater();
 
