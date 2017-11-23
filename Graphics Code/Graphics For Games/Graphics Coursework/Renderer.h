@@ -44,6 +44,7 @@ public:
 protected:
 	void initPostProcessing();
 	void initSkyMaps();
+	void initCameras();
 
 	//Total time since program started
 	float totalTimer = 0.0f;
@@ -155,7 +156,6 @@ protected:
 	Shader* shadowShader;
 	Shader* satelliteShader;
 	Shader* sunShader;
-	Shader* blackHoleShader;
 
 	Matrix4 shadowMapRotations[6] =
 	{
@@ -169,6 +169,7 @@ protected:
 
 	//-----------------------Volcano Scene-----------------------------
 
+	void initVolcano();
 	
 	void DrawVolcanoScene();		//Draw 1 or 4 volcano components with view ports
 	void DrawVolcanoComponents();	//Calls each volcano draw function
@@ -216,6 +217,8 @@ protected:
 	int prevFrame = 0;
 
 	//-----------------------Mountains Scene---------------------------
+
+	void initMountains();
 
 	void DrawMountainsScene();
 	void DrawMountainMap();

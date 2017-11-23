@@ -27,9 +27,8 @@ mat3 sy = mat3(
 
 void main(void)
 {
+	//https://computergraphics.stackexchange.com/questions/3646/opengl-glsl-sobel-edge-detection-filter
     vec3 diffuse = texture(diffuseTex, IN.texCoord.st).rgb;
-	//  fragColour = vec4(diffuse, 1.0);
-	//  return;
 
     mat3 I;
     for (int i = 0; i < 3; i++) 
