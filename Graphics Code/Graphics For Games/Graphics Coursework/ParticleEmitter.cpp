@@ -159,20 +159,6 @@ Particle* ParticleEmitter::GetFreeParticle() {
 
 		p->speed = particleSpeed * 0.5f + particleSpeed * RAND();
 	}
-	else if (particleType == ParticleType::STEAM_PARTICLE)
-	{
-		float greyFloat = 0.5f + RAND() * 0.5f;
-		p->colour = Vector4(greyFloat, greyFloat, greyFloat, 1.0f);
-		p->direction = initialDirection;
-		p->direction.x += ((RAND() - RAND()) * particleVariance);
-		p->direction.y += (RAND() * particleVariance);
-		p->direction.z += ((RAND() - RAND()) * particleVariance);
-
-		p->direction.Normalise();	//Keep its direction normalised!
-		p->position = Vector3(2244.0f, 1450.0f, 2076.0f);		//Top of the volcano
-
-		p->speed = particleSpeed + particleSpeed * RAND();
-	}
 
 	return p;	//return the new particle :-)
 }

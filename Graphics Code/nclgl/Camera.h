@@ -46,7 +46,7 @@ public:
 	//Gets yaw, in degrees
 	inline float	GetYaw()   const { return yaw;}
 	//Sets yaw, in degrees
-	inline void	SetYaw(float y) {yaw = y;}
+	inline void	SetYaw(float y) { yaw = y; }
 
 	//Gets pitch, in degrees
 	inline float	GetPitch() const { return pitch;}

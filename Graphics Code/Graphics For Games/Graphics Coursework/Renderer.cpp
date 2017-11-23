@@ -2,70 +2,10 @@
 
 Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 {
-	//Post processing setup
-	processQuad = Mesh::GenerateQuad();
-
-	//Generate scene depth texture
-	glGenTextures(1, &bufferDepthTex);
-	glBindTexture(GL_TEXTURE_2D, bufferDepthTex);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
-
-	//Colour texture
-	for (int i = 0; i < 2; ++i)
-	{
-		glGenTextures(1, &bufferColourTex[i]);
-		glBindTexture(GL_TEXTURE_2D, bufferColourTex[i]);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	}
-
-	glGenFramebuffers(1, &bufferFBO);		//Render the scene into this
-	glGenFramebuffers(1, &processFBO);		//And do post processing in this
-
-	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, bufferDepthTex, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, bufferDepthTex, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bufferColourTex[0], 0);
-
-	//Check FBO attachment success
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE || !bufferDepthTex || !bufferColourTex[0])
-	{
-		return;
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	initPostProcessing();
+	initSkyMaps();
 
 	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
-
-	//Set up the sky map for each scene
-	skyMaps[SceneID::SPACE_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"GalaxySkyBox/galaxy_west.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_east.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_up.bmp",
-		TEXTUREDIR"GalaxySkyBox/galaxy_down.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_south.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_north.bmp",
-		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
-
-	skyMaps[SceneID::VOLCANO_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"HellSkyBox/hell_rt.bmp", TEXTUREDIR"HellSkyBox/hell_lf.bmp", TEXTUREDIR"HellSkyBox/hell_up.bmp",
-		TEXTUREDIR"HellSkyBox/hell_dn.bmp", TEXTUREDIR"HellSkyBox/hell_bk.bmp", TEXTUREDIR"HellSkyBox/hell_ft.bmp",
-		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
-
-	skyMaps[SceneID::MOUNTAIN_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"sb_frozen/frozen_rt.bmp", TEXTUREDIR"sb_frozen/frozen_lf.bmp", TEXTUREDIR"sb_frozen/frozen_up.bmp",
-		TEXTUREDIR"sb_frozen/frozen_dn.bmp", TEXTUREDIR"sb_frozen/frozen_bk.bmp", TEXTUREDIR"sb_frozen/frozen_ft.bmp",
-		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
-
-	for (int i = 0; i < SceneID::NUM_SCENES; ++i)
-	{
-		if (!skyMaps[i])
-		{
-			return;
-		}
-	}
-
-	currentSkyMap = skyMaps[sceneID];
 
 	//--------------Volcano Stuff-------------------------
 
@@ -103,13 +43,6 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	emberEmitter->SetLaunchParticles(16.0f);
 	emberEmitter->SetParticleLifetime(3000.0f);
 	emberEmitter->SetParticleSpeed(1.0f);
-
-	steamEmitter = new ParticleEmitter(ParticleType::STEAM_PARTICLE);
-	steamEmitter->SetParticleSize(10.0f);
-	steamEmitter->SetParticleVariance(1.0f);
-	steamEmitter->SetLaunchParticles(16.0f);
-	steamEmitter->SetParticleLifetime(3000.0f);
-	steamEmitter->SetParticleSpeed(0.1f);
 
 	volcanoLight = new Light(Vector3(2240.0f, 2000.0f, 2100.0f), Vector4(1.0f, 1.0f, 1.0f, 1), 10000.0f);
 
@@ -247,7 +180,6 @@ Renderer::~Renderer(void)
 
 	delete lavaEmitter;
 	delete emberEmitter;
-	delete steamEmitter;
 
 	delete hellData;
 	delete hellNode;
@@ -318,6 +250,8 @@ void Renderer::UpdateScene(float msec)
 	}
 	viewMatrix = currentCamera->BuildViewMatrix();
 
+	//Calls the solar system's update function which updates all of the planet positions
+	//then calls the RenderObject update to update all of the nodes
 	currentScene->Update(msec);
 
 	if (sceneID == SceneID::VOLCANO_SCENE)
@@ -328,6 +262,7 @@ void Renderer::UpdateScene(float msec)
 			volcanoMultiCam = !volcanoMultiCam;
 		}
 
+		//Change selected camera (1 - 4)
 		if (volcanoMultiCam)
 		{
 			if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_1))
@@ -356,7 +291,6 @@ void Renderer::UpdateScene(float msec)
 
 		lavaEmitter->Update(msec, volcanoErupting);
 		emberEmitter->Update(msec);
-		//steamEmitter->Update(msec);
 
 		if (volcanoErupting)
 		{
@@ -526,30 +460,19 @@ void Renderer::DrawVolcanoComponents()
 
 void Renderer::UpdateHellKnight(const float msec)
 {
-	//if (Window::GetKeyboard()->KeyDown(KEYBOARD_L))
-	//{
-	//	hellKnightStep += 0.1f;
-	//}
-	//if (Window::GetKeyboard()->KeyDown(KEYBOARD_K))
-	//{
-	//	hellKnightStep -= 0.1f;
-	//}
-
-	//hellKnightDir = Vector3(0, 0, -1);
-	//hellKnightRotation = 270.0f;
-
+	//Turn around
 	if (hellKnightOffset.x < 2230)
 	{
 		hellKnightDir = Vector3(1, 0, 1);
 		hellKnightRotation = 315 - 180;
 	}
 
+	//Turn around
 	if (hellKnightOffset.x > 2900)
 	{
 		hellKnightDir = Vector3(-1, 0, -1);
 		hellKnightRotation = 315;
 	}
-
 
 	hellNode->Update(msec);
 	int frameDiff = abs(hellNode->getAnimFrame() - prevFrame);
@@ -773,35 +696,23 @@ void Renderer::drawInfo()
 	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
-	//Hell offset
-	oss.str("");
-	oss.clear();
-	oss << "Hell offset: " << std::fixed << std::setprecision(0) << hellKnightOffset;
-	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
-	currentY += 20.0f;
+	//Get heightmap Y at camera pos
+	//oss.str("");
+	//oss.clear();
+	//int yVal = 0;
+	////If within height map bounds
+	//if (currentCamera->GetPosition().x > 0 && currentCamera->GetPosition().x < 257 * 16 &&
+	//	currentCamera->GetPosition().y > 0 && currentCamera->GetPosition().y < 257 * 16)
+	//{
+	//	yVal = (int)volcanoHeightMap->data[(int)(currentCamera->GetPosition().x / 16) * (int)(volcanoHeightMap->getRawWidth())
+	//		+ (int)(currentCamera->GetPosition().z / 16)];
+	//	yVal *= 8;
+	//}
+	////currentCamera->SetPosition(Vector3(currentCamera->GetPosition().x, yVal, currentCamera->GetPosition().z));
+	//oss << "Y: " << std::fixed << std::setprecision(2) << yVal;
+	//drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
+	//currentY += 20.0f;
 
-	//Hell step
-	oss.str("");
-	oss.clear();
-	oss << "Hell step: " << std::fixed << std::setprecision(2) << hellKnightStep;
-	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
-	currentY += 20.0f;
-
-	oss.str("");
-	oss.clear();
-	int yVal = 0;
-	//If within height map bounds
-	if (currentCamera->GetPosition().x > 0 && currentCamera->GetPosition().x < 257 * 16 &&
-		currentCamera->GetPosition().y > 0 && currentCamera->GetPosition().y < 257 * 16)
-	{
-		yVal = (int)volcanoHeightMap->data[(int)(currentCamera->GetPosition().x / 16) * (int)(volcanoHeightMap->getRawWidth())
-			+ (int)(currentCamera->GetPosition().z / 16)];
-		yVal *= 8;
-	}
-	//currentCamera->SetPosition(Vector3(currentCamera->GetPosition().x, yVal, currentCamera->GetPosition().z));
-	oss << "Y: " << std::fixed << std::setprecision(2) << yVal;
-	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
-	currentY += 20.0f;
 
 	//Controls
 	currentY += 20.0f;
@@ -832,6 +743,12 @@ void Renderer::drawInfo()
 
 	oss.str("");
 	oss.clear();
+	oss << "Camera Controls: WASD + Mouse";
+	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
+	oss.str("");
+	oss.clear();
 	oss << "Camera Speed: Up/Down";
 	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
@@ -845,12 +762,6 @@ void Renderer::drawInfo()
 	oss.str("");
 	oss.clear();
 	oss << "Compile Shaders: R";
-	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
-	currentY += 20.0f;
-
-	oss.str("");
-	oss.clear();
-	oss << "View ports (broken): Y";
 	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
@@ -983,22 +894,82 @@ void Renderer::drawPaused()
 	glEnable(GL_CULL_FACE);
 }
 
+void Renderer::initPostProcessing()
+{//Post processing setup
+	processQuad = Mesh::GenerateQuad();
+
+	//Generate scene depth texture
+	glGenTextures(1, &bufferDepthTex);
+	glBindTexture(GL_TEXTURE_2D, bufferDepthTex);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+
+	//Colour texture
+	for (int i = 0; i < 2; ++i)
+	{
+		glGenTextures(1, &bufferColourTex[i]);
+		glBindTexture(GL_TEXTURE_2D, bufferColourTex[i]);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	}
+
+	glGenFramebuffers(1, &bufferFBO);		//Render the scene into this
+	glGenFramebuffers(1, &processFBO);		//And do post processing in this
+
+	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, bufferDepthTex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, bufferDepthTex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bufferColourTex[0], 0);
+
+	//Check FBO attachment success
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE || !bufferDepthTex || !bufferColourTex[0])
+	{
+		return;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::initSkyMaps()
+{
+	//Set up the sky map for each scene
+	skyMaps[SceneID::SPACE_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"GalaxySkyBox/galaxy_west.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_east.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_up.bmp",
+		TEXTUREDIR"GalaxySkyBox/galaxy_down.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_south.bmp", TEXTUREDIR"GalaxySkyBox/galaxy_north.bmp",
+		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
+
+	skyMaps[SceneID::VOLCANO_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"HellSkyBox/hell_rt.bmp", TEXTUREDIR"HellSkyBox/hell_lf.bmp", TEXTUREDIR"HellSkyBox/hell_up.bmp",
+		TEXTUREDIR"HellSkyBox/hell_dn.bmp", TEXTUREDIR"HellSkyBox/hell_bk.bmp", TEXTUREDIR"HellSkyBox/hell_ft.bmp",
+		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
+
+	skyMaps[SceneID::MOUNTAIN_SCENE] = SOIL_load_OGL_cubemap(TEXTUREDIR"sb_frozen/frozen_rt.bmp", TEXTUREDIR"sb_frozen/frozen_lf.bmp", TEXTUREDIR"sb_frozen/frozen_up.bmp",
+		TEXTUREDIR"sb_frozen/frozen_dn.bmp", TEXTUREDIR"sb_frozen/frozen_bk.bmp", TEXTUREDIR"sb_frozen/frozen_ft.bmp",
+		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO);
+
+	for (int i = 0; i < SceneID::NUM_SCENES; ++i)
+	{
+		if (!skyMaps[i])
+		{
+			return;
+		}
+	}
+
+	currentSkyMap = skyMaps[sceneID];
+}
+
 void Renderer::DrawNode(RenderObject* n)
 {
 	if (n->getType() == RenderType::TYPE_SUN)
 	{
-		if (ss->getExploding())
-		{
-			SetCurrentShader(blackHoleShader);
-		}
-		else
-		{
-			SetCurrentShader(sunShader);
-		}
+		SetCurrentShader(sunShader);
 	}
 	else if (n->getType() == RenderType::TYPE_SATELLITE)
 	{
-		SetCurrentShader(satelliteShader);
 		SetCurrentShader(satelliteShader);
 	}
 
@@ -1011,15 +982,8 @@ void Renderer::DrawNode(RenderObject* n)
 		glUniform4fv(glGetUniformLocation(currentShader->GetProgram(), "nodeColour"), 1, (float*)&n->GetColour());
 		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "useTexture"), (int)n->GetMesh()->GetTexture());
 		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
-
-		if (n->getType() == RenderType::TYPE_SUN && ss->getExploding())
-		{
-			n->DrawPatches();
-		}
-		else
-		{
-			n->Draw();
-		}
+			
+		n->Draw();
 	}
 
 	for (vector<RenderObject*>::const_iterator i = n->GetChildIteratorStart(); i != n->GetChildIteratorEnd(); ++i)
@@ -1211,9 +1175,12 @@ void Renderer::shakeCamera(const float msec, Camera* camera)
 {
 	float min = 0.8f * msec;
 	//Camera shake
-	Vector3 oldPosition = currentCamera->GetPosition();
-	currentCamera->SetPosition(Vector3(oldPosition.x + (RAND() * min * 2.0f) - min, oldPosition.y + (RAND() * min * 2.0f) - min,
-		oldPosition.z + (RAND() * min * 2.0f) - min));
+	for (int i = 0; i < 4; ++i)
+	{
+		Vector3 oldPosition = volcanoCameras[i]->GetPosition();
+		volcanoCameras[i]->SetPosition(Vector3(oldPosition.x + (RAND() * min * 2.0f) - min, oldPosition.y + (RAND() * min * 2.0f) - min,
+			oldPosition.z + (RAND() * min * 2.0f) - min));
+	}
 }
 
 void Renderer::DrawSkybox()

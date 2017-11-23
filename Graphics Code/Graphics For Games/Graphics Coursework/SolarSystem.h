@@ -53,9 +53,6 @@ public:
 	const bool getRotateObjects() const { return rotateObjects; }
 	void setRotateObjects(const bool v) { rotateObjects = v; }
 
-	bool getExploding() { return sunExploding; }
-	void setExploding(const bool value) { sunExploding = value; }
-
 private:
 	void initPlanets();
 
@@ -66,11 +63,10 @@ private:
 
 	Planet planets[NUM_PLANETS];
 
+	//Whether the planets/moons rotation is turned on
 	bool rotateObjects = true;
 
 	float scale = 1.0f;
-
-	bool sunExploding = false;
 
 	//Sun data
 	float sunRadius = 300.0f;

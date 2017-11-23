@@ -5,7 +5,8 @@
 
 int main()
 {
-	Window w("Graphics Scenes!", 1600, 900, false);
+	//Window w("Graphics Scenes!", 1600, 900, false);
+	Window w("Graphics Scenes!", 1920, 1080, true);
 	if (!w.HasInitialised())
 	{
 		return -1;
@@ -20,7 +21,7 @@ int main()
 	w.LockMouseToWindow(true);
 	w.ShowOSPointer(false);
 
-	renderer.setScene(SceneID::VOLCANO_SCENE);
+	renderer.setScene(SceneID::MOUNTAIN_SCENE);
 
 	while (w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE))
 	{

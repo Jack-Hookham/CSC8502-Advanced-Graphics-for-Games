@@ -57,8 +57,7 @@ struct Particle
 enum ParticleType
 {
 	LAVA_PARTICLE,
-	EMBER_PARTICLE,
-	STEAM_PARTICLE
+	EMBER_PARTICLE
 };
 
 class ParticleEmitter : public Mesh {

@@ -42,6 +42,9 @@ public:
 	void drawText(const std::string &text, const Vector3 &position, const float size = 10.0f, const bool perspective = false);
 
 protected:
+	void initPostProcessing();
+	void initSkyMaps();
+
 	//Total time since program started
 	float totalTimer = 0.0f;
 	//Total time of current scene
@@ -54,7 +57,7 @@ protected:
 	int frameCount = 0;
 	float fps = 0.0f;
 
-	bool showInfo = true;
+	bool showInfo = false;
 
 	void drawInfo();
 	void drawPaused();
@@ -86,7 +89,6 @@ protected:
 
 	int sceneID = SceneID::SPACE_SCENE;
 
-	std::string currentSceneName;
 	std::string sceneNames[SceneID::NUM_SCENES] = 
 	{
 		"Space",
@@ -126,14 +128,14 @@ protected:
 	bool switchingRight = false;
 	bool switched = true;
 
-	const float blurIncrement = 0.001f;
+	const float blurIncrement = 0.001f;			//Blur increment for scene transition
 
 	//Loop the scene ID if it goes too high or low
 	void wrapSceneID();
 
 	bool freeCam = false;
 
-	bool paused = true;
+	bool paused = false;
 
 	float sobelFactor = 0.0f;
 
@@ -188,7 +190,6 @@ protected:
 	Shader* particleShader;
 	ParticleEmitter* lavaEmitter;
 	ParticleEmitter* emberEmitter;
-	ParticleEmitter* steamEmitter;
 
 	bool volcanoErupting = false;
 	float lavaHeight = 40.0f;
@@ -224,8 +225,8 @@ protected:
 	Shader* reflectShader;
 	Shader* mountainSkyboxShader;
 	float sunStrength = 0.0f;		//Passed into the mountain skybox shader to adjust its alpha based on day/night
-	float minSunX; 
-	float maxSunX;
+	float minSunX;					//Sun X position when it resets
+	float maxSunX;					//Max distance before the sun resets position
 
 	Vector3 mountainsLightReset;
 	Light* mountainsLight;

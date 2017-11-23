@@ -25,31 +25,6 @@ Mesh::Mesh(void)
 	bumpTexture = 0;
 }
 
-//Mesh::Mesh(Mesh* m)
-//{
-//	for (int i = 0; i < MAX_BUFFER; ++i)
-//	{
-//		bufferObject[i] = m->bufferObject[i];
-//	}
-//
-//	glGenVertexArrays(1, &arrayObject);
-//
-//	numVertices = m->numVertices;
-//	vertices = m->vertices;
-//	colours = m->colours;
-//	type = m->type;
-//	texture = m->texture;
-//	textureCoords = m->textureCoords;
-//
-//	indices = m->indices;
-//	numIndices = m->numIndices;
-//
-//	//Lighting
-//	normals = m->normals;
-//	tangents = m->tangents;
-//	bumpTexture = m->bumpTexture;
-//}
-
 Mesh::~Mesh(void)
 {
 	glDeleteVertexArrays(1, &arrayObject);
@@ -72,32 +47,6 @@ void Mesh::Draw()
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, bumpTexture);
 	
-	glBindVertexArray(arrayObject);
-	if (bufferObject[INDEX_BUFFER])
-	{
-		glDrawElements(type, numIndices, GL_UNSIGNED_INT, 0);
-	}
-	else
-	{
-		glDrawArrays(type, 0, numVertices);
-	}
-	glBindVertexArray(0);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-
-void Mesh::DrawPatches()
-{
-	type = GL_PATCHES;
-	glPatchParameteri(GL_PATCH_VERTICES, 3);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, bumpTexture);
-
 	glBindVertexArray(arrayObject);
 	if (bufferObject[INDEX_BUFFER])
 	{
