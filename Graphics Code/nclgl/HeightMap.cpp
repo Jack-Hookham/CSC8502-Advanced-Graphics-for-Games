@@ -1,8 +1,7 @@
 #include "HeightMap.h"
 
 HeightMap::HeightMap(std::string name, int rawWidth, int rawHeight, float heightMapX, 
-	float heightMapZ, float heightMapY,
-	float heightMapTexX, float heightMapTexZ)
+	float heightMapZ, float heightMapY, float heightMapTexX, float heightMapTexZ)
 {
 	mRawWidth = rawWidth;
 	mRawHeight = rawHeight;
@@ -25,7 +24,7 @@ HeightMap::HeightMap(std::string name, int rawWidth, int rawHeight, float height
 	textureCoords = new Vector2[numVertices];
 	indices = new GLuint[numIndices];
 
-	unsigned char* data = new unsigned char[numVertices];
+	data = new unsigned char[numVertices];
 	file.read((char*)data, numVertices * sizeof(unsigned char));
 	file.close();
 
@@ -38,8 +37,6 @@ HeightMap::HeightMap(std::string name, int rawWidth, int rawHeight, float height
 			textureCoords[offset] = Vector2(x * mHeightMapTexX, z * mHeightMapTexZ);
 		}
 	}
-
-	delete data;
 
 	numIndices = 0;
 

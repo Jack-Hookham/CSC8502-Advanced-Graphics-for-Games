@@ -21,7 +21,11 @@ public:
 	HeightMap(std::string name, int rawWidth = 257, int rawHeight = 257, float heightMapX = 16.0f,
 		float heightMapZ = 16.0f, float heightMapY = 8.0f,
 		float heightMapTexX = 1.0f / 16.0f, float heightMapTexZ = 1.0f / 16.0f);
-	~HeightMap(void) {};
+	~HeightMap(void) {
+		delete data;
+	};
+
+	unsigned char* data;
 
 	inline const int getRawWidth() const { return mRawWidth; }
 	inline const int getRawHeight() const { return mRawHeight; }

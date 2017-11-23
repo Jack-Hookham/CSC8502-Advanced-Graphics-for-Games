@@ -40,46 +40,6 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 		return;
 	}
 
-	//Viewport quads
-	for (int i = 0; i < SceneID::NUM_SCENES; ++i)
-	{
-		sceneQuads[i] = Mesh::GenerateQuad();
-
-		//Generate scene depth texture
-		glGenTextures(1, &sceneDepthTex[i]);
-		glBindTexture(GL_TEXTURE_2D, sceneDepthTex[i]);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
-
-		//Colour texture
-		for (int j = 0; j < 2; ++j)
-		{
-			glGenTextures(1, &sceneColourTex[i][j]);
-			glBindTexture(GL_TEXTURE_2D, sceneColourTex[i][j]);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		}
-
-		glGenFramebuffers(1, &sceneFBOs[i]);		//Render the scene into this
-
-		glBindFramebuffer(GL_FRAMEBUFFER, sceneFBOs[i]);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, sceneDepthTex[i], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, sceneDepthTex[i], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneColourTex[i][0], 0);
-
-		//Check FBO attachment success
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE || !sceneDepthTex[i] || !sceneColourTex[i][0])
-		{
-			return;
-		}
-	}
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	sunLight = new Light(Vector3(0.0f, 0.0f, 0.0f), Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
@@ -106,6 +66,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	}
 
 	currentSkyMap = skyMaps[sceneID];
+
+	//--------------Volcano Stuff-------------------------
 
 	lavaQuad = Mesh::GenerateQuad();
 	lavaQuad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"lavaPlanet2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
@@ -149,8 +111,17 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	steamEmitter->SetParticleLifetime(3000.0f);
 	steamEmitter->SetParticleSpeed(0.1f);
 
-	volcanoLight = new Light(Vector3((volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * 0.75f), 3000.0f,
-		volcanoHeightMap->getRawHeight() * volcanoHeightMap->getHeightMapX() * 0.75f), Vector4(1.0f, 1.0f, 1.0f, 1), 10000.0f);
+	volcanoLight = new Light(Vector3(2240.0f, 2000.0f, 2100.0f), Vector4(1.0f, 1.0f, 1.0f, 1), 10000.0f);
+
+	hellData = new MD5FileData(MESHDIR"hellknight.md5mesh");
+	hellNode = new MD5Node(*hellData);
+
+	hellData->AddAnim(MESHDIR"idle2.md5anim");
+	hellData->AddAnim(MESHDIR"walk7.md5anim");
+	//hellNode->PlayAnim(MESHDIR"idle2.md5anim");
+	hellNode->PlayAnim(MESHDIR"walk7.md5anim");
+
+	//----------Mountains Stuff---------------------
 
 	waterQuad = Mesh::GenerateQuad();
 	waterQuad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"water2.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
@@ -173,26 +144,23 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 	SetTextureRepeating(mountainsHeightMap->GetTexture(), true);
 	SetTextureRepeating(mountainsHeightMap->GetBumpMap(), true);
 
-	minSunX = -15000.0f + mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f;
-	maxSunX = 15000.0f + mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX();
+	minSunX = -13000.0f + mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f;
+	maxSunX = 13000.0f + mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX();
 	mountainsLightReset = Vector3(minSunX, -1000.0f,
 		mountainsHeightMap->getRawHeight() * mountainsHeightMap->getHeightMapX() / 2.0f);
 
 	mountainsLight = new Light(mountainsLightReset, Vector4(1.0f, 1.0f, 1.0f, 1.0f), 10000.0f);
 
 	cameras[SceneID::SPACE_SCENE] = new Camera(-20.0f, -15.0f, Vector3(310.0f, 250.0f, 160.0f));
-	cameras[SceneID::VOLCANO_SCENE] = new Camera(10.0f, 150.0f, Vector3(volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 1.2f, 800.0f,
-		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * -0.8f));
+	cameras[SceneID::VOLCANO_SCENE] = new Camera(10.0f, 145.0f, Vector3(5400.0f, 700.0f, -1000.0f));
 	cameras[SceneID::MOUNTAIN_SCENE] = new Camera(-10.0f, 290.0f, Vector3(mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 0.1f, 700.0f,
 		mountainsHeightMap->getRawWidth() * mountainsHeightMap->getHeightMapX() * 0.75f));
 
-	volcanoCameras[0] = cameras[SceneID::VOLCANO_SCENE];
-	volcanoCameras[1] = new Camera(10.0f, 150.0f, Vector3(volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 0.2f, 800.0f,
-		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * -0.8f));
-	volcanoCameras[2] = new Camera(10.0f, 150.0f, Vector3(volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 1.2f, 800.0f,
-		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 0.2f));
-	volcanoCameras[3] = new Camera(10.0f, 150.0f, Vector3(volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 0.2f, 800.0f,
-		volcanoHeightMap->getRawWidth() * volcanoHeightMap->getHeightMapX() * 0.2f));
+	//4 volcano cameras
+	volcanoCameras[0] = cameras[SceneID::VOLCANO_SCENE];		//1st camera just reuses the scene camera
+	volcanoCameras[1] = new Camera(10.0f, 185.0f, Vector3(820.0f, 860.0f, -3290.0f));
+	volcanoCameras[2] = new Camera(-30.0f, 90.0f, Vector3(6300.0f, 2400.0f, 2350.0f));
+	volcanoCameras[3] = new Camera(-20.0f, 220.0f, Vector3(-800.0f, 2200.0f, -810.0f));
 
 	currentCamera = cameras[sceneID];
 
@@ -245,8 +213,6 @@ Renderer::~Renderer(void)
 	{
 		delete cameras[i];
 		delete scenes[i];
-		glDeleteFramebuffers(1, &sceneFBOs[i]);
-		delete sceneQuads[i];
 	}
 
 	delete sunLight;
@@ -282,6 +248,10 @@ Renderer::~Renderer(void)
 	delete lavaEmitter;
 	delete emberEmitter;
 	delete steamEmitter;
+
+	delete hellData;
+	delete hellNode;
+	delete skeletonShader;
 }
 
 void Renderer::UpdateScene(float msec)
@@ -317,12 +287,6 @@ void Renderer::UpdateScene(float msec)
 	{
 		showInfo = !showInfo;
 	}
-
-	//Toggle show all scenes
-	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_Y))
-	{
-		showAllScenes = !showAllScenes;
-	}	
 	
 	//Sobel factor
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_U))
@@ -354,21 +318,7 @@ void Renderer::UpdateScene(float msec)
 	}
 	viewMatrix = currentCamera->BuildViewMatrix();
 
-	if (showAllScenes)
-	{
-		lavaEmitter->Update(msec, volcanoErupting);
-		emberEmitter->Update(msec);
-		if (volcanoErupting)
-		{
-			shakeCamera(msec, cameras[SceneID::VOLCANO_SCENE]);
-		}
-
-		scenes[SceneID::SPACE_SCENE]->Update(msec);
-	}
-	else
-	{
-		currentScene->Update(msec);
-	}
+	currentScene->Update(msec);
 
 	if (sceneID == SceneID::VOLCANO_SCENE)
 	{	
@@ -411,11 +361,9 @@ void Renderer::UpdateScene(float msec)
 		if (volcanoErupting)
 		{
 			shakeCamera(msec, currentCamera);
-			//if (lavaHeight < 75.0f)
-			//{
-			//	lavaHeight += msec * 0.004f;
-			//}
 		}
+
+		UpdateHellKnight(msec);
 	}
 	else if (sceneID == SceneID::MOUNTAIN_SCENE)
 	{
@@ -467,45 +415,7 @@ void Renderer::RenderScene()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	//glUseProgram(currentShader->GetProgram());
 
-	if (showAllScenes)
-	{
-		int mainSceneID = sceneID;
-
-		//Draw the previous scene bottom left
-		sceneID = mainSceneID - 1;
-		wrapSceneID();
-		currentSkyMap = skyMaps[sceneID];
-		currentCamera = cameras[sceneID];
-		viewMatrix = currentCamera->BuildViewMatrix();
-		glViewport(0, 0, width * 0.4f, height * 0.4f);
-		DrawCurrentScene();
-		DrawSceneQuad(sceneID);
-
-		//Draw the next scene bottom right
-		sceneID = mainSceneID + 1;
-		wrapSceneID();
-		currentSkyMap = skyMaps[sceneID];
-		currentCamera = cameras[sceneID];
-		viewMatrix = currentCamera->BuildViewMatrix();
-		glViewport(width * 0.6f, 0, width * 0.4f, height * 0.4f);
-		DrawCurrentScene();
-		DrawSceneQuad(sceneID);
-
-		//Draw the current scene centre
-		sceneID = mainSceneID;
-		wrapSceneID();
-		currentSkyMap = skyMaps[sceneID];
-		currentCamera = cameras[sceneID];
-		viewMatrix = currentCamera->BuildViewMatrix();
-		glViewport(width * 0.15f, height * 0.3f, width * 0.7f, height * 0.7f);
-		DrawCurrentScene();
-		DrawSceneQuad(sceneID);
-	}
-	else
-	{
-		glViewport(0, 0, width, height);
-		DrawCurrentScene();
-	}
+	DrawCurrentScene();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -566,45 +476,33 @@ void Renderer::DrawVolcanoScene()
 		viewMatrix = currentCamera->BuildViewMatrix();
 		UpdateShaderMatrices();
 
+		//Top left
 		glViewport(0, height / 2, width / 2, height / 2);
-		DrawSkybox();
-		DrawVolcanoMap();
-		DrawVolcanoLava();
-		DrawFloorLava();
-		DrawEmitters();
+		DrawVolcanoComponents();
 
 		currentCamera = volcanoCameras[1];
 		viewMatrix = currentCamera->BuildViewMatrix();
 		UpdateShaderMatrices();
 
+		//Top right
 		glViewport(width / 2, height / 2, width / 2, height / 2);
-		DrawSkybox();
-		DrawVolcanoMap();
-		DrawVolcanoLava();
-		DrawFloorLava();
-		DrawEmitters();
+		DrawVolcanoComponents();
 
 		currentCamera = volcanoCameras[2];
 		viewMatrix = currentCamera->BuildViewMatrix();
 		UpdateShaderMatrices();
 
+		//Bottom left
 		glViewport(0, 0, width / 2, height / 2);
-		DrawSkybox();
-		DrawVolcanoMap();
-		DrawVolcanoLava();
-		DrawFloorLava();
-		DrawEmitters();
+		DrawVolcanoComponents();
 
 		currentCamera = volcanoCameras[3];
 		viewMatrix = currentCamera->BuildViewMatrix();
 		UpdateShaderMatrices();
 
+		//Bottom right
 		glViewport(width / 2, 0, width / 2, height / 2);
-		DrawSkybox();
-		DrawVolcanoMap();
-		DrawVolcanoLava();
-		DrawFloorLava();
-		DrawEmitters();
+		DrawVolcanoComponents();
 
 		currentCamera = tempCamera;
 		viewMatrix = currentCamera->BuildViewMatrix();
@@ -612,12 +510,81 @@ void Renderer::DrawVolcanoScene()
 	}
 	else
 	{
-		DrawSkybox();
-		DrawVolcanoMap();
-		DrawVolcanoLava();
-		DrawFloorLava();
-		DrawEmitters();
+		DrawVolcanoComponents();
 	}
+}
+
+void Renderer::DrawVolcanoComponents()
+{
+	DrawSkybox();
+	DrawVolcanoMap();
+	DrawHellKnight();
+	DrawVolcanoLava();
+	DrawFloorLava();
+	DrawEmitters();
+}
+
+void Renderer::UpdateHellKnight(const float msec)
+{
+	//if (Window::GetKeyboard()->KeyDown(KEYBOARD_L))
+	//{
+	//	hellKnightStep += 0.1f;
+	//}
+	//if (Window::GetKeyboard()->KeyDown(KEYBOARD_K))
+	//{
+	//	hellKnightStep -= 0.1f;
+	//}
+
+	//hellKnightDir = Vector3(0, 0, -1);
+	//hellKnightRotation = 270.0f;
+
+	if (hellKnightOffset.x < 2230)
+	{
+		hellKnightDir = Vector3(1, 0, 1);
+		hellKnightRotation = 315 - 180;
+	}
+
+	if (hellKnightOffset.x > 2900)
+	{
+		hellKnightDir = Vector3(-1, 0, -1);
+		hellKnightRotation = 315;
+	}
+
+	hellNode->Update(msec);
+	if (hellNode->getAnimFrame() >= 37)
+	{
+		hellKnightDir.Normalise();
+		hellKnightOffset += hellKnightDir * hellKnightStep;
+		//hellNode->PlayAnim(MESHDIR"walk7.md5anim");
+		hellNode->setAnimFrame(1);
+	}
+	
+
+	//Calculate hellknight height
+	int yVal = 0;
+	//If within height map bounds
+	if (hellKnightOffset.x > 0 && hellKnightOffset.x < 257 * 16 &&
+		hellKnightOffset.z > 0 && hellKnightOffset.z < 257 * 16)
+	{
+		yVal = (int)volcanoHeightMap->data[(int)(hellKnightOffset.x / 16) * (int)(volcanoHeightMap->getRawWidth())
+			+ (int)(hellKnightOffset.z / 16)];
+	}
+
+	yVal *= 8;
+	hellKnightOffset.y = yVal;
+
+	hellKnightMatrix = Matrix4::Translation(hellKnightOffset)
+	* Matrix4::Rotation(hellKnightRotation, Vector3(0, 1, 0));
+}
+
+void Renderer::DrawHellKnight()
+{
+	SetCurrentShader(skeletonShader);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	modelMatrix = hellKnightMatrix;
+	UpdateShaderMatrices();
+	hellNode->Draw(*this);
+	glUseProgram(0);
 }
 
 void Renderer::DrawMountainsScene()
@@ -654,7 +621,9 @@ void Renderer::compileShaders()
 
 	lavaShader = new Shader(SHADERDIR"CW/lavaVertex.glsl", SHADERDIR"CW/lavaFragment.glsl");
 	volcanoLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/volcanoFragment.glsl");
-	particleShader = new Shader(SHADERDIR"CW/particleVertex.glsl", SHADERDIR"CW/particleFragment.glsl", SHADERDIR"CW/particleGeometry.glsl");
+	particleShader = new Shader(SHADERDIR"CW/particleVertex.glsl", SHADERDIR"CW/particleFragment.glsl", 
+		SHADERDIR"CW/particleGeometry.glsl");
+	skeletonShader = new Shader(SHADERDIR"Tutorials/skeletonvertex.glsl", SHADERDIR"Tutorials/texturedFragment.glsl");
 
 	reflectShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/reflectFragment.glsl");
 	mountainsLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/mountainFragment.glsl");
@@ -760,6 +729,13 @@ void Renderer::drawInfo()
 	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
+	//Pitch/Yaw
+	oss.str("");
+	oss.clear();
+	oss << "Pitch: " << std::fixed << std::setprecision(0) << currentCamera->GetPitch() << " Yaw: " << currentCamera->GetYaw();
+	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
 	//Total time
 	oss.str("");
 	oss.clear();
@@ -788,7 +764,35 @@ void Renderer::drawInfo()
 	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
+	//Hell offset
+	oss.str("");
+	oss.clear();
+	oss << "Hell offset: " << std::fixed << std::setprecision(0) << hellKnightOffset;
+	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
 
+	//Hell step
+	oss.str("");
+	oss.clear();
+	oss << "Hell step: " << std::fixed << std::setprecision(2) << hellKnightStep;
+	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
+	oss.str("");
+	oss.clear();
+	int yVal = 0;
+	//If within height map bounds
+	if (currentCamera->GetPosition().x > 0 && currentCamera->GetPosition().x < 257 * 16 &&
+		currentCamera->GetPosition().y > 0 && currentCamera->GetPosition().y < 257 * 16)
+	{
+		yVal = (int)volcanoHeightMap->data[(int)(currentCamera->GetPosition().x / 16) * (int)(volcanoHeightMap->getRawWidth())
+			+ (int)(currentCamera->GetPosition().z / 16)];
+		yVal *= 8;
+	}
+	//currentCamera->SetPosition(Vector3(currentCamera->GetPosition().x, yVal, currentCamera->GetPosition().z));
+	oss << "Y: " << std::fixed << std::setprecision(2) << yVal;
+	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
 
 	//Controls
 	currentY += 20.0f;
@@ -1120,40 +1124,6 @@ void Renderer::DrawProcessedScene()
 	glUseProgram(0);
 }
 
-void Renderer::DrawSceneQuad(const int scene)
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, sceneFBOs[scene]);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneColourTex[scene][1], 0);
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-	SetCurrentShader(sceneShader);
-
-	projMatrix = Matrix4::Orthographic(-1, 1, 1, -1, -1, 1);
-	viewMatrix.ToIdentity();
-	textureMatrix.ToIdentity();
-	modelMatrix.ToIdentity();
-	UpdateShaderMatrices();
-
-	glDisable(GL_DEPTH_TEST);
-
-	glUniform2f(glGetUniformLocation(currentShader->GetProgram(), "pixelSize"), 1.0f / width, 1.0f / height);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneColourTex[scene][1], 0);
-
-	sceneQuads[scene]->SetTexture(sceneColourTex[scene][0]);
-	sceneQuads[scene]->Draw();
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneColourTex[scene][0], 0);
-
-	sceneQuads[scene]->SetTexture(sceneColourTex[scene][1]);
-	sceneQuads[scene]->Draw();
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glUseProgram(0);
-
-	glEnable(GL_DEPTH_TEST);
-}
-
 void Renderer::checkSceneSwitch(const float msec)
 {
 	//Forward scene
@@ -1219,6 +1189,12 @@ void Renderer::checkSceneSwitch(const float msec)
 		{
 			switched = true;
 		}
+	}
+
+	//Account for float error - ensure blurFactor stays above 0
+	if (blurFactor <= 0.001f)
+	{
+		blurFactor = 0.001f;
 	}
 }
 

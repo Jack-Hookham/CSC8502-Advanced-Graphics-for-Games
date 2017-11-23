@@ -92,6 +92,8 @@ public:
 		}
 	}
 
+	inline const int getAnimFrame() const { return currentAnimFrame; }
+	inline void setAnimFrame(const int frame) { currentAnimFrame = frame; }
 
 protected:
 	const MD5FileData&	sourceData;

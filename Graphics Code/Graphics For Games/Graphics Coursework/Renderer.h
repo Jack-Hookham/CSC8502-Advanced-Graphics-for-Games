@@ -7,6 +7,8 @@
 #include "../../nclgl/Camera.h"
 #include "../../nclgl/SceneNode.h"
 #include "../../nclgl/HeightMap.h"
+#include "../../nclgl/MD5Mesh.h"
+#include "../../nclgl/MD5Node.h"
 #include "SolarSystem.h"
 #include "Volcano.h"
 #include "Mountains.h"
@@ -82,13 +84,6 @@ protected:
 
 	float blurFactor = 0.0f;
 
-	Mesh* sceneQuads[SceneID::NUM_SCENES];
-	GLuint sceneFBOs[SceneID::NUM_SCENES];
-	GLuint sceneColourTex[SceneID::NUM_SCENES][2];
-	GLuint sceneDepthTex[SceneID::NUM_SCENES];
-
-	void DrawSceneQuad(const int scene);
-
 	int sceneID = SceneID::SPACE_SCENE;
 
 	std::string currentSceneName;
@@ -135,10 +130,8 @@ protected:
 
 	//Loop the scene ID if it goes too high or low
 	void wrapSceneID();
-	bool showAllScenes = false;
 
 	bool freeCam = false;
-	float freeCamTime = 0.0f;
 
 	bool paused = false;
 
@@ -174,11 +167,14 @@ protected:
 
 	//-----------------------Volcano Scene-----------------------------
 
-	void DrawVolcanoScene();
+	
+	void DrawVolcanoScene();		//Draw 1 or 4 volcano components with view ports
+	void DrawVolcanoComponents();	//Calls each volcano draw function
 	void DrawVolcanoMap();
 	void DrawFloorLava();
 	void DrawVolcanoLava();
 	void DrawEmitters();
+
 	void SetShaderParticleSize(const float f);
 
 	HeightMap* volcanoHeightMap;
@@ -201,6 +197,20 @@ protected:
 	int currentVolcanoCamera = 0;
 
 	bool volcanoMultiCam = true;
+
+	MD5FileData* hellData;
+	MD5Node* hellNode;
+	Shader* skeletonShader;
+
+	void UpdateHellKnight(const float msec);
+	void DrawHellKnight();
+	Matrix4 hellKnightMatrix;
+	Vector3 hellKnightOffset = Vector3(2800.0f, 0.0f, 2000.0f);
+	Vector3 hellKnightOffsetSmooth = Vector3(2800.0f, 0.0f, 2000.0f);
+	float hellKnightRotation = 315.0f;
+	float hellKnightStep = 133.0f;
+	Vector3 hellKnightDir = Vector3(-1, 0, -1);
+
 
 	//-----------------------Mountains Scene---------------------------
 
