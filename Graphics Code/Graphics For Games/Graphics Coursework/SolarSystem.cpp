@@ -153,7 +153,7 @@ void SolarSystem::initPlanets()
 	moon.bodyRadius = 15.0f;
 	moon.orbitRadius = planets[currentPlanet].bodyRadius + 50.0f;
 	moon.orbitSpeed = 0.42f;
-	moon.initialRotation = 10.0f;
+	moon.initialRotation = 70.0f;
 	moon.texture = TEXTUREDIR"Barren Reds.jpg";
 	planets[currentPlanet].moons.push_back(moon);
 
@@ -189,7 +189,7 @@ void SolarSystem::initPlanets()
 	planets[currentPlanet].bodyRadius = 40.0f;
 	planets[currentPlanet].orbitRadius = sunRadius + 2700.0f;
 	planets[currentPlanet].orbitSpeed = 0.23f;
-	planets[currentPlanet].initialRotation = 22.0f;
+	planets[currentPlanet].initialRotation = 96.0f;
 	planets[currentPlanet].texture = TEXTUREDIR"Emerald.jpg";
 
 	moon.bodyRadius = 10.0f;

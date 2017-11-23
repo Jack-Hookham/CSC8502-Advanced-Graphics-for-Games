@@ -550,31 +550,40 @@ void Renderer::UpdateHellKnight(const float msec)
 		hellKnightRotation = 315;
 	}
 
+
 	hellNode->Update(msec);
+	int frameDiff = abs(hellNode->getAnimFrame() - prevFrame);
+	hellKnightDir.Normalise();
 	if (hellNode->getAnimFrame() >= 37)
 	{
-		hellKnightDir.Normalise();
 		hellKnightOffset += hellKnightDir * hellKnightStep;
-		//hellNode->PlayAnim(MESHDIR"walk7.md5anim");
-		hellNode->setAnimFrame(1);
+		hellNode->PlayAnim(MESHDIR"walk7.md5anim");
+		//hellNode->setAnimFrame(1);
 	}
-	
+
+	if (frameDiff > 0)
+	{
+		hellKnightOffsetSmooth += (hellKnightDir * hellKnightStep) / (37 / frameDiff);
+	}
 
 	//Calculate hellknight height
 	int yVal = 0;
 	//If within height map bounds
-	if (hellKnightOffset.x > 0 && hellKnightOffset.x < 257 * 16 &&
-		hellKnightOffset.z > 0 && hellKnightOffset.z < 257 * 16)
+	if (hellKnightOffsetSmooth.x > 0 && hellKnightOffsetSmooth.x < 257 * 16 &&
+		hellKnightOffsetSmooth.z > 0 && hellKnightOffsetSmooth.z < 257 * 16)
 	{
-		yVal = (int)volcanoHeightMap->data[(int)(hellKnightOffset.x / 16) * (int)(volcanoHeightMap->getRawWidth())
-			+ (int)(hellKnightOffset.z / 16)];
+		yVal = (int)volcanoHeightMap->data[(int)(hellKnightOffsetSmooth.x / 16) * (int)(volcanoHeightMap->getRawWidth())
+			+ (int)(hellKnightOffsetSmooth.z / 16)];
 	}
 
 	yVal *= 8;
+	hellKnightOffsetSmooth.y = yVal;
 	hellKnightOffset.y = yVal;
 
 	hellKnightMatrix = Matrix4::Translation(hellKnightOffset)
 	* Matrix4::Rotation(hellKnightRotation, Vector3(0, 1, 0));
+
+	prevFrame = hellNode->getAnimFrame();
 }
 
 void Renderer::DrawHellKnight()

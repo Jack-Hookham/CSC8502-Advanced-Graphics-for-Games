@@ -133,7 +133,7 @@ protected:
 
 	bool freeCam = false;
 
-	bool paused = false;
+	bool paused = true;
 
 	float sobelFactor = 0.0f;
 
@@ -196,7 +196,7 @@ protected:
 	Camera* volcanoCameras[4];
 	int currentVolcanoCamera = 0;
 
-	bool volcanoMultiCam = true;
+	bool volcanoMultiCam = false;
 
 	MD5FileData* hellData;
 	MD5Node* hellNode;
@@ -206,11 +206,13 @@ protected:
 	void DrawHellKnight();
 	Matrix4 hellKnightMatrix;
 	Vector3 hellKnightOffset = Vector3(2800.0f, 0.0f, 2000.0f);
-	Vector3 hellKnightOffsetSmooth = Vector3(2800.0f, 0.0f, 2000.0f);
 	float hellKnightRotation = 315.0f;
 	float hellKnightStep = 133.0f;
 	Vector3 hellKnightDir = Vector3(-1, 0, -1);
 
+	//Used to change the y position every frame rather than just doing it when the animation endss
+	Vector3 hellKnightOffsetSmooth = Vector3(2800.0f, 0.0f, 2000.0f);
+	int prevFrame = 0;
 
 	//-----------------------Mountains Scene---------------------------
 
