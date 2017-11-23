@@ -7,7 +7,7 @@
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 3) out;
 
-uniform float mod;
+uniform float time;
 
 in Vertex {
 	vec4 	colour;
@@ -31,58 +31,58 @@ void main()
 {
 	vec4 norm = normalize(gl_in[0].gl_Position);
 	gl_Position = gl_in[0].gl_Position;
-	if (mod <= 300)
+	if (time <= 300)
 	{
-		gl_Position.x -= norm.x * mod * 0.1;
-		gl_Position.y -= norm.y * mod * 0.1;
+		gl_Position.x -= norm.x * time * 0.1;
+		gl_Position.y -= norm.y * time * 0.1;
 	}
-	if (mod > 300 && mod <= 400)
+	if (time > 300 && time <= 400)
 	{
 		gl_Position.x -= norm.x * 300 * 0.1;
 		gl_Position.y -= norm.y * 300 * 0.1;
 	}
-	if (mod > 360)
+	if (time > 360)
 	{
-		gl_Position.x -= norm.x * (mod - 360) * 0.005 * mod;
-		gl_Position.y -= norm.y * (mod - 360) * 0.005 * mod;
+		gl_Position.x -= norm.x * (time - 360) * 0.005 * time;
+		gl_Position.y -= norm.y * (time - 360) * 0.005 * time;
 	}
 	OUT.colour = vec4(0.5,1.0,0.0,1.0);
 	EmitVertex();
 
 	gl_Position = gl_in[1].gl_Position;
-	if (mod <= 300)
+	if (time <= 300)
 	{
-		gl_Position.x -= norm.x * mod * 0.1;
-		gl_Position.y -= norm.y * mod * 0.1;
+		gl_Position.x -= norm.x * time * 0.1;
+		gl_Position.y -= norm.y * time * 0.1;
 	}
-	if (mod > 300 && mod <= 400)
+	if (time > 300 && time <= 400)
 	{
 		gl_Position.x -= norm.x * 300 * 0.1;
 		gl_Position.y -= norm.y * 300 * 0.1;
 	}
-	if (mod > 360)
+	if (time > 360)
 	{
-		gl_Position.x -= norm.x * (mod - 360) * 0.005 * mod;
-		gl_Position.y -= norm.y * (mod - 360) * 0.005 * mod;
+		gl_Position.x -= norm.x * (time - 360) * 0.005 * time;
+		gl_Position.y -= norm.y * (time - 360) * 0.005 * time;
 	}
 	OUT.colour = vec4(1.0,0.0,0.5,1.0);
 	EmitVertex();
 
 	gl_Position = gl_in[2].gl_Position;
-	if (mod <= 300)
+	if (time <= 300)
 	{
-		gl_Position.x -= norm.x * mod * 0.1;
-		gl_Position.y -= norm.y * mod * 0.1;
+		gl_Position.x -= norm.x * time * 0.1;
+		gl_Position.y -= norm.y * time * 0.1;
 	}
-	if (mod > 300 && mod <= 400)
+	if (time > 300 && time <= 400)
 	{
 		gl_Position.x -= norm.x * 300 * 0.1;
 		gl_Position.y -= norm.y * 300 * 0.1;
 	}
-	if (mod > 360)
+	if (time > 360)
 	{
-		gl_Position.x -= norm.x * (mod - 360) * 0.005 * mod;
-		gl_Position.y -= norm.y * (mod - 360) * 0.005 * mod;
+		gl_Position.x -= norm.x * (time - 360) * 0.005 * time;
+		gl_Position.y -= norm.y * (time - 360) * 0.005 * time;
 	}
 	OUT.colour = vec4(0.0,0.5,1.0,1.0);
 	EmitVertex();

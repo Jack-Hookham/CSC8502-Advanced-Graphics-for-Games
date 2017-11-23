@@ -73,6 +73,14 @@ void SolarSystem::Update(float msec)
 	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_E))
 	{
 		sunExploding = !sunExploding;
+		if (sunExploding)
+		{
+			sun->GetMesh()->setType(GL_PATCHES);
+		}
+		else
+		{
+			sun->GetMesh()->setType(GL_TRIANGLES);
+		}
 	}
 
 	Vector3 sunDir = Vector3(0, 1, 0);

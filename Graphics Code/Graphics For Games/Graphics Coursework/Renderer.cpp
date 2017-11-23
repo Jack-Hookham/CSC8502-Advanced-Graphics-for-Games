@@ -228,6 +228,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent)
 
 Renderer::~Renderer(void)
 {
+	currentShader = NULL;
 	delete processQuad;
 	delete blurShader;
 	delete sceneShader;
@@ -253,9 +254,10 @@ Renderer::~Renderer(void)
 
 	delete satelliteShader;
 	delete sunShader;
+	delete blackHoleShader;
+
 	delete textShader;
 	delete skyboxShader;
-	currentShader = 0;
 
 	delete mountainsLightShader;
 	delete reflectShader;
@@ -546,8 +548,8 @@ void Renderer::DrawSpaceScene()
 	SetShaderLight(*sunLight);
 
 	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, (float*)&textureMatrix);
-	float mod = 0.0f;
-	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "mod"), mod);
+	float time = 0.0f;
+	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "time"), time);
 
 	DrawSkybox();
 	DrawShadowScene();
@@ -647,8 +649,8 @@ void Renderer::compileShaders()
 	//Sun uses a different shader as it doesn't need lighting
 	sunShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl");
 	shadowShader = new Shader(SHADERDIR"CW/shadowVert.glsl", SHADERDIR"CW/shadowFrag.glsl");
-	//blackHoleShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl",
-	//	SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
+	blackHoleShader = new Shader(SHADERDIR"CW/sunVertex.glsl", SHADERDIR"CW/sunFragment.glsl",
+		SHADERDIR"CW/blackHoleGeom.glsl", SHADERDIR"CW/tessControl.glsl", SHADERDIR"CW/tessEval.glsl");
 
 	lavaShader = new Shader(SHADERDIR"CW/lavaVertex.glsl", SHADERDIR"CW/lavaFragment.glsl");
 	volcanoLightShader = new Shader(SHADERDIR"CW/bumpVertex.glsl", SHADERDIR"CW/volcanoFragment.glsl");
@@ -667,6 +669,7 @@ void Renderer::compileShaders()
 		!satelliteShader->LinkProgram() ||
 		!sunShader->LinkProgram() ||
 		!shadowShader->LinkProgram() ||
+		!blackHoleShader->LinkProgram() ||
 
 		!lavaShader->LinkProgram() ||
 		!volcanoLightShader->LinkProgram() ||
@@ -775,6 +778,13 @@ void Renderer::drawInfo()
 	oss.str("");
 	oss.clear();
 	oss << "Sobel factor: " << std::fixed << std::setprecision(1) << sobelFactor;
+	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
+	currentY += 20.0f;
+
+	//Blur
+	oss.str("");
+	oss.clear();
+	oss << "Blur factor: " << std::fixed << std::setprecision(2) << blurFactor;
 	drawText(oss.str(), Vector3(currentX, currentY, 0.0f), 16.0f);
 	currentY += 20.0f;
 
@@ -964,10 +974,18 @@ void Renderer::DrawNode(RenderObject* n)
 {
 	if (n->getType() == RenderType::TYPE_SUN)
 	{
-		SetCurrentShader(sunShader);
+		if (ss->getExploding())
+		{
+			SetCurrentShader(blackHoleShader);
+		}
+		else
+		{
+			SetCurrentShader(sunShader);
+		}
 	}
 	else if (n->getType() == RenderType::TYPE_SATELLITE)
 	{
+		SetCurrentShader(satelliteShader);
 		SetCurrentShader(satelliteShader);
 	}
 
@@ -980,8 +998,15 @@ void Renderer::DrawNode(RenderObject* n)
 		glUniform4fv(glGetUniformLocation(currentShader->GetProgram(), "nodeColour"), 1, (float*)&n->GetColour());
 		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "useTexture"), (int)n->GetMesh()->GetTexture());
 		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
-		
-		n->Draw();
+
+		if (n->getType() == RenderType::TYPE_SUN && ss->getExploding())
+		{
+			n->DrawPatches();
+		}
+		else
+		{
+			n->Draw();
+		}
 	}
 
 	for (vector<RenderObject*>::const_iterator i = n->GetChildIteratorStart(); i != n->GetChildIteratorEnd(); ++i)

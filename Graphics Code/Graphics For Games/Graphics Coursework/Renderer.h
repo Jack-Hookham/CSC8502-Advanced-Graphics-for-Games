@@ -126,12 +126,14 @@ protected:
 	//Check whether the scene is switching
 	void checkSceneSwitch(const float msec);
 
+	//Track scene switching bools - used for scene transition
 	bool switchingLeft = false;
 	bool switchingRight = false;
 	bool switched = true;
 
 	const float blurIncrement = 0.001f;
 
+	//Loop the scene ID if it goes too high or low
 	void wrapSceneID();
 	bool showAllScenes = false;
 
@@ -140,7 +142,7 @@ protected:
 
 	bool paused = false;
 
-	float sobelFactor = false;
+	float sobelFactor = 0.0f;
 
 	//-----------------------Space Scene-------------------------------
 
@@ -158,6 +160,7 @@ protected:
 	Shader* shadowShader;
 	Shader* satelliteShader;
 	Shader* sunShader;
+	Shader* blackHoleShader;
 
 	Matrix4 shadowMapRotations[6] =
 	{
